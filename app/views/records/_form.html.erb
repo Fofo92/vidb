@@ -1,0 +1,23 @@
+<%= simple_form_for(@record) do |f| %>
+  <div class="d-flex flex-row justify-content-between align-items-center">
+    <%= f.input :french_title, input_html: { :size => 40 } %>
+    <%= f.input :original_title, input_html: { size: 40 }  %>
+    <%#= f.input :rank, input_html: { maxlength: 4, size: 10} %>
+  </div>
+
+  <div class="d-flex flex-row justify-content-between align-items-center">
+    <%= f.input :year %>
+    <%= f.input :length_in_mn %>
+    <%#= f.input :parent_id %>
+  </div>
+
+  <div class="d-flex flex-row justify-content-between align-items-center">
+    <%= f.input :is_seen %>
+    <%= f.input :is_available %>
+   </div>
+
+  <div class="d-flex flex-row justify-content-between align-items-center">
+    <%= f.input :abstract, width: 100 , input_html: { rows: 5, cols: 105 } %>
+  </div>
+  <%= f.button :submit, "Sauvegarder l'enregistrement", class: "btn btn-primary" %>
+<% end %>

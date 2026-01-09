@@ -1,0 +1,38 @@
+<div class="d-flex justify-content-between align-items-center">
+  <h1>Versions linguistiques</h1>
+  <%= link_to new_language_version_path, class: "btn btn-primary fa-xl" do %>
+    <i class="fa-regular fa-square-plus"></i>
+  <% end %>
+</div>
+
+<% if @language_versions.empty? %>
+  <h5>Liste vide</h5>
+<% else %>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Nom abrégé</th>
+        <th scope="col">Nom complet</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @language_versions.each do |language_version| %>
+        <tr>
+          <td scope="row"><%= language_version.id %></td>
+          <td scope="row"><%= language_version.short_name %></td>
+          <td scope="row"><%= language_version.long_name %></td>
+          <td class="text-center">
+            <%= link_to edit_language_version_path(language_version) do %>
+              <i class="fas fa-edit"></i>
+            <% end %>
+            <%= link_to language_version, data: {turbo_method: :delete, turbo_confirm: "Êtes-vous sûr ?" } do %>
+              <i class="fas fa-trash-alt"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -9,4 +9,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+  resources :genders, except: :show
+  resources :language_versions, except: :show
+  resources :records
 end

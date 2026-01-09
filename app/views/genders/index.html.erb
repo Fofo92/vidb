@@ -1,0 +1,38 @@
+<div class="d-flex justify-content-between align-items-center">
+  <h1>Genres cinématographiques</h1>
+  <%= link_to new_gender_path, class: "btn btn-primary fa-xl" do %>
+    <i class="fa-regular fa-square-plus"></i>
+  <% end %>
+</div>
+
+<% if @genders.empty? %>
+  <h5>Liste vide</h5>
+<% else %>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Nom</th>
+        <th scope="col">Commentaire</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @genders.each do |gender| %>
+        <tr>
+          <td scope="row"><%= gender.id %></td>
+          <td scope="row"><%= gender.name %></td>
+          <td><%= gender.comment %></td>
+          <td class="text-center">
+            <%= link_to edit_gender_path(gender) do %>
+              <i class="fas fa-edit"></i>
+            <% end %>
+            <%= link_to gender, data: {turbo_method: :delete, turbo_confirm: "Êtes-vous sûr ?" } do %>
+              <i class="fas fa-trash-alt"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

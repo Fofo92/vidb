@@ -1,0 +1,5 @@
+<%= simple_form_for(@language_version) do |f| %>
+  <%= f.input :short_name, label: "Nom abrégé" %>
+  <%= f.input :long_name, label: "Nom complet" %>
+  <%= f.button :submit, class: 'btn btn-primary' %>
+<% end %>

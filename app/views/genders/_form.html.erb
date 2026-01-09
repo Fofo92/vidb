@@ -1,0 +1,5 @@
+<%= simple_form_for(@gender) do |f| %>
+  <%= f.input :name, label: "Nom" %>
+  <%= f.input :comment, label: "Commentaire" %>
+  <%= f.button :submit, class: 'btn btn-primary' %>
+<% end %>
