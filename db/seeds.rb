@@ -104,7 +104,7 @@ Gender.create!({
   comment: "Le théâtre repose sur des dialogues entre personnages en communication directe. Il s'appuie sur les principes de vraisemblance, d'unité de temps, d'espace et d'action."
   })
 
-puts "Creating LanguageVersions..."
+puts "Deleting LanguageVersions..."
 LanguageVersion.destroy_all
 LanguageVersion.connection.execute('ALTER SEQUENCE language_versions_id_seq RESTART WITH 1')
 

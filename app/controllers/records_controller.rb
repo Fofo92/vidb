@@ -5,7 +5,7 @@ class RecordsController < ApplicationController
     @records = Record.order(:french_title).all
   end
 
-	def show
+  def show
   end
 
   def new
@@ -54,6 +54,7 @@ class RecordsController < ApplicationController
       :year,
       :is_seen,
       :is_available,
-      :abstract)
+      :abstract,
+      :rank)
   end
 end
