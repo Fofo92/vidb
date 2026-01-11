@@ -52,6 +52,7 @@ class RecordsController < ApplicationController
       :french_title,
       :length_in_mn,
       :year,
+      :is_recorded,
       :is_seen,
       :is_available,
       :abstract,
