@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_11_105656) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_11_125741) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -47,6 +47,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_11_105656) do
     t.datetime "updated_at", null: false
     t.integer "rank"
     t.boolean "is_recorded"
+    t.bigint "language_version_id"
+    t.index ["language_version_id"], name: "index_records_on_language_version_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -61,4 +63,5 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_11_105656) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "records", "language_versions"
 end

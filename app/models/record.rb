@@ -1,4 +1,5 @@
 class Record < ApplicationRecord
+  belongs_to :language_version, optional: true, default: -> { LanguageVersion.find_by(short_name: 'FR') }
   validates :original_title, presence: { if: -> { french_title.blank? } }
   validates :french_title, presence: { if: -> { original_title.blank? } }
   validate :validate_year_range

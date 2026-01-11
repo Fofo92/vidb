@@ -47,15 +47,7 @@ class RecordsController < ApplicationController
   end
 
   def record_params
-    params.require(:record).permit(
-      :original_title,
-      :french_title,
-      :length_in_mn,
-      :year,
-      :is_recorded,
-      :is_seen,
-      :is_available,
-      :abstract,
-      :rank)
+    params.require(:record).permit(:original_title, :french_title, :length_in_mn, :year, :is_recorded, :is_seen, :is_available,
+                                   :abstract, :rank, :language_version_id)
   end
 end

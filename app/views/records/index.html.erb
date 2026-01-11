@@ -12,6 +12,7 @@
       <th class="w-50">Titre</th>
       <th>Rang</th>
       <th>Durée</th>
+      <th>Version</th>
       <th>Année</th>
     </tr>
   </thead>
@@ -25,6 +26,7 @@
         </td>
         <td><%= record.rank || "n/a" %></td>
         <td><%= record.formatted_total_length %></td>
+        <td><%= record.language_version.short_name || "indef." %></td>
         <td><%= record.year %></td>
         <td>
           <% if record.is_recorded? %>
