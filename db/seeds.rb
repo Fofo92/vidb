@@ -115,6 +115,15 @@ LanguageVersion.create!({short_name: "VM", long_name: "Version multilingue"})
 LanguageVersion.create!({short_name: "VOST", long_name: "Version originale sous-titrée"})
 LanguageVersion.create!({short_name: "VMST", long_name: "Version multilingue sous-titrée"})
 
+puts "Deleting Media"
+Medium.destroy_all
+Medium.connection.execute('ALTER SEQUENCE media_id_seq RESTART WITH 1')
+
+puts "Creating media..."
+Medium.create!({short_name: "HDD", long_name: "Hard Disk Drive"})
+Medium.create!({short_name: "DVD", long_name: "Digital Versatile Disc"})
+Medium.create!({short_name: "BD", long_name: "Blue-ray Disc"})
+
 puts "Deleting Records..."
 Record.destroy_all
 puts "resetting records sequence"
