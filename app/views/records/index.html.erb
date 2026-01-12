@@ -46,6 +46,11 @@
           <% else %>
             <i class="fas fa-folder-minus" style="color:red;"></i>
           <% end %>
+          <% if record.is_checked? %>
+            <i class="fas fa-check" style="color:green;"></i>
+          <% else %>
+            <i class="fas fa-xmark" style="color:red;"></i>
+          <% end %>
         </td>
         <td>
           <%= link_to edit_record_path(record) do %>

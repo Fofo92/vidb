@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_11_234145) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_12_175821) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -53,6 +53,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_11_234145) do
     t.integer "rank"
     t.boolean "is_recorded"
     t.bigint "language_version_id"
+    t.boolean "is_checked", default: false
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
   end
 

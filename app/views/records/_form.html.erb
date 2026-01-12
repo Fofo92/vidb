@@ -16,6 +16,7 @@
     %>
     <%#= f.input :parent_id %>
   </div>
+
   <div class="d-flex flex-row justify-content-between align-items-center">
     <div class="d-flex flex-row justify-content-between align-items-center border px-2 py-1">
       <%= f.input :medium_ids,
@@ -23,19 +24,24 @@
         include_blank: false, as: :check_boxes, label: "Support(s)"
       %>
     </div>
+
     <div class="d-flex flex-row justify-content-between align-items-center">
       <div class="col align-self-start">
         <hd>État</hd>
         <%= f.input :is_recorded, class: "padding=1px" %>
         <%= f.input :is_seen %>
         <%= f.input :is_available %>
+        <%= f.input :is_checked %>
       </div>
     </div>
+
     <div class="d-flex flex-row justify-content-between align-items-center">
     </div>
   </div>
+
   <div class="d-flex flex-row justify-content-between align-items-center">
     <%= f.input :abstract, width: 100 , input_html: { rows: 5, cols: 105 } %>
   </div>
+
   <%= f.button :submit, "Sauvegarder l'enregistrement", class: "btn btn-primary" %>
 <% end %>
