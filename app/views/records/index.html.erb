@@ -10,10 +10,11 @@
     <tr>
       <th>#</th>
       <th class="w-50">Titre</th>
-      <th>Rang</th>
-      <th>Durée</th>
-      <th>Version</th>
       <th>Année</th>
+      <th>Durée</th>
+      <th>Rang</th>
+      <th>Version</th>
+      <th>Support(s)</th>
     </tr>
   </thead>
 
@@ -24,10 +25,11 @@
         <td>
           <%= link_to record.complete_title, record_path(record) %>
         </td>
-        <td><%= record.rank || "n/a" %></td>
-        <td><%= record.formatted_total_length %></td>
-        <td><%= record.language_version.short_name || "indef." %></td>
         <td><%= record.year %></td>
+        <td><%= record.formatted_total_length %></td>
+        <td><%= record.rank || "n/a" %></td>
+        <td><%= record.language_version.short_name || "indef." %></td>
+        <td><%= record.media.map(&:short_name).join(", ") %></td>
         <td>
           <% if record.is_recorded? %>
             <i class="fas fa-record-vinyl" style="color:green;"></i>
