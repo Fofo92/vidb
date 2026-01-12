@@ -2,6 +2,7 @@ class Record < ApplicationRecord
   paginates_per 26
   belongs_to :language_version, optional: true, default: -> { LanguageVersion.find_by(short_name: 'FR') }
   has_and_belongs_to_many :media
+  has_and_belongs_to_many :genders
   validates :original_title, presence: { if: -> { french_title.blank? } }
   validates :french_title, presence: { if: -> { original_title.blank? } }
   validate :validate_year_range

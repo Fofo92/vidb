@@ -17,6 +17,7 @@
       <th>Rang</th>
       <th>Version</th>
       <th>Support(s)</th>
+      <th>Genre(s)</th>
     </tr>
   </thead>
 
@@ -32,6 +33,7 @@
         <td><%= record.rank || "n/a" %></td>
         <td><%= record.language_version.short_name || "indef." %></td>
         <td><%= record.media.map(&:short_name).join(", ") %></td>
+        <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
         <td>
           <% if record.is_recorded? %>
             <i class="fas fa-record-vinyl" style="color:green;"></i>

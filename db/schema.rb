@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_12_175821) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_12_234206) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -19,6 +19,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_12_175821) do
     t.text "comment"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "genders_records", id: false, force: :cascade do |t|
+    t.bigint "record_id", null: false
+    t.bigint "gender_id", null: false
   end
 
   create_table "language_versions", force: :cascade do |t|
