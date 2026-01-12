@@ -1,2 +1,55 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<h1>Application de gestion de vidéos</h1>
+
+<ul>
+  <li>
+    Nombre total d'enregistrements : <%= Record.all.count %>
+    (<%= Record.number_of_checked_records %> vérifiés), dont :
+  </li>
+  <ul>
+    <li>
+      <%= Record.number_of_seen_records %> vus
+      (<%= Record.number_of_seen_and_available_records %> disponibles,
+      <%= Record.number_of_seen_and_removed_records %> supprimés),
+    </li>
+    <li>
+      <%= Record.number_of_unseen_records %> non vus
+      (<%= Record.number_of_unseen_and_available_records %> disponibles,
+      <%= Record.number_of_unseen_and_removed_records %> supprimés).
+    </li>
+  </ul>
+
+  <li>Nombre total de films : ####, dont ceux référencés par genres :</li>
+  <div class="row">
+    <div class="col-md-4">
+      <ul>
+        <% genres_third = Gender.all.length/3 + 1 %>
+        <% Gender.order(:name).all.slice(0, genres_third).map do |genre| %>
+          <li><%= genre.name %> : ####</li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="col-md-4">
+      <ul>
+        <% Gender.order(:name).all.slice(genres_third, genres_third).map do |genre| %>
+          <li><%= genre.name %> : ####</li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="col-md-4">
+      <ul>
+        <% Gender.order(:name).all.slice(2*genres_third, genres_third+1).map do |test| %>
+          <li><%= test.name %> : ####</li>
+        <% end %>
+      </ul>
+    </div>
+    <div>
+      <li>Nombre total de séries : ####, avec :</li>
+    <ul>
+      <li>#### saisons,</li>
+      <li>#### épisodes.</li>
+    </ul>
+  </div>
+  </ul>
+</ul>

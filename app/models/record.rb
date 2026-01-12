@@ -1,4 +1,5 @@
 class Record < ApplicationRecord
+  paginates_per 26
   belongs_to :language_version, optional: true, default: -> { LanguageVersion.find_by(short_name: 'FR') }
   has_and_belongs_to_many :media
   validates :original_title, presence: { if: -> { french_title.blank? } }
@@ -26,6 +27,34 @@ class Record < ApplicationRecord
     else
       french_title ? "#{french_title} (#{original_title})" : original_title.to_s
     end
+  end
+
+  def self.number_of_checked_records
+    return Record.where(is_checked: true).count
+  end
+
+  def self.number_of_seen_records
+    return Record.where(is_seen: true).count
+  end
+
+  def self.number_of_unseen_records
+    return Record.where(is_seen: false).count
+  end
+
+  def self.number_of_seen_and_removed_records
+    return Record.where(is_seen: true, is_available: true).count
+  end
+
+  def self.number_of_seen_and_available_records
+    return Record.where(is_seen: true, is_available: false).count
+  end
+
+  def self.number_of_unseen_and_available_records
+    return Record.where(is_seen: false, is_available: true).count
+  end
+
+  def self.number_of_unseen_and_removed_records
+    return Record.where(is_seen: false, is_available: false).count
   end
 
   private
