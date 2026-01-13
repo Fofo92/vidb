@@ -10,7 +10,7 @@
     <%= f.input :length_in_mn, input_html: { maxlength: 4, size: 3} %>
     <%= f.association :genders,
                       collection: Gender.all.order(:name).collect { |cg| [cg.name, cg.id]},
-                      input_html: { multiple: true }, input_blank: false,
+                      input_html: { multiple: true }, input_blank: "indéfini",
 											include_hidden: false %>
     <%= f.input :language_version_id,
                 collection: LanguageVersion.all.collect { |lv| [lv.short_name, lv.id]},
@@ -18,7 +18,7 @@
                 label: "Version linguistique",
                 input_html: {value: f.object.language_version_id || 1}
     %>
-    <%#= f.input :parent_id %>
+    <%= f.input :parent_id, input_html: {size: 6} %>
   </div>
 
   <div class="d-flex flex-row justify-content-between align-items-center">
