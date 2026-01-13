@@ -277,6 +277,10 @@ GEM
       tsort (>= 0.2)
       zeitwerk (~> 2.6)
     rake (13.3.1)
+    ransack (4.4.0)
+      activerecord (>= 7.1)
+      activesupport (>= 7.1)
+      i18n
     rdoc (7.0.3)
       erb
       psych (>= 4.0.0)
@@ -369,6 +373,7 @@ DEPENDENCIES
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 7.1.6)
+  ransack
   sassc-rails
   selenium-webdriver
   simple_form!

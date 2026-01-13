@@ -53,6 +53,7 @@ gem "sassc-rails"
 gem "kaminari"
 gem "ostruct"
 gem "ancestry"
+gem "ransack"
 
 group :development, :test do
   gem "dotenv-rails"

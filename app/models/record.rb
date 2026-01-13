@@ -14,6 +14,11 @@ class Record < ApplicationRecord
               less_than_or_equal_to: 240,
               only_integer: true
             }
+
+  def self.ransackable_attributes(auth_object = nil)
+    ["french_title", "original_title"]
+  end
+
   def formatted_length(length_in_mn)
     seconds = length_in_mn.to_i * 60
     Time.at(seconds.to_i).utc.strftime("%Hh%M")
