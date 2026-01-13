@@ -302,6 +302,9 @@ GEM
       sprockets-rails
       tilt
     securerandom (0.4.1)
+    seed_dump (3.4.1)
+      activerecord (>= 4)
+      activesupport (>= 4)
     selenium-webdriver (4.39.0)
       base64 (~> 0.2)
       logger (~> 1.4)
@@ -375,6 +378,7 @@ DEPENDENCIES
   rails (~> 7.1.6)
   ransack
   sassc-rails
+  seed_dump
   selenium-webdriver
   simple_form!
   sprockets-rails

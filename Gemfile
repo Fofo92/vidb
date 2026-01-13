@@ -54,6 +54,7 @@ gem "kaminari"
 gem "ostruct"
 gem "ancestry"
 gem "ransack"
+gem "seed_dump"
 
 group :development, :test do
   gem "dotenv-rails"
