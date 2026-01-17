@@ -4,7 +4,7 @@
     <i class="fa-regular fa-square-plus"></i>
   <% end %>
 </div>
-<div class="d-flex flex-row justify-content-between align-items-center">
+<div class="d-flex flex-row justify-content-between align-items-center py-2">
   <%= search_form_for @q do |f| %>
     <%= f.search_field :french_title_cont, label: "Le titre contient" %>
     <%= f.submit "Recherche", class: "btn btn-primary" %>
@@ -20,10 +20,10 @@
       <th class="w-50">Titre</th>
       <th>Année</th>
       <th>Durée</th>
-      <th>Rang</th>
+      <th>Genre(s)</th>
       <th>Version</th>
       <th>Support(s)</th>
-      <th>Genre(s)</th>
+      <th>Rang</th>
       <th>Parents</th>
     </tr>
   </thead>
@@ -37,10 +37,10 @@
         </td>
         <td><%= record.year %></td>
         <td><%= record.formatted_total_length %></td>
-        <td><%= record.rank || "n/a" %></td>
+        <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
         <td><%= record.language_version.short_name %></td>
         <td><%= record.media.map(&:short_name).join(", ") %></td>
-        <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
+        <td><%= record.rank || "n/a" %></td>
         <td><%= record.ancestry %></td>
         <td>
           <% if record.is_recorded? %>

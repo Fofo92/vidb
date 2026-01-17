@@ -24,9 +24,14 @@ class Record < ApplicationRecord
     Time.at(seconds.to_i).utc.strftime("%Hh%M")
   end
 
-  def formatted_total_length # sera modifié par la suite
-    formatted_length(length_in_mn)
+  def display_range_of_years
+    years = []
+    descendants.each do |child|
+      years.push(child.year)
+    end
+    return "#{years.min}-#{years.max}"
   end
+
 
   def complete_title
     if original_title.blank?
@@ -36,34 +41,77 @@ class Record < ApplicationRecord
     end
   end
 
+  def complete_title_with_parents
+    return complete_title unless ancestors?
+
+    complete_title_with_parents = ""
+    ancestors.each do |ancestor|
+      complete_title_with_parents += "#{ancestor.complete_title} / "
+    end
+    return complete_title_with_parents << complete_title
+  end
+
+  def child_length_in_mn
+    return unless has_children? && length_in_mn.zero?
+
+    child_length_in_mn = 0
+    children.each do |child|
+      child_length_in_mn += child.length_in_mn.to_i unless child.length_in_mn.zero?
+    end
+    child_length_in_mn.to_i unless length_in_mn.zero?
+  end
+
+  def formatted_total_length
+    if has_children?
+      formatted_total_length_in_mn = 0
+      descendants.each do |child|
+        formatted_total_length_in_mn += child.length_in_mn.to_i
+      end
+      formatted_length(formatted_total_length_in_mn)
+    else
+      formatted_length(length_in_mn)
+    end
+  end
+
   def self.number_of_checked_records
-    return Record.where(is_checked: true).count
+    return Record.count{ |record| record.is_checked }
   end
 
   def self.number_of_seen_records
-    return Record.where(is_seen: true).count
+    return Record.count(&:is_seen)
   end
 
   def self.number_of_unseen_records
-    return Record.where(is_seen: false).count
+    return Record.count { |record| !record.is_seen }
   end
 
   def self.number_of_seen_and_removed_records
-    return Record.where(is_seen: true, is_available: true).count
+    return Record.count { |record| record.is_seen && record.is_available }
   end
 
   def self.number_of_seen_and_available_records
-    return Record.where(is_seen: true, is_available: false).count
+    return Record.count { |record| record.is_seen && !record.is_available }
   end
 
   def self.number_of_unseen_and_available_records
-    return Record.where(is_seen: false, is_available: true).count
+    return Record.count { |record| !record.is_seen && record.is_available }
   end
 
   def self.number_of_unseen_and_removed_records
-    return Record.where(is_seen: false, is_available: false).count
+    return Record.count { |record| !record.is_seen && !record.is_available }
   end
 
+  def number_of_recorded_children
+    return descendants.count(&:is_recorded)
+  end
+
+  def number_of_seen_children
+    return descendants.count(&:is_seen)
+  end
+
+  def number_of_available_children
+    return descendants.count(&:is_available)
+  end
   private
 
   def validate_year_range
