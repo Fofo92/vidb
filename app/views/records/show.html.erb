@@ -36,7 +36,7 @@
         <th>Année</th>
         <th>Durée</th>
         <th>Genre</td>
-        <th>Version></th>
+        <th>Version</th>
         <th>Support</th>
         <th>rang</th>
         <th>État</th>
@@ -55,7 +55,7 @@
           <td><%= record.year %></td>
           <td><%= record.length_in_mn.zero? ? record.formatted_total_length : record.formatted_length(record.length_in_mn) %></td>
           <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
-          <td></td></td>>
+         
           <td><%= record.media.map(&:short_name).join(", ") %></td>
           <td><%= record.rank %></td>
           <td>

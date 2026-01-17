@@ -74,7 +74,7 @@ class Record < ApplicationRecord
   end
 
   def self.number_of_checked_records
-    return Record.count{ |record| record.is_checked }
+    return Record.count(&:is_checked)
   end
 
   def self.number_of_seen_records
@@ -112,6 +112,7 @@ class Record < ApplicationRecord
   def number_of_available_children
     return descendants.count(&:is_available)
   end
+
   private
 
   def validate_year_range

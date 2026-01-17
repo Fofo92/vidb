@@ -129,6 +129,18 @@ Record.destroy_all
 puts "resetting records sequence"
 Record.connection.execute('ALTER SEQUENCE records_id_seq RESTART WITH 1')
 
+puts "Deleting Countries..."
+Country.destroy_all
+Country.connection.execute('ALTER SEQUENCE countries_id_seq RESTART WITH 1')
+puts "Creating countries..."
+c = ISO3166::Country.all
+c.each do |country|
+Country.create!({
+    short_name: country.alpha2,
+    long_name: country.translations[:fr]
+  })
+end
+
 puts "Creating records..."
 
 Record.create!({ original_title: "The Ten Commandments", french_title: "Les Dix Commandements", length_in_mn: 222, year: 1956, is_recorded: true, is_seen: false, is_available: true, abstract: "Le film raconte la libération des Hébreux esclaves en Égypte, telle qu'elle est relatée dans l'Ancien Testament. Moïse, sauvé des eaux, est élevé à la cour du Pharaon Sethi Ier avec le futur Ramsès II, sur lequel il déclenchera les dix plaies d'Égypte pour le forcer à libérer son peuple. En chemin, Dieu lui remet les tables de la loi et Moïse conduit son peuple à la terre promise.", rank: nil, language_version_id: 1, medium_ids:[1] })

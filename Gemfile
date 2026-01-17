@@ -55,6 +55,7 @@ gem "ostruct"
 gem "ancestry"
 gem "ransack"
 gem "seed_dump"
+gem "country_select"
 
 group :development, :test do
   gem "dotenv-rails"

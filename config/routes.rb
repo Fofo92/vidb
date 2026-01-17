@@ -11,5 +11,6 @@ Rails.application.routes.draw do
   resources :genders, except: :show
   resources :language_versions, except: :show
   resources :records
-  resources :media, except: [:show]
+  resources :media, except: :show
+  resources :countries, except: :show
 end

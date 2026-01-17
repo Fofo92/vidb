@@ -1,0 +1,5 @@
+<%= simple_form_for(@country) do |f| %>
+  <%= f.input :short_name, label: "Code" %>
+  <%= f.input :long_name, label: "Nom" %>
+  <%= f.button :submit, class: 'btn btn-primary' %>
+<% end %>
