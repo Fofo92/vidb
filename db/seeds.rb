@@ -1,6 +1,24 @@
 puts "Cleaning database..."
+puts "  - Deleting Genders"
 Gender.destroy_all
 Gender.connection.execute('ALTER SEQUENCE genders_id_seq RESTART WITH 1')
+
+puts "  - Deleting LanguageVersions"
+LanguageVersion.destroy_all
+LanguageVersion.connection.execute('ALTER SEQUENCE language_versions_id_seq RESTART WITH 1')
+
+puts "  - Deleting Media"
+Medium.destroy_all
+Medium.connection.execute('ALTER SEQUENCE media_id_seq RESTART WITH 1')
+
+puts "  - Deleting Records"
+Record.destroy_all
+puts "resetting records sequence"
+Record.connection.execute('ALTER SEQUENCE records_id_seq RESTART WITH 1')
+
+puts "  - Deleting Countries"
+Country.destroy_all
+Country.connection.execute('ALTER SEQUENCE countries_id_seq RESTART WITH 1')
 
 puts "Creating Genders..."
 Gender.create!({
@@ -104,9 +122,7 @@ Gender.create!({
   comment: "Le théâtre repose sur des dialogues entre personnages en communication directe. Il s'appuie sur les principes de vraisemblance, d'unité de temps, d'espace et d'action."
   })
 
-puts "Deleting LanguageVersions..."
-LanguageVersion.destroy_all
-LanguageVersion.connection.execute('ALTER SEQUENCE language_versions_id_seq RESTART WITH 1')
+
 
 puts "Creating language_versions..."
 LanguageVersion.create!({short_name: "VF", long_name: "Version française"})
@@ -115,30 +131,22 @@ LanguageVersion.create!({short_name: "VM", long_name: "Version multilingue"})
 LanguageVersion.create!({short_name: "VOST", long_name: "Version originale sous-titrée"})
 LanguageVersion.create!({short_name: "VMST", long_name: "Version multilingue sous-titrée"})
 
-puts "Deleting Media"
-Medium.destroy_all
-Medium.connection.execute('ALTER SEQUENCE media_id_seq RESTART WITH 1')
 
 puts "Creating media..."
 Medium.create!({short_name: "HDD", long_name: "Hard Disk Drive"})
 Medium.create!({short_name: "DVD", long_name: "Digital Versatile Disc"})
 Medium.create!({short_name: "BD", long_name: "Blue-ray Disc"})
 
-puts "Deleting Records..."
-Record.destroy_all
-puts "resetting records sequence"
-Record.connection.execute('ALTER SEQUENCE records_id_seq RESTART WITH 1')
-
-puts "Deleting Countries..."
-Country.destroy_all
-Country.connection.execute('ALTER SEQUENCE countries_id_seq RESTART WITH 1')
 puts "Creating countries..."
 c = ISO3166::Country.all
 c.each do |country|
-Country.create!({
-    short_name: country.alpha2,
-    long_name: country.translations[:fr]
-  })
+  Country.create!({
+      short_name: country.alpha2,
+      long_name: country.translations[:fr]
+    })
+  end
+Country.all.each do |country|
+  country.update!({ flag:  country.country_flag(country.short_name) })
 end
 
 puts "Creating records..."

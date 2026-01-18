@@ -16,20 +16,14 @@
         <th scope="col">Nom</th>
       </tr>
     </thead>
-     	<%= "🇦🇷🇦🇷" %>
-      <%= "fr".dup.force_encoding('UTF-8').encode(
-        'UTF-8',
-        invalid: :replace,
-        undef: :replace,
-        replace: ''
-      ) %>
     <tbody>
       <% @countries.each do |country| %>
         <tr>
           <td scope="row"><%= country.id %></td>
           <td scope="row"><%= country.short_name %></td>
           <td scope="row"><%= country.long_name %></td>
-          <td scope="row"><%= country.country_flag(country.short_name) %></td>
+          <!-- <td scope="row"><%#= country.country_flag(country.short_name) %></td> -->
+          <td scope="row"><%= country.flag %></td>
           <td class="text-center">
           <%= link_to edit_country_path(country) do %>
             <i class="fas fa-edit"></i>
