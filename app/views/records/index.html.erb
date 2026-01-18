@@ -17,10 +17,11 @@
   <thead style="position: sticky">
     <tr>
       <th>#</th>
-      <th class="w-50">Titre</th>
+      <th>Titre</th>
       <th>Année</th>
       <th>Durée</th>
       <th>Genre(s)</th>
+      <th>Pays</th>
       <th>Version</th>
       <th>Support(s)</th>
       <th>Rang</th>
@@ -38,7 +39,8 @@
         <td><%= record.year %></td>
         <td><%= record.formatted_total_length %></td>
         <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
-        <td><%= record.language_version.short_name %></td>
+        <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
+        <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
         <td><%= record.media.map(&:short_name).join(", ") %></td>
         <td><%= record.rank || "n/a" %></td>
         <td><%= record.ancestry %></td>

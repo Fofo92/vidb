@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_18_105023) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_18_151340) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -20,6 +20,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_18_105023) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "flag"
+  end
+
+  create_table "countries_records", id: false, force: :cascade do |t|
+    t.bigint "record_id", null: false
+    t.bigint "country_id", null: false
   end
 
   create_table "genders", force: :cascade do |t|
@@ -68,7 +73,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_18_105023) do
     t.bigint "language_version_id"
     t.boolean "is_checked", default: false
     t.string "ancestry"
+    t.bigint "country_id"
     t.index ["ancestry"], name: "index_records_on_ancestry"
+    t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
   end
 
@@ -84,5 +91,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_18_105023) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
 end

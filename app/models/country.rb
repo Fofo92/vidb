@@ -1,6 +1,7 @@
 class Country < ApplicationRecord
   validates :short_name, presence: true, uniqueness: true
   validates :long_name, presence: true, uniqueness: true
+  has_and_belongs_to_many :records
 
   def country_flag(alpha2)
     return '' unless alpha2 =~ /\A[a-zA-Z]{2}\z/

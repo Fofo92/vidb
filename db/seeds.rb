@@ -123,7 +123,6 @@ Gender.create!({
   })
 
 
-
 puts "Creating language_versions..."
 LanguageVersion.create!({short_name: "VF", long_name: "Version française"})
 LanguageVersion.create!({short_name: "VO", long_name: "Version originale"})
