@@ -30,9 +30,13 @@ class Record < ApplicationRecord
     descendants.each do |child|
       years.push(child.year)
     end
-    return "#{years.min}-#{years.max}"
-  end
+    years.compact!
 
+    return "n/a" if years.empty?
+
+    return years.compact.min.eql?(years.max) ? years.min.to_s : "#{years.min}-#{years.max}"
+
+  end
 
   def complete_title
     if original_title.blank?

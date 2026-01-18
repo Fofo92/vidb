@@ -36,7 +36,7 @@
         <td>
           <%= link_to record.complete_title, record_path(record) %>
         </td>
-        <td><%= record.year %></td>
+        <td><%= record.year || record.display_range_of_years %></td>
         <td><%= record.formatted_total_length %></td>
         <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
         <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>

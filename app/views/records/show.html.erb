@@ -1,7 +1,7 @@
 
 <div class="d-flex flex-row justify-content-between align-items-center">
   <h4>
-    <%= link_to @record.complete_title, (@record.has_parent? ? record_path(@record.parent) : nil) %>
+    <%= link_to @record.complete_title_with_parents, (@record.has_parent? ? record_path(@record.parent) : nil) %>
   </h4>
   <h4><%= @record.year ? "(#{@record.year})" : nil %></h4>
   <%= link_to "Modifier", edit_record_path(@record), class: "btn btn-primary btn-sm" %>
@@ -12,7 +12,7 @@
   <strong>, durée : </strong><%= @record.formatted_total_length %>
 </p>
 <p>
-  <strong>Année : </strong><%= @record.year || @record.display_range_of_years%>,
+  <strong>Année : </strong><%= @record.display_range_of_years %>,
   <strong>pays : </strong><%#= @record.country_list.join(", ") %>
 </p>
 <strong>Nombre d'enregistrements :</strong>
@@ -52,10 +52,10 @@
               <%= record.original_title.blank? ? "" : " (#{record.original_title})" %>
             <% end %>
           </td>
-          <td><%= record.year %></td>
-          <td><%= record.length_in_mn.zero? ? record.formatted_total_length : record.formatted_length(record.length_in_mn) %></td>
+          <td><%= record.year || record.display_range_of_years %></td>
+          <td><%= record.length_in_mn.nil? ? record.formatted_total_length : record.formatted_length(record.length_in_mn) %></td>
           <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
-         
+
           <td><%= record.media.map(&:short_name).join(", ") %></td>
           <td><%= record.rank %></td>
           <td>
