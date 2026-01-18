@@ -55,7 +55,8 @@ gem "ostruct"
 gem "ancestry"
 gem "ransack"
 gem "seed_dump"
-gem "country_select"
+gem "countries"
+gem 'twemoji-rails'
 
 group :development, :test do
   gem "dotenv-rails"
