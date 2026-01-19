@@ -3,8 +3,15 @@
   <h4>
     <%= link_to @record.complete_title_with_parents, (@record.has_parent? ? record_path(@record.parent) : nil) %>
   </h4>
-  <h4><%= @record.year ? "(#{@record.year})" : nil %></h4>
-  <%= link_to "Modifier", edit_record_path(@record), class: "btn btn-primary btn-sm" %>
+  <div>
+    <%= link_to edit_record_path(@record), class: "btn btn-primary btn-sm fa-xl" do %>
+          <i class="fa-regular fa-edit"></i>
+    <% end %>
+    <%= link_to new_record_path, class: "btn btn-primary btn-sm fa-xl" do %>
+      <i class="fa-regular fa-square-plus"></i>
+    <% end %>
+    <%#= link_to "Modifier", edit_record_path(@record), class: "btn btn-primary btn-sm" %>
+  </div>
 </div>
 <p>
   <strong>Type d'enregistrement : </strong>néant<%#= (@record.type_list.nil? ? "nil" : @record.type_list) %>
@@ -22,8 +29,12 @@
   <li>disponibles : <%= @record.number_of_available_children || 'n/a' %>/<%= @record.descendants.count %></li>
 </ul>
 <p><strong>Abrégé : </strong><%= @record.abstract %></p>
-<%= link_to "Retour à la liste d'enregistrements", records_path %>
-
+<div class="d-flex flex-row justify-content-between align-items-center">
+<%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>
+  <%= link_to new_record_path, class: "btn btn-primary btn-sm fa-xl" do %>
+    <i class="fa-regular fa-square-plus"></i>
+  <% end %>
+</div>
 <% if @record.has_children? %>
   <%# child_type = @record.children.first.type_list || "enregistrement" %>
   <% record_count = @record.children.count - @record.children.where(is_recorded: [nil, ""]).count %>
