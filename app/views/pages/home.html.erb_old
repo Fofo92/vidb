@@ -19,14 +19,9 @@
 
     <li>Nombre total de films : ####, dont ceux référencés par genres :</li>
 
-    <style>
-      .col-text {
-        column-count: 3;
-        column-gap: 1.5rem;
-      }
-    </style>
-
-    <div class="col-text">
+    <div class="col-12">
+      <div class="row g-3">
+        <div class="col-md-4">
           <ul>
             <% Gender.all.order(:name).each do |gender| %>
               <li><%= gender.name %> : <%= gender.number_of_records_per_gender(gender.id) %></li>
@@ -35,6 +30,8 @@
             <%# Gender.order(:name).all.slice(0, genres_third).map do |genre| %>
             <%# end %>
           </ul>
+        </div>
+      </div>
     </div>
   </ul>
   <li>Nombre total de séries : ####, avec :</li>
@@ -44,3 +41,4 @@
   </ul>
   </ul>
 </ul>
+

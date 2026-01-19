@@ -13,7 +13,7 @@
 </p>
 <p>
   <strong>Année : </strong><%= @record.display_range_of_years %>,
-  <strong>pays : </strong><%#= @record.country_list.join(", ") %>
+  <strong>pays : </strong><%= @record.countries.order(:long_name).map(&:long_name).join("") %>
 </p>
 <strong>Nombre d'enregistrements :</strong>
 <ul>
@@ -55,7 +55,7 @@
           <td><%= record.year || record.display_range_of_years %></td>
           <td><%= record.length_in_mn.nil? ? record.formatted_total_length : record.formatted_length(record.length_in_mn) %></td>
           <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
-
+          <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
           <td><%= record.media.map(&:short_name).join(", ") %></td>
           <td><%= record.rank %></td>
           <td>
