@@ -10,7 +10,12 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   resources :genders, except: :show
   resources :language_versions, except: :show
-  resources :records
+  resources :records do
+    member do
+      get :new_child
+      post :new_child
+    end
+  end
   resources :media, except: :show
   resources :countries, except: :show
 end

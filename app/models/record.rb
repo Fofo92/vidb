@@ -32,7 +32,7 @@ class Record < ApplicationRecord
     end
     years.compact!
 
-    return "n/a" if years.empty?
+    return self.year if years.empty?
 
     return years.compact.min.eql?(years.max) ? years.min.to_s : "#{years.min}-#{years.max}"
 

@@ -1,5 +1,5 @@
 class RecordsController < ApplicationController
-  before_action :set_record, only: [:show, :edit, :update, :destroy]
+  before_action :set_record, only: [:new_child, :show, :edit, :update, :destroy]
 
   def index
     # @records = Record.order(:french_title).all.page(params[:page])
@@ -14,12 +14,22 @@ class RecordsController < ApplicationController
     @record = Record.new
   end
 
+  def new_child
+    parent_id = @record.id
+    @record = Record.new
+    @record.parent_id = parent_id
+    @record.country_ids = @record.parent.country_ids
+    @record.gender_ids = @record.parent.gender_ids
+    @record.medium_ids = @record.parent.medium_ids
+    @record.language_version_id = @record.parent.language_version_id
+  end
+
   def create
     @record = Record.new(record_params)
 
     if @record.valid?
       @record.save
-      redirect_to records_path, notice: "L'enregistrement a été créée avec succès."
+      redirect_to record_path(@record.parent_id || @record.id) || records_path, notice: "L'enregistrement a été créée avec succès."
     else
       render :new, status: :unprocessable_entity
     end
@@ -39,12 +49,13 @@ class RecordsController < ApplicationController
 
   def destroy
     @record.destroy
-    redirect_to records_path
+    redirect_to record_path
   end
 
   private
 
   def set_record
+    puts "Entering set_record"
     @record = Record.find(params[:id])
   end
 
