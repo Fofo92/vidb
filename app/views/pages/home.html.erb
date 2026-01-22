@@ -3,7 +3,7 @@
 <ul>
   <li>
     Nombre total d'enregistrements : <%= Record.all.count %>
-    (<%= Record.number_of_checked_records %> vérifiés), dont :
+    (<%= Record.number_of_checked_records %> vérifiés, soit <%= Record.number_of_checked_records * 100 / Record.all.count if Record.all.count > 0 %>%), dont :
   </li>
   <ul>
     <li>

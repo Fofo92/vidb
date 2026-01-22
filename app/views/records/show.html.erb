@@ -10,7 +10,6 @@
     <%= link_to new_record_path, class: "btn btn-primary btn-sm fa-xl" do %>
       <i class="fa-regular fa-square-plus"></i>
     <% end %>
-    <%#= link_to "Modifier", edit_record_path(@record), class: "btn btn-primary btn-sm" %>
   </div>
 </div>
 <p>
@@ -20,14 +19,18 @@
 </p>
 <p>
   <strong>Année : </strong><%= @record.display_range_of_years %>,
-  <strong>pays : </strong><%= @record.countries.order(:long_name).map(&:long_name).join("") %>
+  <strong>pays : </strong><%= @record.countries.order(:long_name).map(&:long_name).join(", ") %>
+  <strong>, disponible sur : </strong><%= @record.media.map(&:long_name).join(", ") || "Néant" %>
+  <strong>, version linguistique : </strong><%= @record.language_version.nil? ? "n/a" : @record.language_version.long_name %>
 </p>
-<strong>Nombre d'enregistrements :</strong>
-<ul>
-  <li>enregistrés : <%= @record.number_of_recorded_children || 'n/a' %>/<%= @record.descendants.count %></li>
-  <li>visionnés : <%= @record.number_of_seen_children || 'n/a' %>/<%= @record.descendants.count %></li>
-  <li>disponibles : <%= @record.number_of_available_children || 'n/a' %>/<%= @record.descendants.count %></li>
-</ul>
+<% if @record.has_parent? && @record.has_children? %>
+  <strong>Nombre d'enregistrements :</strong>
+  <ul>
+    <li>enregistrés : <%= @record.number_of_recorded_children || 'n/a' %>/<%= @record.descendants.count %></li>
+    <li>visionnés : <%= @record.number_of_seen_children || 'n/a' %>/<%= @record.descendants.count %></li>
+    <li>disponibles : <%= @record.number_of_available_children || 'n/a' %>/<%= @record.descendants.count %></li>
+  </ul>
+<% end %>
 <p><strong>Abrégé : </strong><%= @record.abstract %></p>
 <div class="d-flex flex-row justify-content-between align-items-center">
 <%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>
