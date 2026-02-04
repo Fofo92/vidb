@@ -80,5 +80,5 @@ test:
 production:
   <<: *default
   database: vidb_production
-  username: vidb
+  username: pascal
   password: <%= ENV["VIDB_DATABASE_PASSWORD"] %>
