@@ -4,7 +4,11 @@ class RecordsController < ApplicationController
   def index
     # @records = Record.order(:french_title).all.page(params[:page])
     @q = Record.ransack(params[:q])
-    @records = @q.result(distinct: true).order(:french_title).page(params[:page])
+    if params[:q].present?
+      @records = @q.result(distinct: true).order(:french_title).page(params[:page])
+    else
+      @records = Record.roots.order(:french_title).all.page(params[:page])
+    end
   end
 
   def show
@@ -55,7 +59,6 @@ class RecordsController < ApplicationController
   private
 
   def set_record
-    puts "Entering set_record"
     @record = Record.find(params[:id])
   end
 

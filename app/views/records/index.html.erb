@@ -16,10 +16,10 @@
 <table class="table table-striped table-sm">
   <thead style="position: sticky">
     <tr>
-      <th>#</th>
-      <th>Titre</th>
-      <th>Année</th>
-      <th>Durée</th>
+      <th><%= sort_link(@q, :id, "#") %></th>
+      <th><%= sort_link(@q, :french_title, "Titre") %></th>
+      <th><%= sort_link(@q, :year, "Année") %></th>
+      <th><%= sort_link(@q, :length_in_mn, "Durée") %></th>
       <th>Genre(s)</th>
       <th>Pays</th>
       <th>Version</th>
