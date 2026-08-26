@@ -46,6 +46,20 @@ class CountriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Suisse", @country.long_name
   end
 
+  test "rejects a country creation with invalid attributes" do
+    assert_no_difference("Country.count") do
+      post countries_url, params: {
+        country: {
+          short_name: "",
+          long_name: "",
+          flag: ""
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test "rejects a country update with invalid attributes" do
     patch country_url(@country), params: {
       country: {

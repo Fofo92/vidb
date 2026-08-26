@@ -12,11 +12,10 @@ class CountriesController < ApplicationController
   def create
     @country = Country.new(country_params)
 
-    if @country.valid?
-      @country.save
-      redirect_to countries_path, notice: "Le pays a été crée avec succès."
+    if @country.save
+      redirect_to countries_path, notice: "Le pays a été créé avec succès."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
