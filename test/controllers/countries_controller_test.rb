@@ -10,6 +10,12 @@ class CountriesControllerTest < ActionDispatch::IntegrationTest
     )
 
     sign_in @user
+
+    @country = Country.create!(
+      short_name: "BE",
+      long_name: "Belgique",
+      flag: "🇧🇪"
+    )
   end
 
   test "creates a country" do
@@ -24,5 +30,32 @@ class CountriesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to countries_url
+  end
+
+  test "updates a country with valid attributes" do
+    patch country_url(@country), params: {
+      country: {
+        short_name: "CH",
+        long_name: "Suisse",
+        flag: "🇨🇭"
+      }
+    }
+
+    assert_redirected_to countries_url
+    assert_equal "CH", @country.reload.short_name
+    assert_equal "Suisse", @country.long_name
+  end
+
+  test "rejects a country update with invalid attributes" do
+    patch country_url(@country), params: {
+      country: {
+        short_name: "",
+        long_name: ""
+      }
+    }
+
+    assert_response :unprocessable_content
+    assert_equal "BE", @country.reload.short_name
+    assert_equal "Belgique", @country.long_name
   end
 end

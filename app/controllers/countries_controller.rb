@@ -24,11 +24,10 @@ class CountriesController < ApplicationController
   end
 
   def update
-    if @country.valid?
-      @country.update(country_params)
+    if @country.update(country_params)
       redirect_to countries_path, notice: "Le pays a été mis à jour avec succès."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
