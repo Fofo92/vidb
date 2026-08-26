@@ -153,4 +153,25 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{record_path(@record)}']", text: "Ancien titre"
     assert_select "a[href='#{record_path(other_record)}']", count: 0
   end
+
+  test "searches records by french or original title" do
+    matching_record = Record.create!(
+      french_title: "Titre français distinct",
+      original_title: "The Hidden Film",
+      language_version: @record.language_version
+    )
+
+    get records_url, params: {
+      q: {
+        french_title_or_original_title_cont: "Hidden"
+      }
+    }
+
+    assert_response :success
+    assert_select(
+      "a[href='#{record_path(matching_record)}']",
+      text: "Titre français distinct (The Hidden Film)"
+    )
+    assert_select "a[href='#{record_path(@record)}']", count: 0
+  end
 end

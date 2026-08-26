@@ -17,7 +17,11 @@ class Record < ApplicationRecord
             }
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id french_title year length_in_mn]
+    %w[id french_title original_title year length_in_mn]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    []
   end
 
   def formatted_length(length_in_mn)
