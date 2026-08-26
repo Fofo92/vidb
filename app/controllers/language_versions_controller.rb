@@ -24,11 +24,10 @@ class LanguageVersionsController < ApplicationController
   end
 
   def update
-    if @language_version.valid?
-      @language_version.update(language_version_params)
+    if @language_version.update(language_version_params)
       redirect_to language_versions_path, notice: "La version linguistique a été mise à jour avec succès."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
