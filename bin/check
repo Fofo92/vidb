@@ -14,5 +14,9 @@ echo "== Dependency audit =="
 bundle exec bundle-audit check
 
 echo
+echo "== Security scan =="
+bundle exec brakeman --no-pager
+
+echo
 echo "== Tests =="
 bin/rails test
