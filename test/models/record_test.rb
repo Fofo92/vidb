@@ -26,6 +26,13 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal 2, Record.number_of_unseen_and_removed_records
   end
 
+  test "treats nil statuses as false" do
+    create_record("Statuts inconnus", seen: nil, available: nil)
+
+    assert_equal 4, Record.number_of_unseen_records
+    assert_equal 3, Record.number_of_unseen_and_removed_records
+  end
+
   private
 
   def create_record(title, seen:, available:)

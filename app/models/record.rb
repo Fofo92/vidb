@@ -80,31 +80,34 @@ class Record < ApplicationRecord
   end
 
   def self.number_of_checked_records
-    return Record.count(&:is_checked)
+    where(is_checked: true).count
   end
 
   def self.number_of_seen_records
-    return Record.count(&:is_seen)
+    where(is_seen: true).count
   end
 
   def self.number_of_unseen_records
-    return Record.count { |record| !record.is_seen }
+    where(is_seen: [false, nil]).count
   end
 
   def self.number_of_seen_and_removed_records
-    return Record.count { |record| record.is_seen && !record.is_available }
+    where(is_seen: true, is_available: [false, nil]).count
   end
 
   def self.number_of_seen_and_available_records
-    return Record.count { |record| record.is_seen && record.is_available }
+    where(is_seen: true, is_available: true).count
   end
 
   def self.number_of_unseen_and_available_records
-    return Record.count { |record| !record.is_seen && record.is_available }
+    where(is_seen: [false, nil], is_available: true).count
   end
 
   def self.number_of_unseen_and_removed_records
-    return Record.count { |record| !record.is_seen && !record.is_available }
+    where(
+      is_seen: [false, nil],
+      is_available: [false, nil]
+    ).count
   end
 
   def number_of_recorded_children
