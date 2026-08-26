@@ -79,6 +79,5 @@ test:
 #
 production:
   <<: *default
-  database: vidb_production
-  username: pascal
-  password: <%= ENV["VIDB_DATABASE_PASSWORD"] %>
+  database: <%= ENV.fetch("VIDB_DATABASE_NAME", "vidb_production") %>
+  username: <%= ENV.fetch("VIDB_DATABASE_USER", "vidb") %>
