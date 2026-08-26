@@ -10,5 +10,9 @@ echo "== RuboCop =="
 bundle exec rubocop
 
 echo
+echo "== Dependency audit =="
+bundle exec bundle-audit check
+
+echo
 echo "== Tests =="
 bin/rails test
