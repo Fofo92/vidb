@@ -24,11 +24,10 @@ class GendersController < ApplicationController
   end
 
   def update
-    if @gender.valid?
-      @gender.update(gender_params)
+    if @gender.update(gender_params)
       redirect_to genders_path, notice: "Le genre cinématographique a été mis à jour avec succès."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
