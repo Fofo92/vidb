@@ -92,11 +92,11 @@ class Record < ApplicationRecord
   end
 
   def self.number_of_seen_and_removed_records
-    return Record.count { |record| record.is_seen && record.is_available }
+    return Record.count { |record| record.is_seen && !record.is_available }
   end
 
   def self.number_of_seen_and_available_records
-    return Record.count { |record| record.is_seen && !record.is_available }
+    return Record.count { |record| record.is_seen && record.is_available }
   end
 
   def self.number_of_unseen_and_available_records
