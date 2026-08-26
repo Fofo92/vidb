@@ -1,5 +1,5 @@
 class RecordsController < ApplicationController
-  before_action :set_record, only: [:new_child, :show, :edit, :update, :destroy]
+  before_action :set_record, only: %i[new_child show edit update destroy]
 
   def index
     # @records = Record.order(:french_title).all.page(params[:page])

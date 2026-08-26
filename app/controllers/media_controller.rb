@@ -1,5 +1,5 @@
 class MediaController < ApplicationController
-  before_action :set_medium, only: [:edit, :update, :destroy]
+  before_action :set_medium, only: %i[edit update destroy]
 
   def index
     @media = Medium.order(:long_name).all

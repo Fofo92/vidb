@@ -1,5 +1,5 @@
 class GendersController < ApplicationController
-  before_action :set_gender, only: [:edit, :update, :destroy]
+  before_action :set_gender, only: %i[edit update destroy]
 
   def index
     @genders = Gender.order(:name).all
@@ -47,5 +47,4 @@ class GendersController < ApplicationController
   def gender_params
     params.require(:gender).permit(:name, :comment)
   end
-
 end

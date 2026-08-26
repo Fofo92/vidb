@@ -1,5 +1,5 @@
 class CountriesController < ApplicationController
-  before_action :set_country, only: [:edit, :update, :destroy]
+  before_action :set_country, only: %i[edit update destroy]
 
   def index
     @countries = Country.order(:long_name).all

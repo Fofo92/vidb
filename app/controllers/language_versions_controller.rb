@@ -1,5 +1,5 @@
 class LanguageVersionsController < ApplicationController
-  before_action :set_language_version, only: [:edit, :update, :destroy]
+  before_action :set_language_version, only: %i[edit update destroy]
 
   def index
     @language_versions = LanguageVersion.order(:long_name).all
