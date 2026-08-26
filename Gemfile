@@ -59,9 +59,13 @@ gem "countries"
 gem 'twemoji-rails'
 
 group :development, :test do
+  gem "brakeman", require: false
+  gem "bundler-audit", require: false
   gem "dotenv-rails"
+  gem "rubocop", require: false
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ]
+  gem "debug", platforms: %i[mri windows]
 end
 
 group :development do
