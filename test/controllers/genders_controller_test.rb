@@ -16,6 +16,33 @@ class GendersControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "creates a gender" do
+    assert_difference("Gender.count", 1) do
+      post genders_url, params: {
+        gender: {
+          name: "Comédie",
+          comment: "Genre comique"
+        }
+      }
+    end
+
+    assert_redirected_to genders_url
+    assert_equal "Genre comique", Gender.find_by!(name: "Comédie").comment
+  end
+
+  test "rejects a gender creation with invalid attributes" do
+    assert_no_difference("Gender.count") do
+      post genders_url, params: {
+        gender: {
+          name: "",
+          comment: "Nom absent"
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test "updates a gender with valid attributes" do
     patch gender_url(@gender), params: {
       gender: {

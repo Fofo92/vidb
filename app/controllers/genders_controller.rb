@@ -12,11 +12,13 @@ class GendersController < ApplicationController
   def create
     @gender = Gender.new(gender_params)
 
-    if @gender.valid?
-      @gender.save
-      redirect_to genders_path, notice: "Le genre cinématographique a été crée avec succès."
+    if @gender.save
+      redirect_to(
+        genders_path,
+        notice: "Le genre cinématographique a été créé avec succès."
+      )
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
