@@ -22,6 +22,74 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "creates a root record" do
+    assert_difference("Record.count", 1) do
+      post records_url, params: {
+        record: {
+          french_title: "Nouveau film",
+          length_in_mn: 110,
+          language_version_id: @record.language_version_id
+        }
+      }
+    end
+
+    created_record = Record.find_by!(french_title: "Nouveau film")
+
+    assert created_record.root?
+    assert_redirected_to record_url(created_record)
+  end
+
+  test "creates a child record and redirects to its parent" do
+    assert_difference("Record.count", 1) do
+      post records_url, params: {
+        record: {
+          french_title: "Nouvel épisode",
+          length_in_mn: 45,
+          language_version_id: @record.language_version_id,
+          parent_id: @record.id
+        }
+      }
+    end
+
+    created_record = Record.find_by!(french_title: "Nouvel épisode")
+
+    assert_equal @record, created_record.parent
+    assert_redirected_to record_url(@record)
+  end
+
+  test "redisplays the child form after invalid child creation" do
+    assert_no_difference("Record.count") do
+      post records_url, params: {
+        record: {
+          french_title: "",
+          original_title: "",
+          language_version_id: @record.language_version_id,
+          parent_id: @record.id
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select(
+      "a[href='#{record_path(@record)}']",
+      text: /Retour/
+    )
+  end
+
+  test "rejects a root record creation with invalid attributes" do
+    assert_no_difference("Record.count") do
+      post records_url, params: {
+        record: {
+          french_title: "",
+          original_title: "",
+          language_version_id: @record.language_version_id
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test "updates a record with valid attributes" do
     patch record_url(@record), params: {
       record: {

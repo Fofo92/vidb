@@ -31,11 +31,11 @@ class RecordsController < ApplicationController
   def create
     @record = Record.new(record_params)
 
-    if @record.valid?
-      @record.save
-      redirect_to record_path(@record.parent_id || @record.id) || records_path, notice: "L'enregistrement a été créée avec succès."
+    if @record.save
+      redirect_after_create
     else
-      render :new, status: :unprocessable_entity
+      template = @record.parent ? :new_child : :new
+      render template, status: :unprocessable_content
     end
   end
 
@@ -70,6 +70,15 @@ class RecordsController < ApplicationController
       :original_title, :french_title, :length_in_mn, :year,
       :is_recorded, :is_seen, :is_available, :abstract, :rank, :language_version_id,
       :is_checked, :parent_id, medium_ids: [], gender_ids: [], country_ids: []
+    )
+  end
+
+  def redirect_after_create
+    destination = @record.parent || @record
+
+    redirect_to(
+      record_path(destination),
+      notice: "L'enregistrement a été créé avec succès."
     )
   end
 end

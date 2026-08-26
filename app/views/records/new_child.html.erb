@@ -1,4 +1,4 @@
 <h1>Création d'un enregistrement</h1>
 <%= render 'form' %>
-<%= link_to "Retour à la liste d'enregistrements",
-  record_path, class: "btn btn-outline-primary" %>
+<%= link_to "Retour à la liste d'enregistrements parents",
+  record_path(@record.parent), class: "btn btn-outline-primary" %>
