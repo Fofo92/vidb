@@ -1,7 +1,49 @@
 require "test_helper"
 
 class RecordsControllerTest < ActionDispatch::IntegrationTest
-  # test "the truth" do
-  #   assert true
-  # end
+  include Devise::Test::IntegrationHelpers
+
+  setup do
+    user = User.create!(
+      email: "test@example.com",
+      password: "password"
+    )
+    sign_in user
+
+    language_version = LanguageVersion.create!(
+      short_name: "VF",
+      long_name: "Version française"
+    )
+
+    @record = Record.create!(
+      french_title: "Ancien titre",
+      length_in_mn: 90,
+      language_version: language_version
+    )
+  end
+
+  test "updates a record with valid attributes" do
+    patch record_url(@record), params: {
+      record: {
+        french_title: "Nouveau titre",
+        length_in_mn: 95
+      }
+    }
+
+    assert_redirected_to record_url(@record)
+    assert_equal "Nouveau titre", @record.reload.french_title
+    assert_equal 95, @record.length_in_mn
+  end
+
+  test "rejects a record update with invalid attributes" do
+    patch record_url(@record), params: {
+      record: {
+        french_title: "",
+        original_title: ""
+      }
+    }
+
+    assert_response :unprocessable_content
+    assert_equal "Ancien titre", @record.reload.french_title
+  end
 end

@@ -43,11 +43,13 @@ class RecordsController < ApplicationController
   end
 
   def update
-    if @record.valid?
-      @record.update(record_params)
-      redirect_to records_path, notice: "L'enregistrement a été mise à jour avec succès."
+    if @record.update(record_params)
+      redirect_to(
+        record_path(@record),
+        notice: "L'enregistrement a été mis à jour avec succès."
+      )
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
