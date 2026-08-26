@@ -31,11 +31,18 @@
 
 /public/assets
 
-# Ignore master key for decrypting credentials and more.
+# Ignore Rails credentials and local TLS material.
 /config/master.key
-/config/ssl/*.key
-# Ignore .env file containing credentials.
-.env*
+/config/ssl/*
+!/config/ssl/.keep
+
+# Ignore TLS material accidentally created at the repository root.
+/*.key
+/*.crt
+/*.csr
+
+# Ignore local database exports.
+/*.sql
 
 # Ignore Mac and Linux file system files
 *.swp
