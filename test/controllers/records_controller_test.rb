@@ -46,4 +46,12 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_equal "Ancien titre", @record.reload.french_title
   end
+
+  test "destroys a root record" do
+    assert_difference("Record.count", -1) do
+      delete record_url(@record)
+    end
+
+    assert_redirected_to records_url
+  end
 end
