@@ -24,11 +24,10 @@ class MediaController < ApplicationController
   end
 
   def update
-    if @medium.valid?
-      @medium.update(medium_params)
+    if @medium.update(medium_params)
       redirect_to media_path, notice: "Le support a été mis à jour avec succès."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
