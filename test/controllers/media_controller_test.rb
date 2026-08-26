@@ -16,6 +16,36 @@ class MediaControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "creates a medium" do
+    assert_difference("Medium.count", 1) do
+      post media_url, params: {
+        medium: {
+          short_name: "VHS",
+          long_name: "Video Home System"
+        }
+      }
+    end
+
+    assert_redirected_to media_url
+    assert_equal(
+      "Video Home System",
+      Medium.find_by!(short_name: "VHS").long_name
+    )
+  end
+
+  test "rejects a medium creation with invalid attributes" do
+    assert_no_difference("Medium.count") do
+      post media_url, params: {
+        medium: {
+          short_name: "",
+          long_name: ""
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test "updates a medium with valid attributes" do
     patch medium_url(@medium), params: {
       medium: {

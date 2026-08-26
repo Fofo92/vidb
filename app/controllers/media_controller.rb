@@ -12,11 +12,10 @@ class MediaController < ApplicationController
   def create
     @medium = Medium.new(medium_params)
 
-    if @medium.valid?
-      @medium.save
-      redirect_to media_path, notice: "Le support a été crée avec succès."
+    if @medium.save
+      redirect_to media_path, notice: "Le support a été créé avec succès."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
