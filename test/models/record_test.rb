@@ -33,6 +33,43 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal 3, Record.number_of_unseen_and_removed_records
   end
 
+  test "displays its own year when it has no descendants" do
+    record = create_record(
+      "Film isolé",
+      seen: false,
+      available: true
+    )
+    record.update!(year: 1998)
+
+    assert_equal 1998, record.display_range_of_years
+  end
+
+  test "displays one year when all descendants have the same year" do
+    parent = create_record(
+      "Série uniforme",
+      seen: false,
+      available: true
+    )
+
+    create_child(parent, "Épisode 1", year: 2001)
+    create_child(parent, "Épisode 2", year: 2001)
+
+    assert_equal "2001", parent.display_range_of_years
+  end
+
+  test "displays the descendant year range" do
+    parent = create_record(
+      "Série étendue",
+      seen: false,
+      available: true
+    )
+
+    create_child(parent, "Premier épisode", year: 2001)
+    create_child(parent, "Dernier épisode", year: 2003)
+
+    assert_equal "2001-2003", parent.display_range_of_years
+  end
+
   private
 
   def create_record(title, seen:, available:)
@@ -41,6 +78,14 @@ class RecordTest < ActiveSupport::TestCase
       language_version: @language_version,
       is_seen: seen,
       is_available: available
+    )
+  end
+
+  def create_child(parent, title, year:)
+    parent.children.create!(
+      french_title: title,
+      year: year,
+      language_version: @language_version
     )
   end
 end

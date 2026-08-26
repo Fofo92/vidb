@@ -30,16 +30,11 @@ class Record < ApplicationRecord
   end
 
   def display_range_of_years
-    years = []
-    descendants.each do |child|
-      years.push(child.year)
-    end
-    years.compact!
+    years = descendants.map(&:year).compact
+    return year if years.empty?
 
-    return self.year if years.empty?
-
-    return years.compact.min.eql?(years.max) ? years.min.to_s : "#{years.min}-#{years.max}"
-
+    minimum_year, maximum_year = years.minmax
+    minimum_year == maximum_year ? minimum_year.to_s : "#{minimum_year}-#{maximum_year}"
   end
 
   def complete_title
