@@ -16,6 +16,36 @@ class LanguageVersionsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "creates a language version" do
+    assert_difference("LanguageVersion.count", 1) do
+      post language_versions_url, params: {
+        language_version: {
+          short_name: "VO",
+          long_name: "Version originale"
+        }
+      }
+    end
+
+    assert_redirected_to language_versions_url
+    assert_equal(
+      "Version originale",
+      LanguageVersion.find_by!(short_name: "VO").long_name
+    )
+  end
+
+  test "rejects a language version creation with invalid attributes" do
+    assert_no_difference("LanguageVersion.count") do
+      post language_versions_url, params: {
+        language_version: {
+          short_name: "",
+          long_name: ""
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test "updates a language version with valid attributes" do
     patch language_version_url(@language_version), params: {
       language_version: {

@@ -12,11 +12,10 @@ class LanguageVersionsController < ApplicationController
   def create
     @language_version = LanguageVersion.new(language_version_params)
 
-    if @language_version.valid?
-      @language_version.save
-      redirect_to language_versions_path, notice: "La version linguistique été créée avec succès."
+    if @language_version.save
+      redirect_to language_versions_path, notice: "La version linguistique a été créée avec succès."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
