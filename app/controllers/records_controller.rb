@@ -54,8 +54,9 @@ class RecordsController < ApplicationController
   end
 
   def destroy
+    parent = @record.parent
     @record.destroy
-    redirect_to records_path
+    redirect_to parent ? record_path(parent) : records_path
   end
 
   private

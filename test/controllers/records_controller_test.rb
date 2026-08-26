@@ -54,4 +54,18 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to records_url
   end
+
+  test "redirects to the parent after destroying a child record" do
+    child = @record.children.create!(
+      french_title: "Épisode",
+      length_in_mn: 45,
+      language_version: @record.language_version
+    )
+
+    assert_difference("Record.count", -1) do
+      delete record_url(child)
+    end
+
+    assert_redirected_to record_url(@record)
+  end
 end
