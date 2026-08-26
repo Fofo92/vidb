@@ -6,5 +6,9 @@ echo "== Zeitwerk =="
 bin/rails zeitwerk:check
 
 echo
+echo "== RuboCop =="
+bundle exec rubocop
+
+echo
 echo "== Tests =="
 bin/rails test
