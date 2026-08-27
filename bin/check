@@ -20,3 +20,7 @@ bundle exec brakeman --no-pager
 echo
 echo "== Tests =="
 bin/rails test
+
+echo
+echo "🐷✨ Tout est propre. Rubychon approuve !"
+echo "Zeitwerk, RuboCop, dépendances, sécurité et tests : validés."

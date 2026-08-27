@@ -1,0 +1,330 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly deployment_root="/srv/vidb"
+readonly releases_directory="$deployment_root/releases"
+readonly shared_storage_directory="$deployment_root/shared/storage"
+readonly shared_tmp_directory="$deployment_root/shared/tmp"
+readonly current_link="$deployment_root/current"
+readonly next_link="$deployment_root/current.next"
+readonly environment_file="/etc/vidb/vidb.env"
+readonly ruby_directory="/opt/rubies/4.0.6/bin"
+readonly bundler_version="2.7.1"
+readonly service_name="vidb"
+readonly default_revision="origin/main"
+readonly production_url="https://zeus.fodiman.fr/"
+
+usage() {
+  printf '%s\n' \
+    'Usage: bin/deploy-production [--dry-run] [COMMIT]' \
+    '' \
+    'COMMIT doit désigner un commit déjà présent dans origin/main.' \
+    'Sans COMMIT, origin/main est utilisé.' \
+    '' \
+    'Options :' \
+    '  --dry-run  Affiche le plan sans modifier la production.'
+}
+
+fail() {
+  printf 'Erreur : %s\n' "$*" >&2
+  exit 1
+}
+
+print_command() {
+  printf '  '
+  printf '%q ' "$@"
+  printf '\n'
+}
+
+run_as_vidb_in() {
+  local working_directory="$1"
+  shift
+
+  sudo -u vidb /bin/sh -c '
+    set -a
+    . /etc/vidb/vidb.env
+    set +a
+
+    export HOME=/srv/vidb
+    export PATH=/opt/rubies/4.0.6/bin:/usr/bin:/bin
+    export BUNDLE_DEPLOYMENT=1
+    export BUNDLE_PATH=/srv/vidb/shared/bundle
+    export BUNDLE_WITHOUT=development:test
+
+    cd "$1"
+    shift
+    exec "$@"
+  ' sh "$working_directory" "$@"
+}
+
+run_rails_in() {
+  local working_directory="$1"
+  shift
+
+  run_as_vidb_in \
+    "$working_directory" \
+    "$ruby_directory/bundle" \
+    "_${bundler_version}_" \
+    exec \
+    ./bin/rails \
+    "$@"
+}
+
+dry_run=false
+revision="$default_revision"
+revision_was_set=false
+
+while test "$#" -gt 0; do
+  case "$1" in
+    --dry-run)
+      dry_run=true
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    -?*)
+      usage >&2
+      exit 1
+      ;;
+    *)
+      if "$revision_was_set"; then
+        usage >&2
+        exit 1
+      fi
+
+      revision="$1"
+      revision_was_set=true
+      ;;
+  esac
+
+  shift
+done
+
+repository_root="$(git rev-parse --show-toplevel)"
+cd "$repository_root"
+
+git fetch --quiet origin main
+
+commit="$(git rev-parse --verify "${revision}^{commit}")"
+
+if ! git merge-base --is-ancestor "$commit" origin/main; then
+  fail "$commit ne fait pas partie de origin/main."
+fi
+
+release_directory="$releases_directory/$commit"
+staging_directory=""
+previous_release=""
+switched=false
+
+if sudo test -e "$release_directory"; then
+  release_state="existe déjà"
+else
+  release_state="sera créée"
+fi
+
+if sudo test -L "$current_link"; then
+  previous_release="$(sudo readlink "$current_link")"
+else
+  fail "$current_link n’est pas un lien symbolique."
+fi
+
+printf 'Commit sélectionné : %s\n' "$commit"
+printf 'Release cible : %s (%s)\n' \
+  "$release_directory" \
+  "$release_state"
+printf 'Release courante : %s\n' "$previous_release"
+
+if "$dry_run"; then
+  printf '\n%s\n' 'Plan de déploiement :'
+  printf '%s\n' \
+    '  1. Créer une release temporaire avec git archive.' \
+    '  2. Relier storage et tmp aux répertoires partagés.' \
+    '  3. Installer les gems de production et précompiler les assets.' \
+    '  4. Vérifier Rails, la base de données et les migrations.' \
+    '  5. Promouvoir la release et basculer current atomiquement.' \
+    '  6. Redémarrer vidb.' \
+    '  7. Vérifier vidb, Puma et HTTPS.' \
+    '  8. Revenir à la release précédente en cas d’échec après bascule.'
+
+  printf '\n%s\n' 'Commandes structurantes prévues :'
+  print_command git archive --format=tar "$commit"
+  print_command sudo systemctl restart "$service_name"
+  print_command curl --silent --show-error --output /dev/null \
+    -w 'HTTPS %{http_code}\n' \
+    "$production_url"
+  exit 0
+fi
+
+if sudo test -e "$release_directory"; then
+  fail "La release cible existe déjà : $release_directory"
+fi
+
+if sudo test -e "$next_link" || sudo test -L "$next_link"; then
+  fail "Le lien temporaire existe déjà : $next_link"
+fi
+
+sudo test -d "$releases_directory"
+sudo test -d "$shared_storage_directory"
+sudo test -d "$shared_tmp_directory"
+sudo test -r "$environment_file"
+sudo -u vidb test -r "$environment_file"
+sudo -v
+
+if ! read -r -p "Déployer le commit $commit ? [y/N] " response; then
+  fail 'Confirmation non reçue.'
+fi
+
+case "$response" in
+  y|Y|yes|YES|oui|OUI)
+    ;;
+  *)
+    printf '%s\n' 'Déploiement annulé.'
+    exit 0
+    ;;
+esac
+
+rollback() {
+  trap - ERR
+  set +e
+
+  printf '%s\n' \
+    'Échec après bascule : retour à la release précédente.' >&2
+
+  sudo -u vidb rm -f -- "$next_link"
+  sudo -u vidb ln -s "$previous_release" "$next_link"
+  sudo -u vidb mv -Tf "$next_link" "$current_link"
+  sudo systemctl restart "$service_name"
+}
+
+cleanup() {
+  local temporary_directory="${staging_directory:-}"
+
+  if test -n "$temporary_directory" &&
+     sudo test -d "$temporary_directory"; then
+    sudo rm -rf -- "$temporary_directory"
+  fi
+
+  if sudo test -L "$next_link"; then
+    sudo -u vidb rm -f -- "$next_link"
+  fi
+}
+
+on_error() {
+  local status="$?"
+
+  if "$switched"; then
+    rollback
+  fi
+
+  exit "$status"
+}
+
+trap cleanup EXIT
+trap on_error ERR
+
+staging_directory="$releases_directory/.${commit}.staging.$$"
+
+sudo install \
+  --directory \
+  --owner=vidb \
+  --group=vidb \
+  --mode=750 \
+  "$staging_directory"
+
+git archive --format=tar "$commit" |
+  sudo -u vidb tar -x -C "$staging_directory"
+
+sudo -u vidb rm -rf -- \
+  "$staging_directory/storage" \
+  "$staging_directory/tmp"
+
+sudo -u vidb ln -s \
+  "$shared_storage_directory" \
+  "$staging_directory/storage"
+
+sudo -u vidb ln -s \
+  "$shared_tmp_directory" \
+  "$staging_directory/tmp"
+
+run_as_vidb_in \
+  "$staging_directory" \
+  "$ruby_directory/bundle" \
+  "_${bundler_version}_" \
+  install
+
+run_rails_in "$staging_directory" assets:precompile
+
+runner_code='
+  database = ActiveRecord::Base.connection_db_config.database
+  raise "Unexpected database: #{database}" unless database == "vidb_production"
+
+  puts "Production boot: OK"
+  puts "Database: #{database}"
+  puts "Records: #{Record.count}"
+'
+
+run_rails_in "$staging_directory" runner "$runner_code"
+
+run_rails_in "$staging_directory" db:migrate
+
+migration_check_code='
+  context = ActiveRecord::Base.connection.migration_context
+  raise "Pending migrations" if context.needs_migration?
+
+  puts "Migrations: up"
+'
+
+run_rails_in "$staging_directory" runner "$migration_check_code"
+
+sudo -u vidb mv \
+  "$staging_directory" \
+  "$release_directory"
+staging_directory=""
+
+sudo -u vidb ln -s \
+  "releases/$commit" \
+  "$next_link"
+
+sudo -u vidb mv -Tf \
+  "$next_link" \
+  "$current_link"
+switched=true
+
+sudo systemctl restart "$service_name"
+sudo systemctl is-active --quiet "$service_name"
+
+sudo ss -ltn |
+  grep -F '127.0.0.1:3000' \
+  >/dev/null
+
+http_status="$(
+  curl \
+    --silent \
+    --show-error \
+    --output /dev/null \
+    -w '%{http_code}' \
+    --max-time 10 \
+    "$production_url"
+)"
+
+if test "$http_status" != '200'; then
+  printf 'Erreur : le contrôle HTTPS a renvoyé HTTP %s.\n' \
+    "$http_status" >&2
+  rollback
+  exit 1
+fi
+
+switched=false
+
+printf '\n%s\n' 'Déploiement réussi :'
+printf 'Release : %s\n' "$commit"
+printf '%s\n' 'Service : active'
+printf '%s\n' 'Puma : 127.0.0.1:3000'
+printf 'HTTPS : %s\n' "$http_status"
+
+journalctl \
+  --unit "$service_name" \
+  --since '-2 minutes' \
+  --no-pager
