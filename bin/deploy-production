@@ -268,15 +268,7 @@ runner_code='
 run_rails_in "$staging_directory" runner "$runner_code"
 
 run_rails_in "$staging_directory" db:migrate
-
-migration_check_code='
-  context = ActiveRecord::Base.connection.migration_context
-  raise "Pending migrations" if context.needs_migration?
-
-  puts "Migrations: up"
-'
-
-run_rails_in "$staging_directory" runner "$migration_check_code"
+run_rails_in "$staging_directory" db:migrate:status
 
 sudo -u vidb mv \
   "$staging_directory" \
@@ -316,15 +308,19 @@ if test "$http_status" != '200'; then
   exit 1
 fi
 
-switched=false
 
-printf '\n%s\n' 'Déploiement réussi :'
-printf 'Release : %s\n' "$commit"
-printf '%s\n' 'Service : active'
-printf '%s\n' 'Puma : 127.0.0.1:3000'
-printf 'HTTPS : %s\n' "$http_status"
+switched=false
 
 journalctl \
   --unit "$service_name" \
   --since '-2 minutes' \
   --no-pager
+
+printf '\n%s\n' '🐷✨ Déploiement validé. Rubychon approuve !'
+printf 'Release : %s\n' "$commit"
+printf '%s\n' 'Base : vidb_production'
+printf '%s\n' 'Service : active'
+printf '%s\n' 'Puma : 127.0.0.1:3000'
+printf 'HTTPS : %s\n' "$http_status"
+printf '%s\n' \
+  'Rails, migrations, Puma et HTTPS : validés.'
