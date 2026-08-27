@@ -58,6 +58,36 @@ run_as_vidb_in() {
   ' sh "$working_directory" "$@"
 }
 
+wait_for_healthy_service() {
+  local attempt
+
+  for attempt in {1..15}; do
+    if sudo systemctl is-active --quiet "$service_name" &&
+       sudo ss -ltn | grep -F '127.0.0.1:3000' >/dev/null
+    then
+      http_status="$(
+        curl \
+          --silent \
+          --show-error \
+          --output /dev/null \
+          -w '%{http_code}' \
+          --max-time 2 \
+          "$production_url" ||
+          true
+      )"
+
+      if test "$http_status" = '200'; then
+        health_check_attempt="$attempt"
+        return 0
+      fi
+    fi
+
+    sleep 1
+  done
+
+  return 1
+}
+
 run_rails_in() {
   local working_directory="$1"
   shift
@@ -284,30 +314,17 @@ sudo -u vidb mv -Tf \
   "$current_link"
 switched=true
 
+http_status=""
+health_check_attempt=""
+
 sudo systemctl restart "$service_name"
-sudo systemctl is-active --quiet "$service_name"
 
-sudo ss -ltn |
-  grep -F '127.0.0.1:3000' \
-  >/dev/null
-
-http_status="$(
-  curl \
-    --silent \
-    --show-error \
-    --output /dev/null \
-    -w '%{http_code}' \
-    --max-time 10 \
-    "$production_url"
-)"
-
-if test "$http_status" != '200'; then
-  printf 'Erreur : le contrôle HTTPS a renvoyé HTTP %s.\n' \
-    "$http_status" >&2
+if ! wait_for_healthy_service; then
+  printf '%s\n' \
+    'Erreur : vidb, Puma ou HTTPS ne sont pas prêts après 15 secondes.' >&2
   rollback
   exit 1
 fi
-
 
 switched=false
 
@@ -322,5 +339,7 @@ printf '%s\n' 'Base : vidb_production'
 printf '%s\n' 'Service : active'
 printf '%s\n' 'Puma : 127.0.0.1:3000'
 printf 'HTTPS : %s\n' "$http_status"
+printf 'Disponibilité : après %s tentative(s)\n' \
+  "$health_check_attempt"
 printf '%s\n' \
   'Rails, migrations, Puma et HTTPS : validés.'
