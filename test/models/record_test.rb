@@ -162,7 +162,60 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal 1, season.number_of_available_children
   end
 
+  test "requires at least one title" do
+    record = build_record(french_title: nil)
+
+    assert_not record.valid?
+    assert record.errors[:french_title].any?
+    assert record.errors[:original_title].any?
+
+    record.original_title = "Original title"
+
+    assert record.valid?
+
+    record.french_title = "Titre français"
+    record.original_title = nil
+
+    assert record.valid?
+  end
+
+  test "requires a language version" do
+    record = build_record(language_version: nil)
+
+    assert_not record.valid?
+    assert record.errors[:language_version].any?
+  end
+
+  test "accepts years from 1900 through the current year" do
+    [1900, Date.current.year].each do |year|
+      assert build_record(year: year).valid?
+    end
+
+    [1899, Date.current.year + 1].each do |year|
+      assert_not build_record(year: year).valid?
+    end
+  end
+
+  test "accepts only lengths between 10 and 240 minutes" do
+    [nil, 10, 240].each do |length_in_mn|
+      assert build_record(length_in_mn: length_in_mn).valid?
+    end
+
+    [9, 241].each do |length_in_mn|
+      assert_not build_record(length_in_mn: length_in_mn).valid?
+    end
+  end
+
   private
+
+  def build_record(attributes = {})
+    Record.new(
+      {
+        french_title: "Titre",
+        language_version: @language_version
+      }.merge(attributes)
+    )
+  end
 
   def create_record(title, seen:, available:)
     Record.create!(
