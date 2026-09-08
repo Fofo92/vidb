@@ -174,4 +174,63 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     )
     assert_select "a[href='#{record_path(@record)}']", count: 0
   end
+
+  test "prefills a new child with its parent associations" do
+    language_version = LanguageVersion.create!(
+      short_name: "VO",
+      long_name: "Version originale"
+    )
+    gender = Gender.create!(name: "Policier")
+    country = Country.create!(
+      short_name: "GB",
+      long_name: "Royaume-Uni"
+    )
+    medium = Medium.create!(
+      short_name: "HD",
+      long_name: "Hard Disk Drive"
+    )
+
+    @record.update!(language_version: language_version)
+    @record.genders << gender
+    @record.countries << country
+    @record.media << medium
+
+    get new_child_record_url(@record)
+
+    assert_response :success
+    assert_select(
+      "input[name='record[parent_id]'][value='#{@record.id}']"
+    )
+    assert_select(
+      "select[name='record[gender_ids][]'] option[selected][value='#{gender.id}']"
+    )
+    assert_select(
+      "select[name='record[country_ids][]'] option[selected][value='#{country.id}']"
+    )
+    assert_select(
+      "input[type='checkbox'][name='record[medium_ids][]'][value='#{medium.id}'][checked]"
+    )
+    assert_select(
+      "select[name='record[language_version_id]'] option[selected][value='#{language_version.id}']"
+    )
+  end
+
+  test "does not inherit parent states when preparing a child" do
+    @record.update!(
+      is_recorded: true,
+      is_seen: true,
+      is_available: true,
+      is_checked: true
+    )
+
+    get new_child_record_url(@record)
+
+    assert_response :success
+
+    %w[is_recorded is_seen is_available is_checked].each do |attribute|
+      assert_select(
+        "input[type='checkbox'][name='record[#{attribute}]']:not([checked])"
+      )
+    end
+  end
 end
