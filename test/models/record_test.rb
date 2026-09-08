@@ -206,6 +206,37 @@ class RecordTest < ActiveSupport::TestCase
     end
   end
 
+  test "allows a parent to contain both branches and leaves" do
+    series = create_record(
+      "Shaun le mouton",
+      seen: false,
+      available: false
+    )
+
+    season = create_child(
+      series,
+      "Saison 1",
+      rank: 1
+    )
+    episode = create_child(
+      season,
+      "Épisode 1",
+      rank: 1
+    )
+    film = create_child(
+      series,
+      "Shaun le mouton, le film",
+      rank: 8
+    )
+
+    assert_equal [season, film], series.children.order(:rank).to_a
+    assert_equal [series, season], episode.ancestors
+    assert_equal [series], film.ancestors
+
+    assert season.has_children?
+    assert_not film.has_children?
+  end
+
   private
 
   def build_record(attributes = {})
@@ -226,11 +257,12 @@ class RecordTest < ActiveSupport::TestCase
     )
   end
 
-  def create_child(parent, title, year: nil, length_in_mn: nil)
+  def create_child(parent, title, year: nil, length_in_mn: nil, rank: nil)
     parent.children.create!(
       french_title: title,
       year: year,
       length_in_mn: length_in_mn,
+      rank: rank,
       language_version: @language_version
     )
   end
