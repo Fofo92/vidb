@@ -1,4 +1,6 @@
 class Record < ApplicationRecord
+  include RecordHierarchyPlacement
+
   paginates_per 26
   belongs_to :language_version
   has_and_belongs_to_many :media

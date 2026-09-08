@@ -325,6 +325,71 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal parent, child.parent
   end
 
+test "diagnoses the placement of root records" do
+  expected_statuses = {
+    "undetermined" => :undetermined,
+    "standalone_video" => :consistent,
+    "series" => :consistent,
+    "season" => :inconsistent,
+    "episode" => :inconsistent
+  }
+
+  expected_statuses.each do |kind, expected_status|
+    record = build_record(record_kind: kind)
+
+    assert_equal(
+      expected_status,
+      record.hierarchy_placement_status,
+      "Unexpected placement status for root #{kind}"
+    )
+  end
+end
+
+test "diagnoses placement from the immediate parent kind" do
+  kinds = %w[undetermined standalone_video series season episode]
+
+  expected_statuses = {
+    "undetermined" => [
+      :undetermined, :undetermined, :inconsistent,
+      :undetermined, :undetermined
+    ],
+    "standalone_video" => [
+      :inconsistent, :inconsistent, :inconsistent,
+      :inconsistent, :inconsistent
+    ],
+    "series" => [
+      :undetermined, :inconsistent, :inconsistent,
+      :consistent, :consistent
+    ],
+    "season" => [
+      :undetermined, :inconsistent, :inconsistent,
+      :inconsistent, :consistent
+    ],
+    "episode" => [
+      :inconsistent, :inconsistent, :inconsistent,
+      :inconsistent, :inconsistent
+    ]
+  }
+
+  expected_statuses.each do |parent_kind, statuses|
+    parent = build_record(record_kind: parent_kind)
+    parent.save!
+
+    kinds.zip(statuses).each do |child_kind, expected_status|
+      child = build_record(
+        record_kind: child_kind,
+        parent: parent
+      )
+
+      assert_equal(
+        expected_status,
+        child.hierarchy_placement_status,
+        "Unexpected placement status for #{parent_kind} -> #{child_kind}"
+      )
+    end
+  end
+end
+
   private
 
   def build_record(attributes = {})
