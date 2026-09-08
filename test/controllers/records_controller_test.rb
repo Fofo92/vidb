@@ -233,4 +233,28 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
       )
     end
   end
+
+  test "displays child records ordered by rank" do
+    @record.children.create!(
+      french_title: "Deuxième élément",
+      rank: 2,
+      language_version: @record.language_version
+    )
+    @record.children.create!(
+      french_title: "Premier élément",
+      rank: 1,
+      language_version: @record.language_version
+    )
+
+    get record_url(@record)
+
+    assert_response :success
+
+    assert_select "tbody tr td:nth-child(3) a" do |links|
+      assert_equal(
+        ["Premier élément", "Deuxième élément"],
+        links.map { |link| link.text.strip }
+      )
+    end
+  end
 end
