@@ -56,26 +56,40 @@ La nature décrit ce que représente la fiche. Le vocabulaire envisagé est :
 - `series` : série ;
 - `season` : saison ;
 - `episode` : épisode ;
-- `collection` : regroupement ordonné de contenus.
 
-Ces noms sont provisoires. Si cette information est ajoutée au modèle Rails, la colonne ne devra pas
-s’appeler `type`, car ce nom est réservé par Rails à l’héritage STI.
+Ces noms sont provisoires. Une collection ne constitue pas la nature exclusive d’une fiche : elle relève de
+l’organisation des contenus.
+
+Si cette information est ajoutée au modèle Rails, la colonne ne devra pas s’appeler `type`, car ce nom est
+réservé par Rails à l’héritage STI.
 
 ### Organisation
 
 L’organisation décrit les relations entre les contenus.
-Deux structures principales existent dans les données :
+
+Deux structures principales existent dans les données historiques :
 
 - série → saison → épisode ;
-- collection → contenu.
+- conteneur de collection → contenu.
 
-Une collection représente par exemple une série de films comme James Bond, Astérix ou Mission Impossible.
+Une collection représente par exemple un regroupement de films comme James Bond, Astérix ou Mission
+Impossible. Elle peut également regrouper des contenus de natures différentes appartenant à un même
+univers.
 
-La relation entre une série, ses saisons et ses épisodes n’a pas nécessairement les mêmes règles que
-l’appartenance à une collection. Un contenu pourrait notamment appartenir à plusieurs collections.
+La collection sera donc représentée à terme par un concept distinct des contenus. Une relation
+d’appartenance ordonnée permettra à une collection de contenir plusieurs contenus et à un contenu
+d’appartenir à plusieurs collections.
+
+La relation entre une série, ses saisons et ses épisodes n’a pas les mêmes règles que l’appartenance à une
+collection.
 
 Les pilotes, épisodes spéciaux et épisodes hors saison devront pouvoir être représentés sans créer
 artificiellement une saison ordinaire.
+
+La hiérarchie actuelle peut être mixte. Parmi les enfants directs des séries structurées observées, certaines
+saisons ne possèdent pas encore d’épisodes. La série « Shaun le mouton » contient également directement
+une fiche « Shaun le mouton, le film ». Cette structure historique doit rester utilisable pendant la transition,
+sans devenir une règle du modèle cible.
 
 ### Vérification
 
@@ -255,6 +269,32 @@ Les évolutions du modèle respecteront les principes suivants :
 8. caractériser les comportements existants avant de les modifier ;
 9. effectuer les corrections de données par opérations identifiables et contrôlables ;
 10. ne pas introduire les fichiers physiques ni l’intégration avec `video_encoder` avant la stabilisation du catalogue.
+
+## Orientation du modèle
+
+La première évolution conservera toutes les fiches dans le modèle `Record`.
+Leur nature sera représentée par un attribut métier ordinaire, provisoirement nommé `record_kind`.
+
+Les valeurs envisagées sont :
+
+- `undetermined` ;
+- `standalone_video` ;
+- `series` ;
+- `season` ;
+- `episode`.
+
+L’introduction de cet attribut n’utilisera ni l’héritage STI, ni une association polymorphe. Toutes les fiches
+existantes seront initialisées à `undetermined`, sans déduction automatique fondée sur leur titre, leur rang
+ou leur position dans la hiérarchie.
+
+`ancestry` restera temporairement la représentation faisant autorité pour la hiérarchie existante.
+
+Les collections seront ultérieurement représentées séparément, avec des appartenances ordonnées aux
+contenus. Les anciens `Record` servant de conteneurs de collection conserveront leur identité historique
+pendant cette transformation.
+
+Les relations explicites entre séries, saisons et épisodes seront étudiées avant le remplacement 
+d’`ancestry`. Leur schéma définitif n’est pas encore arrêté.
 
 ## Décisions encore ouvertes
 
