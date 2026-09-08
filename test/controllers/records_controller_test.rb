@@ -287,4 +287,25 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-record-kind]", text: /Vidéo autonome/
   end
+
+  test "displays the immediate hierarchy placement diagnosis" do
+    expected_presentations = [
+      ["undetermined", "undetermined", "À déterminer", "text-bg-warning"],
+      ["standalone_video", "consistent", "Conforme", "text-bg-success"],
+      ["season", "inconsistent", "Incohérent", "text-bg-danger"]
+    ]
+
+    expected_presentations.each do |record_kind, status, label, badge_class|
+      @record.update!(record_kind: record_kind)
+
+      get record_url(@record)
+
+      assert_response :success
+      assert_select(
+        "[data-hierarchy-placement-status='#{status}']"
+      ) do
+        assert_select ".badge.#{badge_class}", text: label
+      end
+    end
+  end
 end
