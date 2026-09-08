@@ -133,6 +133,35 @@ class RecordTest < ActiveSupport::TestCase
     assert_empty Record.where(id: record_ids)
   end
 
+  test "counts episode states for a season" do
+    series = create_record(
+      "Série",
+      seen: false,
+      available: false
+    )
+    season = create_child(series, "Saison 1")
+
+    episode_one = create_child(season, "Épisode 1")
+    episode_one.update!(
+      is_recorded: true,
+      is_seen: true,
+      is_available: false
+    )
+
+    episode_two = create_child(season, "Épisode 2")
+    episode_two.update!(
+      is_recorded: true,
+      is_seen: false,
+      is_available: true
+    )
+
+    create_child(season, "Épisode 3")
+
+    assert_equal 2, season.number_of_recorded_children
+    assert_equal 1, season.number_of_seen_children
+    assert_equal 1, season.number_of_available_children
+  end
+
   private
 
   def create_record(title, seen:, available:)
