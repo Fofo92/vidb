@@ -237,6 +237,94 @@ class RecordTest < ActiveSupport::TestCase
     assert_not film.has_children?
   end
 
+  test "defaults its kind to undetermined" do
+    record = build_record
+
+    assert_equal "undetermined", record.record_kind
+    assert record.record_kind_undetermined?
+  end
+
+  test "accepts the supported record kinds" do
+    supported_kinds = %w[
+      undetermined
+      standalone_video
+      series
+      season
+      episode
+    ]
+
+    supported_kinds.each do |record_kind|
+      record = build_record(record_kind: record_kind)
+
+      assert record.valid?
+      assert record.public_send("record_kind_#{record_kind}?")
+      record.save!
+
+      assert_equal record_kind, record.reload.record_kind
+    end
+  end
+
+  test "rejects unsupported record kinds" do
+    [nil, "", "collection", "unknown"].each do |record_kind|
+      record = build_record(record_kind: record_kind)
+
+      assert_not record.valid?
+      assert record.errors[:record_kind].any?
+    end
+  end
+
+  test "database rejects unsupported record kinds" do
+    record = create_record(
+      "Fiche protégée",
+      seen: false,
+      available: false
+    )
+
+    assert_raises(ActiveRecord::StatementInvalid) do
+      Record.transaction(requires_new: true) do
+        record.update_column(:record_kind, "collection")
+      end
+    end
+
+    assert_equal "undetermined", record.reload.record_kind
+  end
+
+  test "changing its kind preserves hierarchy rank and states" do
+    parent = create_record(
+      "Série",
+      seen: false,
+      available: false
+    )
+    child = create_child(
+      parent,
+      "Épisode",
+      rank: 7
+    )
+    child.update!(
+      is_recorded: true,
+      is_seen: true,
+      is_available: false,
+      is_checked: true
+    )
+
+    preserved_attributes = child.attributes.slice(
+      "ancestry",
+      "rank",
+      "is_recorded",
+      "is_seen",
+      "is_available",
+      "is_checked"
+    )
+
+    child.update!(record_kind: "episode")
+
+    assert_equal(
+      preserved_attributes,
+      child.reload.attributes.slice(*preserved_attributes.keys)
+    )
+    assert_equal parent, child.parent
+  end
+
   private
 
   def build_record(attributes = {})

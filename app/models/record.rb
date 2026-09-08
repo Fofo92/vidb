@@ -5,6 +5,18 @@ class Record < ApplicationRecord
   has_and_belongs_to_many :genders
   has_and_belongs_to_many :countries
   has_ancestry
+
+  enum :record_kind,
+       {
+         undetermined: "undetermined",
+         standalone_video: "standalone_video",
+         series: "series",
+         season: "season",
+         episode: "episode"
+       },
+       prefix: true,
+       validate: true
+
   validates :original_title, presence: { if: -> { french_title.blank? } }
   validates :french_title, presence: { if: -> { original_title.blank? } }
   validate :validate_year_range
