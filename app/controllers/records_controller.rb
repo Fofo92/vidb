@@ -69,7 +69,8 @@ class RecordsController < ApplicationController
     params.require(:record).permit(
       :original_title, :french_title, :length_in_mn, :year,
       :is_recorded, :is_seen, :is_available, :abstract, :rank, :language_version_id,
-      :is_checked, :parent_id, medium_ids: [], gender_ids: [], country_ids: []
+      :is_checked, :record_kind, :parent_id,
+      medium_ids: [], gender_ids: [], country_ids: []
     )
   end
 

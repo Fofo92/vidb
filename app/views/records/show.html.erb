@@ -13,7 +13,9 @@
   </div>
 </div>
 <p>
-  <strong>Type d'enregistrement : </strong>néant<%#= (@record.type_list.nil? ? "nil" : @record.type_list) %>
+  <span data-record-kind>
+    <strong>Nature du contenu : </strong><%= record_kind_label(@record.record_kind) %>
+  </span>
   <strong>, genre : </strong><%= @record.genders.order(:name).map(&:name).join(", ") || "néant" %>
   <strong>, durée : </strong><%= @record.formatted_total_length %>
 </p>

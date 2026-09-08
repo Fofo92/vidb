@@ -28,6 +28,7 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
         record: {
           french_title: "Nouveau film",
           length_in_mn: 110,
+          record_kind: "standalone_video",
           language_version_id: @record.language_version_id
         }
       }
@@ -35,6 +36,7 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
 
     created_record = Record.find_by!(french_title: "Nouveau film")
 
+    assert created_record.record_kind_standalone_video?
     assert created_record.root?
     assert_redirected_to record_url(created_record)
   end
@@ -94,13 +96,18 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     patch record_url(@record), params: {
       record: {
         french_title: "Nouveau titre",
-        length_in_mn: 95
+        length_in_mn: 95,
+        record_kind: "series"
       }
     }
 
     assert_redirected_to record_url(@record)
+
+    @record.reload
+
     assert_equal "Nouveau titre", @record.reload.french_title
     assert_equal 95, @record.length_in_mn
+    assert @record.record_kind_series?
   end
 
   test "rejects a record update with invalid attributes" do
@@ -256,5 +263,28 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
         links.map { |link| link.text.strip }
       )
     end
+  end
+
+  test "displays the available record kinds in the form" do
+    get new_record_url
+
+    assert_response :success
+
+    assert_select "select[name='record[record_kind]']" do
+      assert_select "option[value='undetermined']", text: "À déterminer"
+      assert_select "option[value='standalone_video']", text: "Vidéo autonome"
+      assert_select "option[value='series']", text: "Série"
+      assert_select "option[value='season']", text: "Saison"
+      assert_select "option[value='episode']", text: "Épisode"
+    end
+  end
+
+  test "displays the record kind on the record page" do
+    @record.update!(record_kind: "standalone_video")
+
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "[data-record-kind]", text: /Vidéo autonome/
   end
 end
