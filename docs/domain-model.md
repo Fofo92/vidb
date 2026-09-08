@@ -91,6 +91,65 @@ saisons ne possèdent pas encore d’épisodes. La série « Shaun le mouton » 
 une fiche « Shaun le mouton, le film ». Cette structure historique doit rester utilisable pendant la transition,
 sans devenir une règle du modèle cible.
 
+### Politique de transition de la hiérarchie éditoriale
+
+La hiérarchie éditoriale et l’appartenance à une collection constituent deux relations distinctes.
+
+La hiérarchie éditoriale représente les relations entre une série, ses saisons et ses épisodes. Un film
+appartenant à une collection reste une vidéo autonome et n’a pas besoin d’un parent dans cette hiérarchie.
+À terme, son appartenance à une ou plusieurs collections sera portée par des relations distinctes et
+ordonnées.
+
+La validité structurelle ne doit pas être confondue avec la complétude du catalogue. Une série sans saison
+ou une saison sans épisode peut être structurellement conforme tout en restant incomplète.
+
+Un épisode appartient normalement à une saison. Il peut néanmoins être directement rattaché à une série
+lorsqu’il s’agit notamment d’un pilote, d’un épisode spécial ou d’un épisode hors saison. Selon 
+l’organisation éditoriale de la série, un épisode spécial peut également appartenir à une saison.
+
+La date de publication originale de l’épisode devra être distinguée des dates de ses diffusions télévisées.
+Cette distinction sera modélisée ultérieurement.
+
+Le placement immédiat d’une fiche dans la hiérarchie est diagnostiqué par
+`hierarchy_placement_status`. Cette méthode peut retourner :
+
+- `consistent` lorsque le placement est compatible avec la structure cible ;
+- `undetermined` lorsque les natures connues ne permettent pas encore de conclure ;
+- `inconsistent` lorsque les natures connues prouvent que le placement ne correspond pas à la structure cible.
+
+Pour une fiche racine, les diagnostics sont les suivants :
+
+| Nature             | Diagnostic     |
+| ------------------ | -------------- |
+| `undetermined`     | `undetermined` |
+| `standalone_video` | `consistent`   |
+| `series`           | `consistent`   |
+| `season`           | `inconsistent` |
+| `episode`          | `inconsistent` |
+
+Pour une fiche possédant un parent, les relations cibles conformes sont :
+
+| Parent   | Enfant    |
+| -------- | --------- |
+| `series` | `season`  |
+| `series` | `episode` |
+| `season` | `episode` |
+
+Une vidéo autonome ou un épisode ne peut pas contenir d’enfant dans la hiérarchie éditoriale. Une série
+ne peut pas elle-même y avoir de parent.
+
+Une relation comportant une nature indéterminée reste indéterminée lorsqu’une combinaison cible demeure possible. Elle est toutefois incohérente lorsque les informations déjà connues suffisent pour
+l’établir. Ainsi, `episode → undetermined` et `undetermined → series` sont incohérents, tandis que
+`series → undetermined` et `undetermined → episode` restent indéterminés.
+
+Le diagnostic porte uniquement sur le placement de la fiche par rapport à son parent immédiat. Il ne
+certifie ni la cohérence de tout son sous-arbre, ni la complétude de la série, ni la qualité de ses
+métadonnées.
+
+À ce stade, ce diagnostic est informatif. Il ne bloque aucune sauvegarde et ne modifie aucune donnée. Les
+anciens liens représentant des collections ou d’autres structures historiques sont conservés jusqu’à ce
+qu’une nouvelle représentation permette de préserver explicitement leur sens.
+
 ### Vérification
 
 `is_checked` signifie que les attributs de la fiche ont fait l’objet d’une vérification manuelle, généralement
