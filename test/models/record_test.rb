@@ -70,6 +70,69 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal "2001-2003", parent.display_range_of_years
   end
 
+  test "preserves the ancestry chain across three levels" do
+    series = create_record(
+      "Série",
+      seen: false,
+      available: true
+    )
+    season = create_child(series, "Saison 1")
+    episode = create_child(season, "Épisode 1")
+
+    assert_equal series, season.parent
+    assert_equal season, episode.parent
+    assert_equal [series, season], episode.ancestors
+    assert_equal(
+      "Série / Saison 1 / Épisode 1",
+      episode.complete_title_with_parents
+    )
+  end
+
+  test "uses every descendant to display the year range" do
+    series = create_record(
+      "Série",
+      seen: false,
+      available: true
+    )
+    season = create_child(series, "Saison 1")
+
+    create_child(season, "Premier épisode", year: 2001)
+    create_child(season, "Dernier épisode", year: 2003)
+
+    assert_equal "2001-2003", series.display_range_of_years
+  end
+
+  test "adds every descendant length to the total" do
+    series = create_record(
+      "Série",
+      seen: false,
+      available: true
+    )
+    season = create_child(series, "Saison 1")
+
+    create_child(season, "Épisode 1", length_in_mn: 45)
+    create_child(season, "Épisode 2", length_in_mn: 50)
+
+    assert_equal "01h35", series.formatted_total_length
+  end
+
+  test "destroys all descendants when destroying a parent" do
+    series = create_record(
+      "Série",
+      seen: false,
+      available: true
+    )
+    season = create_child(series, "Saison 1")
+    episode = create_child(season, "Épisode 1")
+    record_ids = [series.id, season.id, episode.id]
+
+    assert_difference("Record.count", -3) do
+      series.destroy!
+    end
+
+    assert_empty Record.where(id: record_ids)
+  end
+
   private
 
   def create_record(title, seen:, available:)
@@ -81,10 +144,11 @@ class RecordTest < ActiveSupport::TestCase
     )
   end
 
-  def create_child(parent, title, year:)
+  def create_child(parent, title, year: nil, length_in_mn: nil)
     parent.children.create!(
       french_title: title,
       year: year,
+      length_in_mn: length_in_mn,
       language_version: @language_version
     )
   end
