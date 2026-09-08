@@ -18,9 +18,10 @@ echo "== Security scan =="
 bundle exec brakeman --no-pager
 
 echo
-echo "== Tests =="
-bin/rails test
+echo "== Tests and coverage =="
+COVERAGE=true PARALLEL_WORKERS=1 bin/rails test
 
 echo
-echo "🐷✨ Tout est propre. Rubychon approuve !"
 echo "Zeitwerk, RuboCop, dépendances, sécurité et tests : validés."
+echo "Couverture des lignes : seuil minimal de 85 % validé par SimpleCov."
+echo "🐷✨ Tout est propre. Rubychon approuve !"

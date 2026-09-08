@@ -1,3 +1,10 @@
+if ENV["COVERAGE"] == "true"
+  require "simplecov"
+  SimpleCov.start "rails" do
+    coverage :line, minimum: 85
+  end
+end
+
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"

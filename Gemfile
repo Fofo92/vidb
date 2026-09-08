@@ -83,4 +83,5 @@ group :test do
   gem "minitest", "< 6"
   gem "capybara"
   gem "selenium-webdriver"
+  gem "simplecov", require: false
 end
