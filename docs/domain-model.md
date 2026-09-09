@@ -158,6 +158,30 @@ Cette protection ne corrige aucune donnée automatiquement. Les anciens liens re
 collections ou d’autres structures historiques sont conservés jusqu’à ce qu’une nouvelle représentation
 permette de préserver explicitement leur sens.
 
+### Déplacement d’une branche
+
+Le déplacement hiérarchique change le parent d’une fiche. Lorsqu’elle possède des descendants, toute sa
+branche est déplacée et les relations internes entre ses éléments sont conservées. Le déplacement d’une
+feuille constitue le cas particulier d’une branche sans descendant.
+
+Le déplacement doit être atomique : soit la fiche et tous ses descendants atteignent leur nouvel
+emplacement, soit la hiérarchie reste intégralement inchangée.
+
+Le nouveau parent doit produire un placement conforme ou encore indéterminé. La fiche déplacée et ses
+propres descendants ne peuvent pas être choisis comme parents. Le placement à la racine reste possible
+uniquement lorsque la nature de la fiche le permet.
+
+Avant confirmation, l’interface devra présenter le parent actuel, le parent envisagé et le nombre de
+descendants concernés.
+
+Un déplacement ne modifie ni la nature, ni les titres, ni les métadonnées, ni les rangs des fiches
+concernées. Si toute une branche désigne déjà le bon contenu mais que sa racine est simplement mal
+nommée, une correction du titre peut suffire et doit être préférée à un déplacement inutile.
+
+La fusion de fiches doublonnées et la dissolution d’un niveau intermédiaire sont des opérations distinctes.
+La dissolution d’une saison consiste notamment à réaffecter explicitement ses épisodes avant de supprimer la saison devenue vide. Elle ne doit pas être confondue avec le déplacement de toute la
+branche.
+
 ### Vérification
 
 `is_checked` signifie que les attributs de la fiche ont fait l’objet d’une vérification manuelle, généralement
@@ -238,6 +262,19 @@ Le champ `rank` sert actuellement à ordonner :
 
 Cette notion recouvre plusieurs significations métier. Elle pourra être remplacée ultérieurement par des
 attributs distincts, tels qu’un numéro de saison, un numéro d’épisode ou une position dans une collection.
+
+Le rattachement hiérarchique et le rang constituent deux informations indépendantes. Un déplacement ne
+renumérote jamais implicitement la fiche déplacée, les éléments restés dans le parent d’origine, les
+éléments du parent destinataire ou les descendants de la branche.
+
+Après un déplacement, un diagnostic des rangs pourra être exécuté automatiquement sur les branches
+concernées. Il pourra signaler notamment un rang absent, un rang zéro ou négatif, un doublon ou un trou
+dans une séquence. Ce diagnostic ne modifiera aucune donnée.
+
+La correction des rangs constitue une opération autonome. Elle pourra être demandée manuellement ou
+automatisée lorsqu’une règle explicite, prévisible et vérifiable aura été choisie. Un trou ou un doublon ne
+doit jamais provoquer à lui seul une renumérotation silencieuse : il peut traduire un contenu manquant, un
+épisode spécial, une donnée historique incomplète ou une erreur d’identification.
 
 Les données contiennent notamment :
 
