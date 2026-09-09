@@ -59,6 +59,27 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to record_url(@record)
   end
 
+  test "displays the hierarchy error after rejecting a child creation" do
+    @record.update!(record_kind: "standalone_video")
+
+    assert_no_difference("Record.count") do
+      post records_url, params: {
+        record: {
+          french_title: "Épisode impossible",
+          record_kind: "episode",
+          language_version_id: @record.language_version_id,
+          parent_id: @record.id
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select(
+      ".record_parent_id .invalid-feedback",
+      text: /ne permet pas ce placement pour la nature du contenu/
+    )
+  end
+
   test "redisplays the child form after invalid child creation" do
     assert_no_difference("Record.count") do
       post records_url, params: {

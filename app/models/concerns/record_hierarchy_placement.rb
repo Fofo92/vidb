@@ -30,7 +30,7 @@ module RecordHierarchyPlacement
     return unless hierarchy_placement_status == :inconsistent
 
     errors.add(
-      :parent,
+      :parent_id,
       "ne permet pas ce placement pour la nature du contenu"
     )
   end

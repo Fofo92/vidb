@@ -399,7 +399,7 @@ class RecordTest < ActiveSupport::TestCase
     record = build_record(record_kind: "season")
 
     assert_not record.save
-    assert record.errors[:parent].any?
+    assert record.errors[:parent_id].any?
   end
 
   test "rejects a new child under an incompatible parent" do
@@ -412,7 +412,7 @@ class RecordTest < ActiveSupport::TestCase
     )
 
     assert_not child.save
-    assert child.errors[:parent].any?
+    assert child.errors[:parent_id].any?
   end
 
   test "accepts a new child with a consistent hierarchy placement" do
@@ -459,7 +459,7 @@ class RecordTest < ActiveSupport::TestCase
     episode.parent = standalone_video
 
     assert_not episode.save
-    assert episode.errors[:parent].any?
+    assert episode.errors[:parent_id].any?
     assert_equal series, episode.reload.parent
   end
 
@@ -520,7 +520,7 @@ class RecordTest < ActiveSupport::TestCase
     )
 
     assert_not child.save
-    assert child.errors[:parent].any?
+    assert child.errors[:parent_id].any?
 
     child.reload
 
@@ -541,7 +541,7 @@ class RecordTest < ActiveSupport::TestCase
     episode.parent = nil
 
     assert_not episode.save
-    assert episode.errors[:parent].any?
+    assert episode.errors[:parent_id].any?
     assert_equal series, episode.reload.parent
   end
 
