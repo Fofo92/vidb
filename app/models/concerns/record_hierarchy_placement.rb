@@ -10,6 +10,17 @@ module RecordHierarchyPlacement
     "episode" => %w[series season]
   }.freeze
 
+  class_methods do
+    def allowed_record_kinds_for_new_hierarchy(parent: nil)
+      record_kinds.keys.reject do |record_kind|
+        candidate = new(record_kind: record_kind)
+        candidate.parent = parent
+
+        candidate.hierarchy_placement_status == :inconsistent
+      end
+    end
+  end
+
   def hierarchy_placement_status
     return root_hierarchy_placement_status if root?
     return :inconsistent if impossible_hierarchy_relationship?
@@ -20,6 +31,10 @@ module RecordHierarchyPlacement
     else
       :inconsistent
     end
+  end
+
+  def allows_new_hierarchy_children?
+    self.class.allowed_record_kinds_for_new_hierarchy(parent: self).any?
   end
 
   private

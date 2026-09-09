@@ -22,8 +22,8 @@ module RecordsHelper
     }
   }.freeze
 
-  def record_kind_options
-    Record.record_kinds.keys.map do |record_kind|
+  def record_kind_options(record)
+    record_kinds_for(record).map do |record_kind|
       [record_kind_label(record_kind), record_kind]
     end
   end
@@ -41,6 +41,14 @@ module RecordsHelper
   end
 
   private
+
+  def record_kinds_for(record)
+    return Record.record_kinds.keys unless record.new_record?
+
+    Record.allowed_record_kinds_for_new_hierarchy(
+      parent: record.parent
+    )
+  end
 
   def hierarchy_placement_presentation(status)
     HIERARCHY_PLACEMENT_PRESENTATIONS.fetch(status.to_sym)

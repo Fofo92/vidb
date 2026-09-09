@@ -4,7 +4,7 @@
     <%= f.input :original_title, input_html: { size: 40 }, label: "Titre original"  %>
     <%= f.input :year, input_html: { maxlength: 4, size: 4}, label:"Année de production" %>
     <%= f.input :record_kind,
-            collection: record_kind_options,
+            collection: record_kind_options(@record),
             include_blank: false,
             label: "Nature du contenu" %>
   </div>
@@ -20,8 +20,7 @@
     <%= f.association :countries,
                 collection: Country.all.order(:long_name).collect { |c| [c.long_name, c.id] },
                 input_html: { multiple: true, size: 5, class: 'w-100' }, input_blank: false,
-								include_hidden: false, label: "Pays de production", include_blank: true
-  %>
+								include_hidden: false, label: "Pays de production", include_blank: true %>
     <%= f.association :language_version,
                 collection: LanguageVersion.all,
                 required: true,
@@ -29,8 +28,7 @@
                 include_blank: false,
                 label: "Version linguistique",
                 value_method: :id,
-                label_method: :short_name
-    %>
+                label_method: :short_name %>
     <% if @record.parent %>
       <div class="record_parent_id" data-record-parent>
         <strong>Parent :</strong>

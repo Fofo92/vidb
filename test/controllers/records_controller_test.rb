@@ -292,20 +292,6 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "displays the available record kinds in the form" do
-    get new_record_url
-
-    assert_response :success
-
-    assert_select "select[name='record[record_kind]']" do
-      assert_select "option[value='undetermined']", text: "À déterminer"
-      assert_select "option[value='standalone_video']", text: "Vidéo autonome"
-      assert_select "option[value='series']", text: "Série"
-      assert_select "option[value='season']", text: "Saison"
-      assert_select "option[value='episode']", text: "Épisode"
-    end
-  end
-
   test "displays the record kind on the record page" do
     @record.update!(record_kind: "standalone_video")
 
@@ -333,6 +319,102 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
       ) do
         assert_select ".badge.#{badge_class}", text: label
       end
+    end
+  end
+
+  test "offers only root-compatible kinds for a new root record" do
+    get new_record_url
+
+    assert_response :success
+
+    option_values = css_select(
+      "select[name='record[record_kind]'] option"
+    ).map { |option| option["value"] }
+
+    assert_equal(
+      %w[undetermined standalone_video series],
+      option_values
+    )
+  end
+
+  test "offers kinds compatible with the new child's parent" do
+    expected_kinds_by_parent_kind = {
+      "undetermined" => %w[
+        undetermined
+        standalone_video
+        season
+        episode
+      ],
+      "series" => %w[
+        undetermined
+        season
+        episode
+      ],
+      "season" => %w[
+        undetermined
+        episode
+      ]
+    }
+
+    expected_kinds_by_parent_kind.each do |parent_kind, expected_kinds|
+      @record.update!(record_kind: parent_kind)
+
+      get new_child_record_url(@record)
+
+      assert_response :success
+
+      option_values = css_select(
+        "select[name='record[record_kind]'] option"
+      ).map { |option| option["value"] }
+
+      assert_equal(
+        expected_kinds,
+        option_values,
+        "Unexpected choices for a child of #{parent_kind}"
+      )
+    end
+  end
+
+  test "offers every kind when editing an existing record" do
+    get edit_record_url(@record)
+
+    assert_response :success
+
+    option_values = css_select(
+      "select[name='record[record_kind]'] option"
+    ).map { |option| option["value"] }
+
+    assert_equal(
+      %w[
+        undetermined
+        standalone_video
+        series
+        season
+        episode
+      ],
+      option_values
+    )
+  end
+
+  test "offers child creation only to records that may contain children" do
+    expected_link_counts = {
+      "undetermined" => 1,
+      "series" => 1,
+      "season" => 1,
+      "standalone_video" => 0,
+      "episode" => 0
+    }
+
+    expected_link_counts.each do |record_kind, expected_count|
+      @record.update!(record_kind: record_kind)
+
+      get record_url(@record)
+
+      assert_response :success
+      assert_select(
+        "a[href='#{new_child_record_path(@record)}']",
+        count: expected_count
+      )
     end
   end
 

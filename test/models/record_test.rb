@@ -566,6 +566,69 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal :consistent, record.hierarchy_placement_status
   end
 
+  test "lists the kinds allowed for new hierarchy placements" do
+    assert_equal(
+      %w[undetermined standalone_video series],
+      Record.allowed_record_kinds_for_new_hierarchy
+    )
+
+    parent = build_record
+    parent.save!
+
+    expected_kinds_by_parent_kind = {
+      "undetermined" => %w[
+        undetermined
+        standalone_video
+        season
+        episode
+      ],
+      "series" => %w[
+        undetermined
+        season
+        episode
+      ],
+      "season" => %w[
+        undetermined
+        episode
+      ]
+    }
+
+    expected_kinds_by_parent_kind.each do |parent_kind, expected_kinds|
+      parent.update!(record_kind: parent_kind)
+
+      assert_equal(
+        expected_kinds,
+        Record.allowed_record_kinds_for_new_hierarchy(
+          parent: parent
+        ),
+        "Unexpected kinds for a child of #{parent_kind}"
+      )
+    end
+  end
+
+  test "reports whether a record may receive hierarchy children" do
+    expected_results = {
+      "undetermined" => true,
+      "series" => true,
+      "season" => true,
+      "standalone_video" => false,
+      "episode" => false
+    }
+
+    record = build_record
+    record.save!
+
+    expected_results.each do |record_kind, expected_result|
+      record.update!(record_kind: record_kind)
+
+      assert_equal(
+        expected_result,
+        record.allows_new_hierarchy_children?,
+        "Unexpected child capability for #{record_kind}"
+      )
+    end
+  end
+
   private
 
   def build_record(attributes = {})
