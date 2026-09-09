@@ -31,7 +31,23 @@
                 value_method: :id,
                 label_method: :short_name
     %>
-    <%= f.input :parent_id, input_html: {size: 4} %>
+    <% if @record.parent %>
+      <div class="record_parent_id" data-record-parent>
+        <strong>Parent :</strong>
+        <%= link_to(
+          @record.parent.complete_title,
+          record_path(@record.parent)
+        ) %>
+
+        <% @record.errors[:parent_id].each do |message| %>
+          <div class="invalid-feedback d-block">
+            <%= message %>
+          </div>
+        <% end %>
+      </div>
+
+      <%= f.hidden_field :parent_id if @record.new_record? %>
+    <% end %>
   </div>
 
   <div class="d-flex flex-row justify-content-between align-items-center">

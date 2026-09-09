@@ -227,8 +227,14 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select(
-      "input[name='record[parent_id]'][value='#{@record.id}']"
+      "input[type='hidden'][name='record[parent_id]'][value='#{@record.id}']"
     )
+    assert_select "[data-record-parent]" do
+      assert_select(
+        "a[href='#{record_path(@record)}']",
+        text: @record.complete_title
+      )
+    end
     assert_select(
       "select[name='record[gender_ids][]'] option[selected][value='#{gender.id}']"
     )
@@ -327,6 +333,32 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
       ) do
         assert_select ".badge.#{badge_class}", text: label
       end
+    end
+  end
+
+  test "does not display a parent field for a new root record" do
+    get new_record_url
+
+    assert_response :success
+    assert_select "input[name='record[parent_id]']", count: 0
+    assert_select "[data-record-parent]", count: 0
+  end
+
+  test "displays an existing parent without allowing ordinary reassignment" do
+    child = @record.children.create!(
+      french_title: "Épisode",
+      language_version: @record.language_version
+    )
+
+    get edit_record_url(child)
+
+    assert_response :success
+    assert_select "input[name='record[parent_id]']", count: 0
+    assert_select "[data-record-parent]" do
+    assert_select(
+      "a[href='#{record_path(@record)}']",
+      text: @record.complete_title
+    )
     end
   end
 end
