@@ -1,6 +1,10 @@
 module RecordHierarchyPlacement
   extend ActiveSupport::Concern
 
+  included do
+    validate :validate_new_hierarchy_placement
+  end
+
   CONSISTENT_PARENT_KINDS_BY_RECORD_KIND = {
     "season" => %w[series],
     "episode" => %w[series season]
@@ -19,6 +23,25 @@ module RecordHierarchyPlacement
   end
 
   private
+
+  def validate_new_hierarchy_placement
+    return unless new_record? || parent_id != parent_id_in_database
+    return unless hierarchy_placement_diagnosable?
+    return unless hierarchy_placement_status == :inconsistent
+
+    errors.add(
+      :parent,
+      "ne permet pas ce placement pour la nature du contenu"
+    )
+  end
+
+  def hierarchy_placement_diagnosable?
+    return false unless self.class.record_kinds.key?(record_kind)
+    return false if errors[:ancestry].any?
+    return false if has_parent? && parent.nil?
+
+    true
+  end
 
   def root_hierarchy_placement_status
     case record_kind

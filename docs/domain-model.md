@@ -146,9 +146,17 @@ Le diagnostic porte uniquement sur le placement de la fiche par rapport à son p
 certifie ni la cohérence de tout son sous-arbre, ni la complétude de la série, ni la qualité de ses
 métadonnées.
 
-À ce stade, ce diagnostic est informatif. Il ne bloque aucune sauvegarde et ne modifie aucune donnée. Les
-anciens liens représentant des collections ou d’autres structures historiques sont conservés jusqu’à ce
-qu’une nouvelle représentation permette de préserver explicitement leur sens.
+Pendant la transition, le diagnostic reste informatif pour les placements historiques. Il bloque toutefois la
+création d’une fiche dont le placement est déjà connu comme incohérent, ainsi que le déplacement d’une
+fiche vers un parent incompatible. Les placements conformes ou encore indéterminés restent autorisés.
+
+Le changement de nature d’une fiche existante reste autorisé lorsqu’il ne modifie pas son parent immédiat,
+même s’il révèle une incohérence historique. Les modifications sans rapport avec la hiérarchie restent
+également possibles. Une correction qui rend le placement conforme est autorisée.
+
+Cette protection ne corrige aucune donnée automatiquement. Les anciens liens représentant des
+collections ou d’autres structures historiques sont conservés jusqu’à ce qu’une nouvelle représentation
+permette de préserver explicitement leur sens.
 
 ### Vérification
 

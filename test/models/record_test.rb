@@ -253,9 +253,12 @@ class RecordTest < ActiveSupport::TestCase
       episode
     ]
 
+    series = build_record(record_kind: "series")
+    series.save!
+
     supported_kinds.each do |record_kind|
       record = build_record(record_kind: record_kind)
-
+      record.parent = series if %w[season episode].include?(record_kind)
       assert record.valid?
       assert record.public_send("record_kind_#{record_kind}?")
       record.save!
@@ -325,70 +328,243 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal parent, child.parent
   end
 
-test "diagnoses the placement of root records" do
-  expected_statuses = {
-    "undetermined" => :undetermined,
-    "standalone_video" => :consistent,
-    "series" => :consistent,
-    "season" => :inconsistent,
-    "episode" => :inconsistent
-  }
+  test "diagnoses the placement of root records" do
+    expected_statuses = {
+      "undetermined" => :undetermined,
+      "standalone_video" => :consistent,
+      "series" => :consistent,
+      "season" => :inconsistent,
+      "episode" => :inconsistent
+    }
 
-  expected_statuses.each do |kind, expected_status|
-    record = build_record(record_kind: kind)
-
-    assert_equal(
-      expected_status,
-      record.hierarchy_placement_status,
-      "Unexpected placement status for root #{kind}"
-    )
-  end
-end
-
-test "diagnoses placement from the immediate parent kind" do
-  kinds = %w[undetermined standalone_video series season episode]
-
-  expected_statuses = {
-    "undetermined" => [
-      :undetermined, :undetermined, :inconsistent,
-      :undetermined, :undetermined
-    ],
-    "standalone_video" => [
-      :inconsistent, :inconsistent, :inconsistent,
-      :inconsistent, :inconsistent
-    ],
-    "series" => [
-      :undetermined, :inconsistent, :inconsistent,
-      :consistent, :consistent
-    ],
-    "season" => [
-      :undetermined, :inconsistent, :inconsistent,
-      :inconsistent, :consistent
-    ],
-    "episode" => [
-      :inconsistent, :inconsistent, :inconsistent,
-      :inconsistent, :inconsistent
-    ]
-  }
-
-  expected_statuses.each do |parent_kind, statuses|
-    parent = build_record(record_kind: parent_kind)
-    parent.save!
-
-    kinds.zip(statuses).each do |child_kind, expected_status|
-      child = build_record(
-        record_kind: child_kind,
-        parent: parent
-      )
+    expected_statuses.each do |kind, expected_status|
+      record = build_record(record_kind: kind)
 
       assert_equal(
         expected_status,
-        child.hierarchy_placement_status,
-        "Unexpected placement status for #{parent_kind} -> #{child_kind}"
+        record.hierarchy_placement_status,
+        "Unexpected placement status for root #{kind}"
       )
     end
   end
-end
+
+  test "diagnoses placement from the immediate parent kind" do
+    kinds = %w[undetermined standalone_video series season episode]
+    expected_statuses = {
+      "undetermined" => [
+        :undetermined, :undetermined, :inconsistent,
+        :undetermined, :undetermined
+      ],
+      "standalone_video" => [
+        :inconsistent, :inconsistent, :inconsistent,
+        :inconsistent, :inconsistent
+      ],
+      "series" => [
+        :undetermined, :inconsistent, :inconsistent,
+        :consistent, :consistent
+      ],
+      "season" => [
+        :undetermined, :inconsistent, :inconsistent,
+        :inconsistent, :consistent
+      ],
+      "episode" => [
+        :inconsistent, :inconsistent, :inconsistent,
+        :inconsistent, :inconsistent
+      ]
+    }
+
+    expected_statuses.each do |parent_kind, statuses|
+      parent = build_record
+      parent.save!
+
+      # Represent historical placements, including inconsistent roots.
+      parent.update!(record_kind: parent_kind)
+
+      kinds.zip(statuses).each do |child_kind, expected_status|
+        child = build_record(
+          record_kind: child_kind,
+          parent: parent
+        )
+
+        assert_equal(
+          expected_status,
+          child.hierarchy_placement_status,
+          "Unexpected placement status for #{parent_kind} -> #{child_kind}"
+        )
+      end
+    end
+  end
+
+  test "rejects a new record with an inconsistent hierarchy placement" do
+    record = build_record(record_kind: "season")
+
+    assert_not record.save
+    assert record.errors[:parent].any?
+  end
+
+  test "rejects a new child under an incompatible parent" do
+    parent = build_record(record_kind: "standalone_video")
+    parent.save!
+
+    child = build_record(
+      record_kind: "episode",
+      parent: parent
+    )
+
+    assert_not child.save
+    assert child.errors[:parent].any?
+  end
+
+  test "accepts a new child with a consistent hierarchy placement" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    season = build_record(
+      record_kind: "season",
+      parent: series
+    )
+
+    assert season.save
+    assert_equal :consistent, season.hierarchy_placement_status
+  end
+
+  test "accepts a new child with an undetermined hierarchy placement" do
+    parent = build_record(record_kind: "undetermined")
+    parent.save!
+
+    episode = build_record(
+      record_kind: "episode",
+      parent: parent
+    )
+
+    assert episode.save
+    assert_equal :undetermined, episode.hierarchy_placement_status
+  end
+
+  test "rejects moving a record under an incompatible parent" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    episode = build_record(
+      record_kind: "episode",
+      parent: series
+    )
+    episode.save!
+
+    standalone_video = build_record(
+      record_kind: "standalone_video"
+    )
+    standalone_video.save!
+
+    episode.parent = standalone_video
+
+    assert_not episode.save
+    assert episode.errors[:parent].any?
+    assert_equal series, episode.reload.parent
+  end
+
+  test "allows ordinary changes to an existing inconsistent record" do
+    record = build_record
+    record.save!
+    record.update_column(:record_kind, "season")
+
+    assert_equal :inconsistent, record.reload.hierarchy_placement_status
+
+    assert record.update(french_title: "Saison historique")
+    assert_equal "Saison historique", record.reload.french_title
+  end
+
+  test "allows changing kind when it reveals an existing inconsistency" do
+    record = build_record
+    record.save!
+
+    assert record.update(record_kind: "episode")
+    assert_equal :inconsistent, record.reload.hierarchy_placement_status
+  end
+
+  test "allows correcting an existing inconsistent placement" do
+    episode = build_record
+    episode.save!
+    episode.update_column(:record_kind, "episode")
+
+    assert_equal :inconsistent, episode.reload.hierarchy_placement_status
+
+    series = build_record(record_kind: "series")
+    series.save!
+
+    episode.parent = series
+
+    assert episode.save
+    assert_equal :consistent, episode.reload.hierarchy_placement_status
+    assert_equal series, episode.parent
+  end
+
+  test "checks the final kind when parent and kind change together" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    child = build_record(
+      record_kind: "undetermined",
+      parent: series
+    )
+    child.save!
+
+    standalone_video = build_record(
+      record_kind: "standalone_video"
+    )
+    standalone_video.save!
+
+    child.assign_attributes(
+      parent: standalone_video,
+      record_kind: "episode"
+    )
+
+    assert_not child.save
+    assert child.errors[:parent].any?
+
+    child.reload
+
+    assert_equal series, child.parent
+    assert child.record_kind_undetermined?
+  end
+
+  test "rejects detaching an episode to the root" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    episode = build_record(
+      record_kind: "episode",
+      parent: series
+    )
+    episode.save!
+
+    episode.parent = nil
+
+    assert_not episode.save
+    assert episode.errors[:parent].any?
+    assert_equal series, episode.reload.parent
+  end
+
+  test "allows detaching a historical standalone video to the root" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    record = build_record(
+      record_kind: "undetermined",
+      parent: series
+    )
+    record.save!
+
+    record.update!(record_kind: "standalone_video")
+
+    assert_equal :inconsistent, record.hierarchy_placement_status
+
+    record.parent = nil
+
+    assert record.save
+    assert record.root?
+    assert_equal :consistent, record.hierarchy_placement_status
+  end
 
   private
 
