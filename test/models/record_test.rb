@@ -629,6 +629,174 @@ class RecordTest < ActiveSupport::TestCase
     end
   end
 
+  test "moves an episode without changing any rank" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    source_season = build_record(
+      record_kind: "season",
+      parent: series,
+      rank: 1
+    )
+    source_season.save!
+
+    destination_season = build_record(
+      record_kind: "season",
+      parent: series,
+      rank: 2
+    )
+    destination_season.save!
+
+    source_sibling = build_record(
+      record_kind: "episode",
+      parent: source_season,
+      rank: 2
+    )
+    source_sibling.save!
+
+    moved_episode = build_record(
+      record_kind: "episode",
+      parent: source_season,
+      rank: 3
+    )
+    moved_episode.save!
+
+    destination_sibling = build_record(
+      record_kind: "episode",
+      parent: destination_season,
+      rank: 3
+    )
+    destination_sibling.save!
+
+    moved_episode.parent = destination_season
+
+    assert moved_episode.save
+    assert_equal destination_season, moved_episode.reload.parent
+    assert_equal 3, moved_episode.rank
+    assert_equal 2, source_sibling.reload.rank
+    assert_equal 3, destination_sibling.reload.rank
+  end
+
+  test "moves a season branch without changing descendant ranks" do
+    source_series = build_record(record_kind: "series")
+    source_series.save!
+
+    destination_series = build_record(record_kind: "series")
+    destination_series.save!
+
+    season = build_record(
+      record_kind: "season",
+      parent: source_series,
+      rank: 4
+    )
+    season.save!
+
+    first_episode = build_record(
+      record_kind: "episode",
+      parent: season,
+      rank: 1
+    )
+    first_episode.save!
+
+    special_episode = build_record(
+      record_kind: "episode",
+      parent: season,
+      rank: 0
+    )
+    special_episode.save!
+
+    original_episode_ancestries = {
+      first_episode.id => first_episode.ancestry,
+      special_episode.id => special_episode.ancestry
+    }
+
+    season.parent = destination_series
+
+    assert season.save
+
+    assert_equal destination_series, season.reload.parent
+    assert_equal 4, season.rank
+
+    assert_equal season, first_episode.reload.parent
+    assert_equal 1, first_episode.rank
+
+    assert_equal season, special_episode.reload.parent
+    assert_equal 0, special_episode.rank
+
+    assert_equal destination_series, first_episode.root
+    assert_equal destination_series, special_episode.root
+
+    assert_not_equal(
+      original_episode_ancestries.fetch(first_episode.id),
+      first_episode.ancestry
+    )
+    assert_not_equal(
+      original_episode_ancestries.fetch(special_episode.id),
+      special_episode.ancestry
+    )
+  end
+
+  test "rejects moving a record under itself" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    series.parent = series
+
+    assert_not series.save
+    assert series.errors[:base].any?
+
+    series.reload
+
+    assert series.root?
+  end
+
+  test "rejects moving a record under one of its descendants" do
+    series = build_record(record_kind: "series")
+    series.save!
+
+    season = build_record(
+      record_kind: "season",
+      parent: series,
+      rank: 1
+    )
+    season.save!
+
+    episode = build_record(
+      record_kind: "episode",
+      parent: season,
+      rank: 1
+    )
+    episode.save!
+
+    original_ancestries = {
+      series.id => series.ancestry,
+      season.id => season.ancestry,
+      episode.id => episode.ancestry
+    }
+
+    series.parent = episode
+
+    assert_not series.save
+    assert series.errors[:base].any?
+
+    assert_equal(
+      original_ancestries.fetch(series.id),
+      series.reload.ancestry
+    )
+    assert_equal(
+      original_ancestries.fetch(season.id),
+      season.reload.ancestry
+    )
+    assert_equal(
+      original_ancestries.fetch(episode.id),
+      episode.reload.ancestry
+    )
+
+    assert series.root?
+    assert_equal series, season.parent
+    assert_equal season, episode.parent
+  end
+
   private
 
   def build_record(attributes = {})
