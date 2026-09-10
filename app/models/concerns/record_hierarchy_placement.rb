@@ -5,12 +5,22 @@ module RecordHierarchyPlacement
     validate :validate_new_hierarchy_placement
   end
 
-  CONSISTENT_PARENT_KINDS_BY_RECORD_KIND = {
-    "season" => %w[series],
-    "episode" => %w[series season]
+  ALLOWED_PARENT_KINDS_BY_RECORD_KIND = {
+    "undetermined" => %w[undetermined series season],
+    "standalone_video" => %w[undetermined],
+    "series" => [],
+    "season" => %w[undetermined series],
+    "episode" => %w[undetermined series season]
   }.freeze
 
   class_methods do
+    def allowed_parent_kinds_for_hierarchy(record_kind)
+      ALLOWED_PARENT_KINDS_BY_RECORD_KIND.fetch(
+        record_kind.to_s,
+        []
+      )
+    end
+
     def allowed_record_kinds_for_new_hierarchy(parent: nil)
       record_kinds.keys.reject do |record_kind|
         candidate = new(record_kind: record_kind)
@@ -23,14 +33,11 @@ module RecordHierarchyPlacement
 
   def hierarchy_placement_status
     return root_hierarchy_placement_status if root?
-    return :inconsistent if impossible_hierarchy_relationship?
+    return :inconsistent unless valid_parent_kinds_for_record_kind
+                                .include?(parent.record_kind)
     return :undetermined if undetermined_hierarchy_context?
 
-    if valid_parent_kinds_for_record_kind.include?(parent.record_kind)
-      :consistent
-    else
-      :inconsistent
-    end
+    :consistent
   end
 
   def allows_new_hierarchy_children?
@@ -69,17 +76,11 @@ module RecordHierarchyPlacement
     end
   end
 
-  def impossible_hierarchy_relationship?
-    parent.record_kind_standalone_video? ||
-      parent.record_kind_episode? ||
-      record_kind_series?
-  end
-
   def undetermined_hierarchy_context?
     record_kind_undetermined? || parent.record_kind_undetermined?
   end
 
   def valid_parent_kinds_for_record_kind
-    CONSISTENT_PARENT_KINDS_BY_RECORD_KIND.fetch(record_kind, [])
+    self.class.allowed_parent_kinds_for_hierarchy(record_kind)
   end
 end
