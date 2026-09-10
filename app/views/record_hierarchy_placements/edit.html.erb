@@ -33,5 +33,85 @@
 
 <p data-hierarchy-descendant-count>
   <strong>Descendants déplacés avec cette fiche :</strong>
-  <%= @record.descendants.count %>
+  <%= @descendant_count %>
 </p>
+
+<% move_confirmation = [
+  "Déplacer cette fiche et ses #{@descendant_count} descendant(s) ?",
+  "Les rangs resteront inchangés."
+].join(" ") %>
+
+<h2>Rechercher un nouveau parent</h2>
+
+<%= form_with(
+  url: edit_record_hierarchy_placement_path(@record),
+  method: :get
+) do |form| %>
+  <div class="d-flex gap-2">
+    <%= form.search_field(
+      :q,
+      value: @query,
+      placeholder: "Titre français ou original",
+      class: "form-control"
+    ) %>
+    <%= form.submit "Rechercher", class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<% if @candidate_parents.any? %>
+  <table class="table table-striped mt-3">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Nature</th>
+        <th>Année</th>
+        <th>Ascendance</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @candidate_parents.each do |candidate| %>
+        <tr data-hierarchy-parent-candidate="<%= candidate.id %>">
+          <td data-candidate-title>
+            <%= candidate.complete_title %>
+          </td>
+          <td data-candidate-kind>
+            <%= record_kind_label(candidate.record_kind) %>
+          </td>
+          <td data-candidate-year>
+            <%= candidate.year || "n/a" %>
+          </td>
+          <td data-candidate-ancestry>
+            <% if candidate.ancestors.any? %>
+              <%= candidate.ancestors
+                .map(&:complete_title)
+                .join(" › ") %>
+            <% else %>
+              Racine
+            <% end %>
+          </td>
+          <td>
+            <%= button_to(
+              "Déplacer ici",
+              record_hierarchy_placement_path(@record),
+              method: :patch,
+              params: {
+                hierarchy_placement: {
+                  parent_id: candidate.id
+                }
+              },
+              form: {
+                data: {
+                  turbo_confirm: move_confirmation
+                }
+              },
+              class: "btn btn-outline-primary btn-sm"
+            ) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @candidate_parents %>
+<% end %>
