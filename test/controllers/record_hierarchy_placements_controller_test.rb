@@ -142,4 +142,96 @@ class RecordHierarchyPlacementsControllerTest <
       text: /ne permet pas ce placement/
     )
   end
+
+  test "ignores record attributes outside the move operation" do
+    destination_series = Record.create!(
+      french_title: "Série destination",
+      record_kind: "series",
+      language_version: @series.language_version
+    )
+
+    original_title = @season.french_title
+    original_kind = @season.record_kind
+    original_rank = @season.rank
+
+    patch record_hierarchy_placement_url(@season), params: {
+      hierarchy_placement: {
+        parent_id: destination_series.id,
+        french_title: "Titre détourné",
+        record_kind: "episode",
+        rank: 99
+      }
+    }
+
+    assert_redirected_to record_url(@season)
+
+    @season.reload
+
+    assert_equal destination_series, @season.parent
+    assert_equal original_title, @season.french_title
+    assert_equal original_kind, @season.record_kind
+    assert_equal original_rank, @season.rank
+  end
+
+  test "rejects an unknown parent without moving the record" do
+    original_parent = @season.parent
+
+    patch record_hierarchy_placement_url(@season), params: {
+      hierarchy_placement: {
+        parent_id: -1
+      }
+    }
+
+    assert_response :not_found
+    assert_equal original_parent, @season.reload.parent
+  end
+
+  test "rejects moving a branch under one of its descendants" do
+    episode = @season.children.first
+
+    original_ancestries = {
+      @series.id => @series.ancestry,
+      @season.id => @season.ancestry,
+      episode.id => episode.ancestry
+    }
+
+    patch record_hierarchy_placement_url(@series), params: {
+      hierarchy_placement: {
+        parent_id: @season.id
+      }
+    }
+
+    assert_response :unprocessable_content
+    assert_select "[data-hierarchy-errors]"
+
+    assert_equal(
+      original_ancestries.fetch(@series.id),
+      @series.reload.ancestry
+    )
+    assert_equal(
+      original_ancestries.fetch(@season.id),
+      @season.reload.ancestry
+    )
+    assert_equal(
+      original_ancestries.fetch(episode.id),
+      episode.reload.ancestry
+    )
+
+    assert @series.root?
+    assert_equal @series, @season.parent
+    assert_equal @season, episode.parent
+  end
+
+  test "rejects a move request without a parent choice" do
+    original_parent = @season.parent
+
+    patch record_hierarchy_placement_url(@season), params: {
+      hierarchy_placement: {
+        rank: 99
+      }
+    }
+
+    assert_response :bad_request
+    assert_equal original_parent, @season.reload.parent
+  end
 end
