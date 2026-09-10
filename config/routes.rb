@@ -11,8 +11,9 @@ Rails.application.routes.draw do
   resources :genders, except: :show
   resources :language_versions, except: :show
   resources :records do
-    resource :hierarchy_placement, controller: "record_hierarchy_placements", only: :edit
-
+    resource :hierarchy_placement,
+             controller: "record_hierarchy_placements",
+             only: %i[edit update]
     member do
       get :new_child
       post :new_child
