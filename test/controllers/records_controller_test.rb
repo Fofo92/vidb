@@ -443,4 +443,14 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     )
     end
   end
+
+  test "offers the dedicated hierarchy move page" do
+  get record_url(@record)
+
+  assert_response :success
+  assert_select(
+    "a[href='#{edit_record_hierarchy_placement_path(@record)}']",
+    text: /Déplacer/
+  )
+  end
 end

@@ -1,0 +1,24 @@
+<h1>Déplacer une fiche</h1>
+
+<p data-hierarchy-record>
+  <strong>Fiche :</strong>
+  <%= link_to @record.complete_title, record_path(@record) %>
+</p>
+
+<p data-hierarchy-current-parent>
+  <strong>Parent actuel :</strong>
+
+  <% if @record.parent %>
+    <%= link_to(
+      @record.parent.complete_title,
+      record_path(@record.parent)
+    ) %>
+  <% else %>
+    Aucun
+  <% end %>
+</p>
+
+<p data-hierarchy-descendant-count>
+  <strong>Descendants déplacés avec cette fiche :</strong>
+  <%= @record.descendants.count %>
+</p>

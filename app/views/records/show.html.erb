@@ -4,9 +4,16 @@
     <%= link_to @record.complete_title_with_parents, (@record.has_parent? ? record_path(@record.parent) : nil) %>
   </h4>
   <div>
+    <%= link_to(
+      "Déplacer",
+      edit_record_hierarchy_placement_path(@record),
+      class: "btn btn-outline-primary btn-sm"
+    ) %>
+
     <%= link_to edit_record_path(@record), class: "btn btn-primary btn-sm fa-xl" do %>
           <i class="fa-regular fa-edit"></i>
     <% end %>
+
     <%= link_to new_record_path, class: "btn btn-primary btn-sm fa-xl" do %>
       <i class="fa-regular fa-square-plus"></i>
     <% end %>
