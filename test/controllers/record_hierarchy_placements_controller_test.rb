@@ -94,6 +94,15 @@ class RecordHierarchyPlacementsControllerTest <
       "[data-hierarchy-errors]",
       text: /ne permet pas ce placement/
     )
+    assert_select(
+      "[data-hierarchy-current-parent]",
+      text: /Série source/
+    )
+    assert_select(
+      "[data-hierarchy-current-parent] a",
+      text: "Vidéo autonome",
+      count: 0
+    )
   end
 
   test "moves a root-compatible record to the root" do

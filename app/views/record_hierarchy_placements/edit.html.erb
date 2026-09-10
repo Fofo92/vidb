@@ -21,10 +21,10 @@
 <p data-hierarchy-current-parent>
   <strong>Parent actuel :</strong>
 
-  <% if @record.parent %>
+  <% if @current_parent %>
     <%= link_to(
-      @record.parent.complete_title,
-      record_path(@record.parent)
+      @current_parent.complete_title,
+      record_path(@current_parent)
     ) %>
   <% else %>
     Aucun

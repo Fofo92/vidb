@@ -32,5 +32,6 @@ class RecordHierarchyPlacementsController < ApplicationController
 
   def set_record
     @record = Record.find(params[:record_id])
+    @current_parent = @record.parent
   end
 end
