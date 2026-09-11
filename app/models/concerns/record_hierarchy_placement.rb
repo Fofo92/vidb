@@ -44,6 +44,12 @@ module RecordHierarchyPlacement
     self.class.allowed_record_kinds_for_new_hierarchy(parent: self).any?
   end
 
+  def allows_root_hierarchy_placement?
+    self.class
+        .allowed_record_kinds_for_new_hierarchy
+        .include?(record_kind)
+  end
+
   private
 
   def validate_new_hierarchy_placement

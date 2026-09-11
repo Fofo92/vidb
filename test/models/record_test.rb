@@ -797,6 +797,29 @@ class RecordTest < ActiveSupport::TestCase
     assert_equal season, episode.parent
   end
 
+  test "reports whether a record may be moved to the root" do
+    expected_results = {
+      "undetermined" => true,
+      "standalone_video" => true,
+      "series" => true,
+      "season" => false,
+      "episode" => false
+    }
+
+    record = build_record
+    record.save!
+
+    expected_results.each do |record_kind, expected_result|
+      record.update!(record_kind: record_kind)
+
+      assert_equal(
+        expected_result,
+        record.allows_root_hierarchy_placement?,
+        "Unexpected root capability for #{record_kind}"
+      )
+    end
+  end
+
   private
 
   def build_record(attributes = {})

@@ -283,7 +283,7 @@ class RecordHierarchyPlacementsControllerTest < ActionDispatch::IntegrationTest
       end
     end
   end
-  
+
   test "paginates matching parent candidates" do
     27.times do |index|
       Record.create!(
@@ -312,6 +312,42 @@ class RecordHierarchyPlacementsControllerTest < ActionDispatch::IntegrationTest
     assert_equal(
       1,
       css_select("[data-hierarchy-parent-candidate]").size
+    )
+  end
+
+  test "offers the root destination to a root-compatible record" do
+    record = @series.children.create!(
+      french_title: "Vidéo historiquement mal placée",
+      record_kind: "undetermined",
+      language_version: @series.language_version
+    )
+    record.update!(record_kind: "standalone_video")
+
+    get edit_record_hierarchy_placement_url(record)
+
+    assert_response :success
+
+    assert_select(
+      "form[action='#{record_hierarchy_placement_path(record)}']" \
+      "[data-hierarchy-root-destination]" \
+      "[data-turbo-confirm]"
+    ) do
+      assert_select "input[name='_method'][value='patch']"
+      assert_select(
+        "input[name='hierarchy_placement[parent_id]']" \
+        "[value='']"
+      )
+      assert_select "button", text: /Placer à la racine/
+    end
+  end
+
+  test "does not offer the root destination to a season" do
+    get edit_record_hierarchy_placement_url(@season)
+
+    assert_response :success
+    assert_select(
+      "[data-hierarchy-root-destination]",
+      count: 0
     )
   end
 end

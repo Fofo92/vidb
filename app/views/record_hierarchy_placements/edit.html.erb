@@ -41,6 +41,27 @@
   "Les rangs resteront inchangés."
 ].join(" ") %>
 
+<% if @record.has_parent? &&
+      @record.allows_root_hierarchy_placement? %>
+  <%= button_to(
+    "Placer à la racine",
+    record_hierarchy_placement_path(@record),
+    method: :patch,
+    params: {
+      hierarchy_placement: {
+        parent_id: ""
+      }
+    },
+    form: {
+      data: {
+        hierarchy_root_destination: true,
+        turbo_confirm: move_confirmation
+      }
+    },
+    class: "btn btn-outline-warning my-3"
+  ) %>
+<% end %>
+
 <h2>Rechercher un nouveau parent</h2>
 
 <%= form_with(
