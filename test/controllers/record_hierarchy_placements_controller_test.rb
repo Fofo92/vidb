@@ -350,4 +350,27 @@ class RecordHierarchyPlacementsControllerTest < ActionDispatch::IntegrationTest
       count: 0
     )
   end
+
+  test "displays the ancestry of a nested parent candidate" do
+    nested_candidate = @series.children.create!(
+      french_title: "Regroupement destination",
+      record_kind: "undetermined",
+      language_version: @series.language_version
+    )
+
+    get edit_record_hierarchy_placement_url(@season), params: {
+      q: "Regroupement destination"
+    }
+
+    assert_response :success
+
+    assert_select(
+      "[data-hierarchy-parent-candidate='#{nested_candidate.id}']"
+    ) do
+      assert_select(
+        "[data-candidate-ancestry]",
+        text: /Série source/
+      )
+    end
+  end
 end
