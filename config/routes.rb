@@ -14,6 +14,9 @@ Rails.application.routes.draw do
     resource :hierarchy_placement,
              controller: "record_hierarchy_placements",
              only: %i[edit update]
+    resource :child_qualification,
+             controller: "record_child_qualifications",
+             only: :edit
     member do
       get :new_child
       post :new_child

@@ -457,4 +457,38 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     text: /Déplacer/
   )
   end
+
+  test "offers bulk child qualification for a record with children" do
+    @record.children.create!(
+      french_title: "Enfant à qualifier",
+      record_kind: "undetermined",
+      language_version: @record.language_version
+    )
+
+    get record_url(@record)
+
+    assert_response :success
+    assert_select(
+      "a[href='#{edit_record_child_qualification_path(@record)}']",
+      text: /Qualifier les enfants/
+    )
+  end
+
+  test "does not offer bulk child qualification without a compatible kind" do
+    @record.children.create!(
+      french_title: "Enfant historique",
+      record_kind: "undetermined",
+      language_version: @record.language_version
+    )
+
+    @record.update!(record_kind: "standalone_video")
+
+    get record_url(@record)
+
+    assert_response :success
+    assert_select(
+      "a[href='#{edit_record_child_qualification_path(@record)}']",
+      count: 0
+    )
+  end
 end

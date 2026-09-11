@@ -1,0 +1,45 @@
+<h1>Qualifier les enfants</h1>
+
+<p data-child-qualification-parent>
+  <strong>Parent :</strong>
+  <%= link_to @record.complete_title, record_path(@record) %>
+</p>
+
+<section>
+  <h2>Natures proposées</h2>
+
+  <ul>
+    <% @qualification_targets.each do |record_kind| %>
+      <li data-child-qualification-target="<%= record_kind %>">
+        <%= record_kind_label(record_kind) %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<section>
+  <h2>Enfants à qualifier</h2>
+
+  <ul>
+    <% @qualifiable_children.each do |child| %>
+      <li data-qualifiable-child="<%= child.id %>">
+        <%= link_to child.complete_title, record_path(child) %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<section>
+  <h2>Enfants déjà qualifiés, conservés sans modification</h2>
+
+  <ul>
+    <% @preserved_children.each do |child| %>
+      <li data-preserved-child="<%= child.id %>">
+        <%= link_to child.complete_title, record_path(child) %>
+        — <%= record_kind_label(child.record_kind) %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<%= link_to "Retour à la fiche", record_path(@record) %>
