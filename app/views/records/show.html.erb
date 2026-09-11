@@ -26,9 +26,9 @@
   <% placement_status = @record.hierarchy_placement_status %>
   <span
     data-hierarchy-placement-status="<%= placement_status %>"
-    title="Diagnostic informatif du placement par rapport au parent immédiat"
+    title="Diagnostic du placement de cette fiche par rapport à son parent immédiat ou à la racine ; il ne porte pas sur ses descendants"
   >
-    <strong>, placement hiérarchique : </strong>
+    <strong>, placement de cette fiche : </strong>
     <span class="badge <%= hierarchy_placement_badge_class(placement_status) %>">
       <%= hierarchy_placement_label(placement_status) %>
     </span>

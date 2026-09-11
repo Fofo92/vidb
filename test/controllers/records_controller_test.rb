@@ -315,8 +315,12 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select(
-        "[data-hierarchy-placement-status='#{status}']"
+        "[data-hierarchy-placement-status='#{status}']" \
+        "[title='Diagnostic du placement de cette fiche par rapport " \
+        "à son parent immédiat ou à la racine ; il ne porte pas " \
+        "sur ses descendants']"
       ) do
+        assert_select "strong", text: /placement de cette fiche/i
         assert_select ".badge.#{badge_class}", text: label
       end
     end

@@ -142,9 +142,18 @@ Une relation comportant une nature indéterminée reste indéterminée lorsqu’
 l’établir. Ainsi, `episode → undetermined` et `undetermined → series` sont incohérents, tandis que
 `series → undetermined` et `undetermined → episode` restent indéterminés.
 
-Le diagnostic porte uniquement sur le placement de la fiche par rapport à son parent immédiat. Il ne
-certifie ni la cohérence de tout son sous-arbre, ni la complétude de la série, ni la qualité de ses
-métadonnées.
+Le diagnostic affiché sur la page d’une fiche qualifie donc uniquement son propre placement. Il ne
+certifie ni les relations entre cette fiche et ses enfants, ni la cohérence de tout son sous-arbre, ni la
+complétude de la série, ni la qualité de ses métadonnées.
+
+L’affichage d’un diagnostic distinct pour les enfants directs est différé jusqu’à l’introduction des
+collections. Avant de clore ce chantier, les contrôles et leurs tests devront distinguer explicitement :
+
+- le placement propre de la fiche par rapport à son parent immédiat ou à la racine ;
+- les relations hiérarchiques entre la fiche et ses enfants directs ;
+- les appartenances à des collections, qui ne relèvent pas de la hiérarchie éditoriale.
+
+L’absence d’enfant ne devra pas être présentée comme une validation de la descendance.
 
 Pendant la transition, le diagnostic reste informatif pour les placements historiques. Il bloque toutefois la
 création d’une fiche dont le placement est déjà connu comme incohérent, ainsi que le déplacement d’une
