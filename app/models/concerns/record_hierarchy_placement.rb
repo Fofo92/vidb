@@ -50,6 +50,12 @@ module RecordHierarchyPlacement
         .include?(record_kind)
   end
 
+  def allowed_record_kinds_for_child_qualification
+    self.class
+        .allowed_record_kinds_for_new_hierarchy(parent: self)
+        .excluding("undetermined")
+  end
+
   private
 
   def validate_new_hierarchy_placement

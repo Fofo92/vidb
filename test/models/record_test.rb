@@ -820,6 +820,29 @@ class RecordTest < ActiveSupport::TestCase
     end
   end
 
+  test "lists kinds allowed for bulk child qualification" do
+    expected_kinds_by_parent_kind = {
+      "undetermined" => %w[standalone_video season episode],
+      "series" => %w[season episode],
+      "season" => %w[episode],
+      "standalone_video" => [],
+      "episode" => []
+    }
+
+    parent = build_record
+    parent.save!
+
+    expected_kinds_by_parent_kind.each do |parent_kind, expected_kinds|
+      parent.update!(record_kind: parent_kind)
+
+      assert_equal(
+        expected_kinds,
+        parent.allowed_record_kinds_for_child_qualification,
+        "Unexpected qualification choices for #{parent_kind}"
+      )
+    end
+  end
+
   private
 
   def build_record(attributes = {})
