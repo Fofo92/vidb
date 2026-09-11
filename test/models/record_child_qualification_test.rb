@@ -182,6 +182,25 @@ class RecordChildQualificationTest < ActiveSupport::TestCase
     assert_equal "undetermined", invalid_child.reload.record_kind
   end
 
+  test "checks the current parent kind before qualifying children" do
+    child = create_child("Saison à qualifier", rank: 1)
+
+    operation = RecordChildQualification.new(
+      parent: @series,
+      child_ids: [child.id],
+      record_kind: "season"
+    )
+
+    another_parent_instance = Record.find(@series.id)
+    another_parent_instance.update!(record_kind: "standalone_video")
+    assert_equal "series", @series.record_kind
+    assert_equal "standalone_video", Record.find(@series.id).record_kind
+    assert_not operation.call
+    assert operation.errors[:record_kind].any?
+    assert_equal "undetermined", child.reload.record_kind
+    assert_equal "standalone_video", @series.reload.record_kind
+  end
+
   private
 
   def create_child(title, rank:)

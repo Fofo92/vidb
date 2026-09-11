@@ -12,10 +12,7 @@ class RecordChildQualification
   end
 
   def call
-    return false unless valid?
-
-    qualify_children
-    true
+    Record.transaction { qualify? }
   rescue ActiveRecord::RecordInvalid => e
     add_record_invalid_error(e)
     false
@@ -23,18 +20,25 @@ class RecordChildQualification
 
   private
 
-  def qualify_children
-    Record.transaction do
-      selected_children.each { |child| child.update!(record_kind: @record_kind) }
-    end
+  def qualify?
+    lock_records_for_qualification
+    @parent.reload
+    return false unless valid?
+
+    qualify_children
+    true
   end
 
-  def add_record_invalid_error(exception)
-    errors.add(
-      :base,
-      "Qualification annulée pour la fiche ##{exception.record.id} : " \
-      "#{exception.record.errors.full_messages.to_sentence}"
+  def lock_records_for_qualification
+    Record.connection.execute(
+      "LOCK TABLE records IN SHARE ROW EXCLUSIVE MODE"
     )
+  end
+
+  def qualify_children
+    selected_children.each do |child|
+      child.update!(record_kind: @record_kind)
+    end
   end
 
   def validate_target_kind
@@ -46,6 +50,14 @@ class RecordChildQualification
     errors.add(
       :record_kind,
       "n’est pas autorisée pour les enfants de cette fiche"
+    )
+  end
+
+  def add_record_invalid_error(exception)
+    errors.add(
+      :base,
+      "Qualification annulée pour la fiche ##{exception.record.id} : " \
+      "#{exception.record.errors.full_messages.to_sentence}"
     )
   end
 
