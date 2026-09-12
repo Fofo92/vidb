@@ -5,6 +5,8 @@ class RecordChildQualification
   validate :validate_child_selection
   validate :validate_children_placements
 
+  attr_reader :child_ids, :record_kind
+
   def initialize(parent:, child_ids:, record_kind:)
     @parent = parent
     @child_ids = child_ids

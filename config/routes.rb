@@ -16,7 +16,7 @@ Rails.application.routes.draw do
              only: %i[edit update]
     resource :child_qualification,
              controller: "record_child_qualifications",
-             only: :edit
+             only: %i[edit update]
     member do
       get :new_child
       post :new_child
