@@ -191,6 +191,30 @@ La fusion de fiches doublonnées et la dissolution d’un niveau intermédiaire 
 La dissolution d’une saison consiste notamment à réaffecter explicitement ses épisodes avant de supprimer la saison devenue vide. Elle ne doit pas être confondue avec le déplacement de toute la
 branche.
 
+### Qualification collective des enfants
+
+La qualification collective permet d’attribuer une même nature à plusieurs enfants directs d’une fiche.
+Elle facilite notamment la qualification des épisodes d’une saison ou des saisons d’une série, sans imposer
+une modification individuelle de chaque fiche.
+
+Cette opération reste explicitement sélective :
+
+- seules les fiches directement rattachées au parent sont proposées ;
+- seules les fiches dont la nature est encore `undetermined` peuvent être sélectionnées ;
+- chaque fiche concernée est choisie explicitement ;
+- les enfants déjà qualifiés sont affichés séparément et restent inchangés ;
+- la nature cible doit être compatible avec celle du parent ;
+- les éventuels enfants des fiches sélectionnées doivent rester compatibles avec la nature cible.
+
+La qualification collective modifie uniquement `record_kind`. Elle ne déplace aucune fiche et ne modifie
+ni les relations hiérarchiques, ni les rangs, ni les titres, ni les autres métadonnées. Elle ne renumérote
+donc jamais les enfants.
+
+L’opération est atomique : soit toutes les fiches sélectionnées sont qualifiées, soit aucune modification
+n’est conservée. Leur admissibilité est vérifiée de nouveau au moment de l’écriture, sous une protection
+contre les modifications concurrentes. Une fiche déplacée, déjà qualifiée ou devenue incompatible entre
+l’affichage du formulaire et sa validation provoque ainsi l’annulation complète de l’opération.
+
 ### Vérification
 
 `is_checked` signifie que les attributs de la fiche ont fait l’objet d’une vérification manuelle, généralement
