@@ -16,14 +16,12 @@ module Tv
 
     def call
       root = parse.root
+      programmes, duplicate_programme_count = read_programmes(root)
 
-      XmltvDocument.new(
-        source_info_name: root["source-info-name"],
-        source_info_url: root["source-info-url"],
-        generator_info_name: root["generator-info-name"],
-        generator_info_url: root["generator-info-url"],
-        channels: read_channels(root),
-        programmes: read_programmes(root)
+      build_document(
+        root,
+        programmes,
+        duplicate_programme_count
       )
     end
 
@@ -48,6 +46,18 @@ module Tv
       File.binread(@path, GZIP_MAGIC.bytesize) == GZIP_MAGIC
     end
 
+    def build_document(root, programmes, duplicate_programme_count)
+      XmltvDocument.new(
+        source_info_name: root["source-info-name"],
+        source_info_url: root["source-info-url"],
+        generator_info_name: root["generator-info-name"],
+        generator_info_url: root["generator-info-url"],
+        channels: read_channels(root),
+        programmes: programmes,
+        duplicate_programme_count: duplicate_programme_count
+      )
+    end
+
     def read_channels(root)
       root.xpath("./channel").to_h do |node|
         channel = XmltvChannel.new(
@@ -60,22 +70,44 @@ module Tv
     end
 
     def read_programmes(root)
-      root.xpath("./programme").map do |node|
-        build_programme(node)
-      end
+      nodes = root.xpath("./programme")
+      unique_nodes = nodes.uniq(&:to_xml)
+
+      [
+        unique_nodes.map { |node| build_programme(node) },
+        nodes.size - unique_nodes.size
+      ]
     end
 
     def build_programme(node)
       XmltvProgramme.new(
         channel_id: node["channel"],
-        starts_at: parse_time(node["start"]),
-        ends_at: parse_time(node["stop"]),
+        **programme_timing(node),
         titles: localized_values(node, "./title"),
         subtitles: localized_values(node, "./sub-title"),
         descriptions: localized_values(node, "./desc"),
         categories: localized_values(node, "./category"),
         episode_numbers: episode_numbers(node)
       )
+    end
+
+    def programme_timing(node)
+      starts_at = parse_time(node["start"])
+      ends_at = parse_time(node["stop"])
+
+      validate_interval!(starts_at, ends_at)
+
+      {
+        starts_at: starts_at,
+        ends_at: ends_at
+      }
+    end
+
+    def validate_interval!(starts_at, ends_at)
+      return if ends_at > starts_at
+
+      raise InvalidDocument,
+            "la fin doit être postérieure au début"
     end
 
     def localized_values(node, xpath)

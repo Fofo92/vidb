@@ -5,6 +5,7 @@ module Tv
     :generator_info_name,
     :generator_info_url,
     :channels,
-    :programmes
+    :programmes,
+    :duplicate_programme_count
   )
 end

@@ -23,6 +23,7 @@ module Tv
         "https://github.com/racacax/XML-TV-Fr",
         @document.generator_info_url
       )
+      assert_equal 1, @document.duplicate_programme_count
     end
 
     test "reads channel metadata" do
@@ -113,6 +114,16 @@ module Tv
 
         assert_match(/document XMLTV invalide/, error.message)
       end
+    end
+
+    test "rejects a programme whose end does not follow its start" do
+      error = assert_raises(XmltvReader::InvalidDocument) do
+        XmltvReader.new(
+          file_fixture("tv/invalid_interval_guide.xml")
+        ).call
+      end
+
+      assert_match(/fin doit être postérieure au début/, error.message)
     end
   end
 end

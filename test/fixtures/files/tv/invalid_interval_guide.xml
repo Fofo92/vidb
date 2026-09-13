@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tv source-info-name="XML TV Fr">
+  <channel id="France2.fr">
+    <display-name lang="fr">France 2</display-name>
+  </channel>
+
+  <programme
+    start="20260913145500 +0200"
+    stop="20260913140500 +0200"
+    channel="France2.fr"
+  >
+    <title lang="fr">Programme aux horaires incohérents</title>
+  </programme>
+</tv>
