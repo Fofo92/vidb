@@ -408,6 +408,7 @@ DEPENDENCIES
   jbuilder
   kaminari
   minitest (< 6)
+  nokogiri
   ostruct
   pg (~> 1.1)
   puma (~> 7.2, >= 7.2.1)

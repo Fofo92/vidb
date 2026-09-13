@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tv
+  source-info-name="XML TV Fr"
+  source-info-url="https://github.com/racacax/XML-TV-Fr"
+  generator-info-name="XML TV Fr"
+  generator-info-url="https://github.com/racacax/XML-TV-Fr"
+>
+  <channel id="France2.fr">
+    <display-name lang="fr">France 2</display-name>
+  </channel>
+
+  <programme
+    start="20260913140500 +0200"
+    stop="20260913145500 +0200"
+    channel="France2.fr"
+  >
+    <title lang="fr">Un si grand soleil</title>
+    <sub-title lang="fr">Épisode du dimanche</sub-title>
+    <desc lang="fr">Résumé de l’épisode.</desc>
+    <category lang="fr">Série dramatique</category>
+    <episode-num system="xmltv_ns">7.42.</episode-num>
+  </programme>
+</tv>

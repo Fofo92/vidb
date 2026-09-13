@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tv>
+  <channel id="France3.fr">
+    <display-name>France 3</display-name>
+  </channel>
+
+  <programme
+    start="20260914000500 +0200"
+    stop="20260914010000 +0200"
+    channel="France3.fr"
+  >
+    <title lang="fr">Programme sans métadonnées facultatives</title>
+  </programme>
+</tv>
