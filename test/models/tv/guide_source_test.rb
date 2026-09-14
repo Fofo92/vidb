@@ -54,6 +54,31 @@ module Tv
       assert GuideSource.exists?(source.id)
     end
 
+    test "exposes its guide imports" do
+      source = build_source
+      source.save!
+
+      guide_import = source.guide_imports.create!(
+        document_sha256: "a" * 64,
+        document_byte_size: 1_024
+      )
+
+      assert_equal [guide_import], source.guide_imports.to_a
+    end
+
+    test "cannot be destroyed while a guide import refers to it" do
+      source = build_source
+      source.save!
+      source.guide_imports.create!(
+        document_sha256: "a" * 64,
+        document_byte_size: 1_024
+      )
+
+      assert_not source.destroy
+      assert source.errors[:base].any?
+      assert GuideSource.exists?(source.id)
+    end
+
     private
 
     def build_source(attributes = {})

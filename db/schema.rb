@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_174602) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_212827) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,6 +100,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_174602) do
     t.index ["guide_source_id"], name: "index_tv_guide_channels_on_guide_source_id"
   end
 
+  create_table "tv_guide_imports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "document_byte_size", null: false
+    t.string "document_sha256", null: false
+    t.bigint "guide_source_id", null: false
+    t.string "status", default: "running", null: false
+    t.datetime "updated_at", null: false
+    t.index ["guide_source_id", "document_sha256"], name: "index_unique_successful_tv_guide_import", unique: true, where: "((status)::text = 'succeeded'::text)"
+    t.index ["guide_source_id"], name: "index_tv_guide_imports_on_guide_source_id"
+    t.check_constraint "document_byte_size >= 0", name: "tv_guide_imports_byte_size_check"
+    t.check_constraint "document_sha256::text ~ '^[0-9A-Fa-f]{64}$'::text", name: "tv_guide_imports_sha256_check"
+    t.check_constraint "status::text = ANY (ARRAY['running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "tv_guide_imports_status_check"
+  end
+
   create_table "tv_guide_sources", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -126,4 +140,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_174602) do
   add_foreign_key "records", "language_versions"
   add_foreign_key "tv_guide_channels", "tv_channels", column: "channel_id"
   add_foreign_key "tv_guide_channels", "tv_guide_sources", column: "guide_source_id"
+  add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
 end
