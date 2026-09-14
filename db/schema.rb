@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_171639) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_174602) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_171639) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "tv_guide_channels", force: :cascade do |t|
+    t.bigint "channel_id"
+    t.datetime "created_at", null: false
+    t.jsonb "display_names", default: [], null: false
+    t.string "external_id", null: false
+    t.bigint "guide_source_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel_id"], name: "index_tv_guide_channels_on_channel_id"
+    t.index ["guide_source_id", "external_id"], name: "index_tv_guide_channels_on_guide_source_id_and_external_id", unique: true
+    t.index ["guide_source_id"], name: "index_tv_guide_channels_on_guide_source_id"
+  end
+
   create_table "tv_guide_sources", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -112,4 +124,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_171639) do
 
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
+  add_foreign_key "tv_guide_channels", "tv_channels", column: "channel_id"
+  add_foreign_key "tv_guide_channels", "tv_guide_sources", column: "guide_source_id"
 end

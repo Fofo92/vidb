@@ -31,6 +31,29 @@ module Tv
       assert duplicate.errors[:name].any?
     end
 
+    test "exposes its external guide channels" do
+      source = build_source
+      source.save!
+
+      guide_channel = source.guide_channels.create!(
+        external_id: "C192.api.telerama.fr"
+      )
+
+      assert_equal [guide_channel], source.guide_channels.to_a
+    end
+
+    test "cannot be destroyed while an external channel refers to it" do
+      source = build_source
+      source.save!
+      source.guide_channels.create!(
+        external_id: "C192.api.telerama.fr"
+      )
+
+      assert_not source.destroy
+      assert source.errors[:base].any?
+      assert GuideSource.exists?(source.id)
+    end
+
     private
 
     def build_source(attributes = {})
