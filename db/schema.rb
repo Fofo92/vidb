@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_08_113405) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_170231) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,6 +79,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_113405) do
     t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
     t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying, 'standalone_video'::character varying, 'series'::character varying, 'season'::character varying, 'episode'::character varying]::text[])", name: "records_record_kind_check"
+  end
+
+  create_table "tv_channels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "display_name", null: false
+    t.boolean "enabled", default: true, null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
