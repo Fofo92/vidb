@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_170231) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_171639) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,6 +86,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_170231) do
     t.string "display_name", null: false
     t.boolean "enabled", default: true, null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "tv_guide_sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "display_name", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "name", null: false
+    t.string "time_zone", default: "Europe/Paris", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_tv_guide_sources_on_name", unique: true
   end
 
   create_table "users", force: :cascade do |t|
