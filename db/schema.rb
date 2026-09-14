@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_212827) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_214204) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,16 +101,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_212827) do
   end
 
   create_table "tv_guide_imports", force: :cascade do |t|
+    t.integer "channel_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.bigint "document_byte_size", null: false
     t.string "document_sha256", null: false
+    t.integer "duplicate_programme_count", default: 0, null: false
+    t.text "error_message"
+    t.datetime "finished_at"
     t.bigint "guide_source_id", null: false
+    t.integer "programme_count", default: 0, null: false
+    t.jsonb "source_metadata", default: {}, null: false
+    t.integer "source_programme_count", default: 0, null: false
+    t.datetime "started_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.string "status", default: "running", null: false
     t.datetime "updated_at", null: false
     t.index ["guide_source_id", "document_sha256"], name: "index_unique_successful_tv_guide_import", unique: true, where: "((status)::text = 'succeeded'::text)"
     t.index ["guide_source_id"], name: "index_tv_guide_imports_on_guide_source_id"
+    t.check_constraint "channel_count >= 0", name: "tv_guide_imports_channel_count_check"
     t.check_constraint "document_byte_size >= 0", name: "tv_guide_imports_byte_size_check"
     t.check_constraint "document_sha256::text ~ '^[0-9A-Fa-f]{64}$'::text", name: "tv_guide_imports_sha256_check"
+    t.check_constraint "duplicate_programme_count >= 0", name: "tv_guide_imports_duplicate_programme_count_check"
+    t.check_constraint "programme_count >= 0", name: "tv_guide_imports_programme_count_check"
+    t.check_constraint "source_programme_count >= 0", name: "tv_guide_imports_source_programme_count_check"
     t.check_constraint "status::text = ANY (ARRAY['running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "tv_guide_imports_status_check"
   end
 

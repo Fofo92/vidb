@@ -7,6 +7,7 @@ module Tv
         name: "xml_tv_fr",
         display_name: "XML TV Fr"
       )
+      @started_at = Time.current
     end
 
     test "requires its guide source" do
@@ -89,9 +90,22 @@ module Tv
         {
           guide_source: @source,
           document_sha256: "a" * 64,
-          document_byte_size: 1_024
-        }.merge(attributes)
+          document_byte_size: 1_024,
+          started_at: @started_at
+        }.merge(status_attributes(attributes[:status]))
+         .merge(attributes)
       )
+    end
+
+    def status_attributes(status)
+      case status
+      when "succeeded"
+        { finished_at: @started_at + 1.second }
+      when "failed"
+        { finished_at: @started_at + 1.second, error_message: "Import impossible" }
+      else
+        {}
+      end
     end
   end
 end
