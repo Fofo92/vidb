@@ -59,7 +59,36 @@ module Tv
       assert_equal [], guide_channel.display_names
     end
 
+    test "exposes its broadcast observations" do
+      guide_channel = build_guide_channel
+      guide_channel.save!
+      observation = create_observation(guide_channel)
+
+      assert_equal(
+        [observation],
+        guide_channel.broadcast_observations.to_a
+      )
+    end
+
+    test "cannot be destroyed while an observation refers to it" do
+      guide_channel = build_guide_channel
+      guide_channel.save!
+      create_observation(guide_channel)
+
+      assert_not guide_channel.destroy
+      assert guide_channel.errors[:base].any?
+      assert GuideChannel.exists?(guide_channel.id)
+    end
+
     private
+
+    def create_observation(guide_channel)
+      guide_channel.broadcast_observations.create!(
+        fingerprint: "a" * 64,
+        starts_at: Time.utc(2026, 9, 15, 20),
+        ends_at: Time.utc(2026, 9, 15, 21)
+      )
+    end
 
     def build_guide_channel(attributes = {})
       GuideChannel.new(

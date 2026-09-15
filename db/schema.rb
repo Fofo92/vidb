@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_214204) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_111833) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,6 +79,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_214204) do
     t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
     t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying, 'standalone_video'::character varying, 'series'::character varying, 'season'::character varying, 'episode'::character varying]::text[])", name: "records_record_kind_check"
+  end
+
+  create_table "tv_broadcast_observations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.timestamptz "ends_at", null: false
+    t.string "fingerprint", null: false
+    t.integer "fingerprint_version", default: 1, null: false
+    t.bigint "guide_channel_id", null: false
+    t.timestamptz "starts_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fingerprint_version", "fingerprint"], name: "index_unique_tv_broadcast_observation_fingerprint", unique: true
+    t.index ["guide_channel_id", "starts_at", "ends_at"], name: "index_tv_broadcast_observations_on_channel_and_time"
+    t.index ["guide_channel_id"], name: "index_tv_broadcast_observations_on_guide_channel_id"
+    t.check_constraint "ends_at > starts_at", name: "tv_broadcast_observations_time_interval_check"
+    t.check_constraint "fingerprint::text ~ '^[0-9A-Fa-f]{64}$'::text", name: "tv_broadcast_observations_fingerprint_check"
+    t.check_constraint "fingerprint_version > 0", name: "tv_broadcast_observations_fingerprint_version_check"
   end
 
   create_table "tv_channels", force: :cascade do |t|
@@ -150,6 +166,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_214204) do
 
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
+  add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"
   add_foreign_key "tv_guide_channels", "tv_channels", column: "channel_id"
   add_foreign_key "tv_guide_channels", "tv_guide_sources", column: "guide_source_id"
   add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
