@@ -1,6 +1,8 @@
 module Tv
   class GuideImport < ApplicationRecord
     belongs_to :guide_source
+    has_many :guide_import_observations, dependent: :restrict_with_error
+    has_many :broadcast_observations, through: :guide_import_observations
 
     enum :status,
          {

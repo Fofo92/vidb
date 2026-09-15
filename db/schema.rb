@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_113118) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_115238) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -128,6 +128,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_113118) do
     t.index ["guide_source_id"], name: "index_tv_guide_channels_on_guide_source_id"
   end
 
+  create_table "tv_guide_import_observations", force: :cascade do |t|
+    t.bigint "broadcast_observation_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "guide_import_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["broadcast_observation_id"], name: "index_tv_guide_import_observations_on_broadcast_observation_id"
+    t.index ["guide_import_id", "broadcast_observation_id"], name: "index_unique_tv_guide_import_observation", unique: true
+    t.index ["guide_import_id"], name: "index_tv_guide_import_observations_on_guide_import_id"
+  end
+
   create_table "tv_guide_imports", force: :cascade do |t|
     t.integer "channel_count", default: 0, null: false
     t.datetime "created_at", null: false
@@ -181,5 +191,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_113118) do
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"
   add_foreign_key "tv_guide_channels", "tv_channels", column: "channel_id"
   add_foreign_key "tv_guide_channels", "tv_guide_sources", column: "guide_source_id"
+  add_foreign_key "tv_guide_import_observations", "tv_broadcast_observations", column: "broadcast_observation_id"
+  add_foreign_key "tv_guide_import_observations", "tv_guide_imports", column: "guide_import_id"
   add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
 end

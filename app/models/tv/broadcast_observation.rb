@@ -1,6 +1,8 @@
 module Tv
   class BroadcastObservation < ApplicationRecord
     belongs_to :guide_channel
+    has_many :guide_import_observations, dependent: :restrict_with_error
+    has_many :guide_imports, through: :guide_import_observations
 
     validates :fingerprint,
               presence: true,
