@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_115238) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_115932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -128,6 +128,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_115238) do
     t.index ["guide_source_id"], name: "index_tv_guide_channels_on_guide_source_id"
   end
 
+  create_table "tv_guide_import_channels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "display_names", default: [], null: false
+    t.timestamptz "first_starts_at"
+    t.integer "gap_count", default: 0, null: false
+    t.jsonb "gaps", default: [], null: false
+    t.bigint "guide_channel_id", null: false
+    t.bigint "guide_import_id", null: false
+    t.timestamptz "last_ends_at"
+    t.integer "programme_count", default: 0, null: false
+    t.bigint "total_gap_duration_seconds", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["guide_channel_id"], name: "index_tv_guide_import_channels_on_guide_channel_id"
+    t.index ["guide_import_id", "guide_channel_id"], name: "index_unique_tv_guide_import_channel", unique: true
+    t.index ["guide_import_id"], name: "index_tv_guide_import_channels_on_guide_import_id"
+    t.check_constraint "gap_count = jsonb_array_length(gaps)", name: "tv_guide_import_channels_gap_count_matches_gaps_check"
+    t.check_constraint "gap_count > 0 OR total_gap_duration_seconds = 0", name: "tv_guide_import_channels_empty_gap_duration_check"
+    t.check_constraint "gap_count >= 0", name: "tv_guide_import_channels_gap_count_check"
+    t.check_constraint "jsonb_typeof(display_names) = 'array'::text", name: "tv_guide_import_channels_display_names_array_check"
+    t.check_constraint "jsonb_typeof(gaps) = 'array'::text", name: "tv_guide_import_channels_gaps_array_check"
+    t.check_constraint "programme_count = 0 AND first_starts_at IS NULL AND last_ends_at IS NULL OR programme_count > 0 AND first_starts_at IS NOT NULL AND last_ends_at IS NOT NULL AND last_ends_at > first_starts_at", name: "tv_guide_import_channels_coverage_interval_check"
+    t.check_constraint "programme_count >= 0", name: "tv_guide_import_channels_programme_count_check"
+    t.check_constraint "total_gap_duration_seconds >= 0", name: "tv_guide_import_channels_total_gap_duration_seconds_check"
+  end
+
   create_table "tv_guide_import_observations", force: :cascade do |t|
     t.bigint "broadcast_observation_id", null: false
     t.datetime "created_at", null: false
@@ -191,6 +216,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_115238) do
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"
   add_foreign_key "tv_guide_channels", "tv_channels", column: "channel_id"
   add_foreign_key "tv_guide_channels", "tv_guide_sources", column: "guide_source_id"
+  add_foreign_key "tv_guide_import_channels", "tv_guide_channels", column: "guide_channel_id"
+  add_foreign_key "tv_guide_import_channels", "tv_guide_imports", column: "guide_import_id"
   add_foreign_key "tv_guide_import_observations", "tv_broadcast_observations", column: "broadcast_observation_id"
   add_foreign_key "tv_guide_import_observations", "tv_guide_imports", column: "guide_import_id"
   add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
