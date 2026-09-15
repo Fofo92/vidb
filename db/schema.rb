@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_111833) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_113118) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,12 +82,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_111833) do
   end
 
   create_table "tv_broadcast_observations", force: :cascade do |t|
+    t.jsonb "categories", default: [], null: false
     t.datetime "created_at", null: false
+    t.jsonb "descriptions", default: [], null: false
     t.timestamptz "ends_at", null: false
+    t.jsonb "episode_numbers", default: [], null: false
     t.string "fingerprint", null: false
     t.integer "fingerprint_version", default: 1, null: false
     t.bigint "guide_channel_id", null: false
+    t.string "source_start"
+    t.string "source_stop"
     t.timestamptz "starts_at", null: false
+    t.jsonb "subtitles", default: [], null: false
+    t.jsonb "titles", default: [], null: false
     t.datetime "updated_at", null: false
     t.index ["fingerprint_version", "fingerprint"], name: "index_unique_tv_broadcast_observation_fingerprint", unique: true
     t.index ["guide_channel_id", "starts_at", "ends_at"], name: "index_tv_broadcast_observations_on_channel_and_time"
@@ -95,6 +102,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_111833) do
     t.check_constraint "ends_at > starts_at", name: "tv_broadcast_observations_time_interval_check"
     t.check_constraint "fingerprint::text ~ '^[0-9A-Fa-f]{64}$'::text", name: "tv_broadcast_observations_fingerprint_check"
     t.check_constraint "fingerprint_version > 0", name: "tv_broadcast_observations_fingerprint_version_check"
+    t.check_constraint "jsonb_typeof(categories) = 'array'::text", name: "tv_broadcast_observations_categories_array_check"
+    t.check_constraint "jsonb_typeof(descriptions) = 'array'::text", name: "tv_broadcast_observations_descriptions_array_check"
+    t.check_constraint "jsonb_typeof(episode_numbers) = 'array'::text", name: "tv_broadcast_observations_episode_numbers_array_check"
+    t.check_constraint "jsonb_typeof(subtitles) = 'array'::text", name: "tv_broadcast_observations_subtitles_array_check"
+    t.check_constraint "jsonb_typeof(titles) = 'array'::text", name: "tv_broadcast_observations_titles_array_check"
   end
 
   create_table "tv_channels", force: :cascade do |t|
