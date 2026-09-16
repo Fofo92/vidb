@@ -92,15 +92,17 @@ module Tv
     end
 
     def programme_timing(node)
-      starts_at = parse_time(node["start"])
-      ends_at = parse_time(node["stop"])
+      source_start = node["start"]
+      source_stop = node["stop"]
+      starts_at = parse_time(source_start)
+      ends_at = parse_time(source_stop)
 
       validate_interval!(starts_at, ends_at)
 
-      {
-        starts_at: starts_at,
-        ends_at: ends_at
-      }
+      { starts_at: starts_at,
+        ends_at: ends_at,
+        source_start: source_start,
+        source_stop: source_stop }
     end
 
     def validate_interval!(starts_at, ends_at)

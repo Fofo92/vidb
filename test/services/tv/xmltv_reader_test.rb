@@ -44,6 +44,14 @@ module Tv
         Time.new(2026, 9, 13, 14, 55, 0, "+02:00"),
         @programme.ends_at
       )
+      assert_equal(
+        "20260913140500 +0200",
+        @programme.source_start
+      )
+      assert_equal(
+        "20260913145500 +0200",
+        @programme.source_stop
+      )
     end
 
     test "reads programme metadata" do

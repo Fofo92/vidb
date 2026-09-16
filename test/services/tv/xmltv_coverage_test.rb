@@ -40,11 +40,10 @@ module Tv
         channel_id: channel_id,
         starts_at: starts_at,
         ends_at: ends_at,
-        titles: [],
-        subtitles: [],
-        descriptions: [],
-        categories: [],
-        episode_numbers: []
+        source_start: starts_at.strftime("%Y%m%d%H%M%S %z"),
+        source_stop: ends_at.strftime("%Y%m%d%H%M%S %z"),
+        titles: [], subtitles: [], descriptions: [],
+        categories: [], episode_numbers: []
       )
     end
 
