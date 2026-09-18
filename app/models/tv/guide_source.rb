@@ -5,5 +5,11 @@ module Tv
 
     validates :name, presence: true, uniqueness: true
     validates :display_name, :time_zone, presence: true
+
+    def latest_successful_import
+      guide_imports.status_succeeded
+                   .order(started_at: :desc, id: :desc)
+                   .first
+    end
   end
 end
