@@ -1,0 +1,132 @@
+require "test_helper"
+
+class TvGuidesControllerTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+
+  setup do
+    user = User.create!(
+      email: "test@example.com",
+      password: "password"
+    )
+    sign_in user
+
+    @guide_source = Tv::GuideSource.create!(
+      name: "xml_tv_fr_test",
+      display_name: "XML TV Fr"
+    )
+  end
+
+  test "displays the selected Paris calendar day" do
+    get tv_guide_url, params: {
+      date: "2026-09-18",
+      guide_source_id: @guide_source.id
+    }
+
+    assert_response :success
+    assert_select "h1", text: /Programmes TV/
+    assert_select(
+      "form[action='#{tv_guide_path}'][method='get']"
+    )
+    assert_select(
+      "input[name='date'][value='2026-09-18']"
+    )
+    assert_select(
+      "[data-tv-guide-day='2026-09-18']"
+    )
+    assert_select "[data-tv-guide-programme]", count: 0
+  end
+
+  test "groups programmes by channel with Paris times" do
+    guide_import = create_successful_import
+    channel = @guide_source.guide_channels.create!(
+      external_id: "France2.fr",
+      display_names: [{ "value" => "France 2", "language" => "fr" }]
+    )
+    programme = create_programme(
+      guide_import, channel,
+      title: "Un si grand soleil",
+      starts_at: "2026-09-18T20:55:00+02:00",
+      ends_at: "2026-09-18T22:30:00+02:00"
+    )
+
+    get tv_guide_url, params: { date: "2026-09-18", guide_source_id: @guide_source.id }
+
+    assert_response :success
+
+    assert_select(
+      "[data-tv-guide-channel='France2.fr']"
+    ) do
+      assert_select "h2", text: "France 2"
+
+      assert_select(
+        "[data-tv-guide-programme='#{programme.id}']"
+      ) do
+        assert_select "[data-tv-guide-start]", text: "20:55"
+        assert_select "[data-tv-guide-end]", text: "22:30"
+        assert_select("[data-tv-guide-title]", text: "Un si grand soleil")
+      end
+    end
+  end
+
+  test "defaults to the first enabled source and the current Paris day" do
+    travel_to Time.utc(2026, 9, 18, 10) do
+      get tv_guide_url
+    end
+
+    assert_response :success
+    assert_select "[data-tv-guide-day='2026-09-18']"
+    assert_select(
+      "input[name='guide_source_id']" \
+      "[value='#{@guide_source.id}']"
+    )
+  end
+
+    test "offers the TV guide in the main navigation" do
+      get tv_guide_url
+
+      assert_response :success
+      assert_select(
+        "a[href='#{tv_guide_path}']",
+        text: "Programmes TV"
+      )
+    end
+
+  test "explains when no enabled guide source is available" do
+    @guide_source.destroy!
+
+    get tv_guide_url
+
+    assert_response :success
+    assert_select(
+      "[data-tv-guide-unavailable]",
+      text: /Aucune source de programmes TV/
+    )
+    assert_select "form[action='#{tv_guide_path}']", count: 0
+    assert_select "[data-tv-guide-programme]", count: 0
+  end
+
+  private
+
+  def create_successful_import
+    @guide_source.guide_imports.create!(
+      document_sha256: "a" * 64,
+      document_byte_size: 100,
+      status: "succeeded",
+      started_at: Time.utc(2026, 9, 18, 8),
+      finished_at: Time.utc(2026, 9, 18, 8, 1)
+    )
+  end
+
+  def create_programme(guide_import, channel, title:, starts_at:, ends_at:)
+    programme = channel.broadcast_observations.create!(
+      fingerprint: "b" * 64, starts_at: starts_at, ends_at: ends_at,
+      titles: [{ "value" => title, "language" => "fr" }]
+    )
+
+    guide_import.guide_import_observations.create!(
+      broadcast_observation: programme
+    )
+
+    programme
+  end
+end

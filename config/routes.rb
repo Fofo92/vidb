@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   resources :genders, except: :show
   resources :language_versions, except: :show
+  resource :tv_guide, only: :show
   resources :records do
     resource :hierarchy_placement,
              controller: "record_hierarchy_placements",

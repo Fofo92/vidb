@@ -1,0 +1,56 @@
+<h1>Programmes TV</h1>
+
+<% if @guide_source %>
+  <%= form_with(
+    url: tv_guide_path,
+    method: :get
+  ) do %>
+    <%= hidden_field_tag :guide_source_id, @guide_source.id %>
+
+    <%= label_tag :date, "Journée" %>
+    <%= date_field_tag :date, @date.iso8601 %>
+
+    <%= submit_tag "Afficher", class: "btn btn-primary" %>
+  <% end %>
+
+  <section data-tv-guide-day="<%= @date.iso8601 %>">
+    <% if @programmes_by_channel.empty? %>
+      <p>Aucun programme disponible pour cette journée.</p>
+    <% else %>
+      <% @programmes_by_channel.each do |channel, programmes| %>
+        <section data-tv-guide-channel="<%= channel.external_id %>">
+          <h2>
+            <%= channel.display_names.first&.fetch("value", nil) ||
+                  channel.external_id %>
+          </h2>
+
+          <ul>
+            <% programmes.each do |programme| %>
+              <li data-tv-guide-programme="<%= programme.id %>">
+                <time data-tv-guide-start>
+                  <%= programme.starts_at
+                               .in_time_zone("Europe/Paris")
+                               .strftime("%H:%M") %>
+                </time>
+                –
+                <time data-tv-guide-end>
+                  <%= programme.ends_at
+                               .in_time_zone("Europe/Paris")
+                               .strftime("%H:%M") %>
+                </time>
+
+                <strong data-tv-guide-title>
+                  <%= programme.titles.first&.fetch("value", nil) %>
+                </strong>
+              </li>
+            <% end %>
+          </ul>
+        </section>
+      <% end %>
+    <% end %>
+  </section>
+<% else %>
+  <p class="alert alert-warning" data-tv-guide-unavailable>
+    Aucune source de programmes TV n’est actuellement disponible.
+  </p>
+<% end %>
