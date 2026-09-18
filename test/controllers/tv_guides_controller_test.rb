@@ -81,15 +81,15 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-    test "offers the TV guide in the main navigation" do
-      get tv_guide_url
+  test "offers the TV guide in the main navigation" do
+    get tv_guide_url
 
-      assert_response :success
-      assert_select(
-        "a[href='#{tv_guide_path}']",
-        text: "Programmes TV"
-      )
-    end
+    assert_response :success
+    assert_select(
+      "a[href='#{tv_guide_path}']",
+      text: "Programmes TV"
+    )
+  end
 
   test "explains when no enabled guide source is available" do
     @guide_source.destroy!
@@ -105,7 +105,66 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-tv-guide-programme]", count: 0
   end
 
+  test "displays the available editorial programme metadata" do
+    guide_import = create_successful_import
+    channel = @guide_source.guide_channels.create!(
+      external_id: "France2.fr",
+      display_names: [
+        { "value" => "France 2", "language" => "fr" }
+      ]
+    )
+    programme = create_programme(
+      guide_import,
+      channel,
+      title: "Un si grand soleil",
+      starts_at: "2026-09-18T20:55:00+02:00",
+      ends_at: "2026-09-18T22:30:00+02:00"
+    )
+
+    add_editorial_metadata(programme)
+
+    get tv_guide_url, params: {
+      date: "2026-09-18",
+      guide_source_id: @guide_source.id
+    }
+
+    assert_response :success
+    assert_editorial_metadata(programme)
+  end
+
   private
+
+  def add_editorial_metadata(programme)
+    programme.update!(
+      titles: [metadata("Un si grand soleil"), metadata("Chronicles of the Sun", "en")],
+      subtitles: [metadata("Épisode du dimanche")], descriptions: [metadata("Résumé de l’épisode.")],
+      categories: [metadata("Série dramatique")], episode_numbers: [{ "value" => "7.42.", "system" => "xmltv_ns" }]
+    )
+  end
+
+  def metadata(value, language = "fr")
+    { "value" => value, "language" => language }
+  end
+
+  def assert_editorial_metadata(programme)
+    assert_select(
+      "[data-tv-guide-programme='#{programme.id}']"
+    ) do
+      editorial_expectations.each do |selector, text|
+        assert_select selector, text: text
+      end
+    end
+  end
+
+  def editorial_expectations
+    {
+      "[data-tv-guide-original-title]" => /Chronicles of the Sun/,
+      "[data-tv-guide-episode]" => /Saison 8.*épisode 43/i,
+      "[data-tv-guide-subtitle]" => "Épisode du dimanche",
+      "[data-tv-guide-category]" => "Série dramatique",
+      "[data-tv-guide-description]" => "Résumé de l’épisode."
+    }
+  end
 
   def create_successful_import
     @guide_source.guide_imports.create!(

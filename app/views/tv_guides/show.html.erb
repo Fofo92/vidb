@@ -40,8 +40,39 @@
                 </time>
 
                 <strong data-tv-guide-title>
-                  <%= programme.titles.first&.fetch("value", nil) %>
+                  <%= tv_programme_title(programme) %>
                 </strong>
+
+                <% if (original_title = tv_programme_original_title(programme)) %>
+                  <div data-tv-guide-original-title>
+                    Titre original ou alternatif :
+                    <%= original_title %>
+                  </div>
+                <% end %>
+
+                <% if (episode = tv_programme_episode(programme)) %>
+                  <div data-tv-guide-episode>
+                    <%= episode %>
+                  </div>
+                <% end %>
+
+                <% if (subtitle = tv_programme_subtitle(programme)) %>
+                  <div data-tv-guide-subtitle>
+                    <%= subtitle %>
+                  </div>
+                <% end %>
+
+                <% if (category = tv_programme_category(programme)) %>
+                  <div data-tv-guide-category>
+                    <%= category %>
+                  </div>
+                <% end %>
+
+                <% if (description = tv_programme_description(programme)) %>
+                  <p data-tv-guide-description>
+                    <%= description %>
+                  </p>
+                <% end %>
               </li>
             <% end %>
           </ul>
