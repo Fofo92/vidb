@@ -19,10 +19,18 @@ class TvGuidesController < ApplicationController
   def programmes_by_channel
     return {} unless @guide_source
 
+    grouped_programmes
+      .select { |channel, _| channel.channel&.enabled? }
+      .sort_by { |channel, _| channel.channel.logical_number }
+      .to_h
+  end
+
+  def grouped_programmes
     Tv::DailyGuide.new(
       guide_source: @guide_source,
       date: @date
-    ).call.includes(:guide_channel).group_by(&:guide_channel)
+    ).call.includes(guide_channel: :channel)
+                  .group_by(&:guide_channel)
   end
 
   def selected_date

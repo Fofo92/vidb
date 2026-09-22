@@ -14,6 +14,11 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
       name: "xml_tv_fr_test",
       display_name: "XML TV Fr"
     )
+
+    @france_two = Tv::Channel.create!(
+      display_name: "France 2",
+      logical_number: 2
+    )
   end
 
   test "displays the selected Paris calendar day" do
@@ -38,10 +43,7 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
 
   test "groups programmes by channel with Paris times" do
     guide_import = create_successful_import
-    channel = @guide_source.guide_channels.create!(
-      external_id: "France2.fr",
-      display_names: [{ "value" => "France 2", "language" => "fr" }]
-    )
+    channel = create_france_two_guide_channel
     programme = create_programme(
       guide_import, channel,
       title: "Un si grand soleil",
@@ -83,7 +85,6 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
 
   test "offers the TV guide in the main navigation" do
     get tv_guide_url
-
     assert_response :success
     assert_select(
       "a[href='#{tv_guide_path}']",
@@ -95,7 +96,6 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
     @guide_source.destroy!
 
     get tv_guide_url
-
     assert_response :success
     assert_select(
       "[data-tv-guide-unavailable]",
@@ -107,12 +107,7 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
 
   test "displays the available editorial programme metadata" do
     guide_import = create_successful_import
-    channel = @guide_source.guide_channels.create!(
-      external_id: "France2.fr",
-      display_names: [
-        { "value" => "France 2", "language" => "fr" }
-      ]
-    )
+    channel = create_france_two_guide_channel
     programme = create_programme(
       guide_import,
       channel,
@@ -122,17 +117,20 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
     )
 
     add_editorial_metadata(programme)
-
-    get tv_guide_url, params: {
-      date: "2026-09-18",
-      guide_source_id: @guide_source.id
-    }
-
+    get tv_guide_url, params: { date: "2026-09-18", guide_source_id: @guide_source.id }
     assert_response :success
     assert_editorial_metadata(programme)
   end
 
   private
+
+  def create_france_two_guide_channel
+    @guide_source.guide_channels.create!(
+      external_id: "France2.fr",
+      channel: @france_two,
+      display_names: [metadata("France 2")]
+    )
+  end
 
   def add_editorial_metadata(programme)
     programme.update!(
@@ -178,7 +176,9 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
 
   def create_programme(guide_import, channel, title:, starts_at:, ends_at:)
     programme = channel.broadcast_observations.create!(
-      fingerprint: "b" * 64, starts_at: starts_at, ends_at: ends_at,
+      fingerprint: "b" * 64,
+      starts_at: starts_at,
+      ends_at: ends_at,
       titles: [{ "value" => title, "language" => "fr" }]
     )
 
