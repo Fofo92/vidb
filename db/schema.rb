@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_115932) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_114601) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -113,7 +113,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_115932) do
     t.datetime "created_at", null: false
     t.string "display_name", null: false
     t.boolean "enabled", default: true, null: false
+    t.integer "logical_number"
     t.datetime "updated_at", null: false
+    t.index ["logical_number"], name: "index_tv_channels_on_logical_number", unique: true
+    t.check_constraint "logical_number > 0", name: "tv_channels_logical_number_positive_check"
   end
 
   create_table "tv_guide_channels", force: :cascade do |t|

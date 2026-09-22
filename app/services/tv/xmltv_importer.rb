@@ -12,13 +12,23 @@ module Tv
     end
 
     def call
-      successful_import || import_document(XmltvReader.new(@path).call)
+      guide_import = successful_import
+      return synchronize_existing_channels(guide_import) if guide_import
+
+      import_document(XmltvReader.new(@path).call)
     rescue StandardError => e
-      XmltvImportFailureRecorder.new(@guide_source, @document_sha256, @document_byte_size, e).call
+      XmltvImportFailureRecorder.new(
+        @guide_source, @document_sha256, @document_byte_size, e
+      ).call
       raise
     end
 
     private
+
+    def synchronize_existing_channels(guide_import)
+      ChannelCatalogSynchronizer.new(@guide_source).call
+      guide_import
+    end
 
     def successful_import
       @guide_source.guide_imports.status_succeeded.find_by(
@@ -34,6 +44,13 @@ module Tv
       end
     end
 
+    def persist_guide_channels(document)
+      XmltvImportChannelPersister.new(
+        guide_source: @guide_source,
+        channels: document.channels
+      ).call
+    end
+
     def persist_import_data(guide_import, document, guide_channels)
       persist_channel_coverages(guide_import, document, guide_channels)
       persist_observations(guide_import, document, guide_channels)
@@ -47,25 +64,6 @@ module Tv
         **document_results(document),
         source_metadata: source_metadata(document)
       )
-    end
-
-    def persist_guide_channels(document)
-      document.channels.transform_values do |channel|
-        persist_guide_channel(channel.external_id, channel)
-      end
-    end
-
-    def persist_guide_channel(external_id, channel)
-      guide_channel = @guide_source.guide_channels
-                                   .find_or_initialize_by(
-                                     external_id: external_id
-                                   )
-      display_names = stringify_entries(channel.display_names)
-
-      guide_channel.display_names =
-        (guide_channel.display_names + display_names).uniq
-      guide_channel.save!
-      guide_channel
     end
 
     def persist_channel_coverages(guide_import, document, guide_channels)

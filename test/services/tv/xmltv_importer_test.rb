@@ -32,6 +32,9 @@ module Tv
       guide_channel = @source.guide_channels.find_by!(
         external_id: "France3.fr"
       )
+      assert_equal 3, guide_channel.channel.logical_number
+      assert_equal "France 3", guide_channel.channel.display_name
+
       coverage = @guide_import.guide_import_channels.find_by!(
         guide_channel: guide_channel
       )
