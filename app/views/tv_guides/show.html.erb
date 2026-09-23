@@ -10,6 +10,19 @@
     <%= label_tag :date, "Journée" %>
     <%= date_field_tag :date, @date.iso8601 %>
 
+    <%= label_tag :zoom, "Échelle" %>
+    <%= select_tag(
+      :zoom,
+      options_for_select(
+        [
+          ["Compacte", 1],
+          ["Lisible", 2],
+          ["Détaillée", 4]
+        ],
+        @minute_height
+      )
+    ) %>
+
     <%= submit_tag "Afficher", class: "btn btn-primary" %>
   <% end %>
 
@@ -17,67 +30,165 @@
     <% if @programmes_by_channel.empty? %>
       <p>Aucun programme disponible pour cette journée.</p>
     <% else %>
-      <% @programmes_by_channel.each do |channel, programmes| %>
-        <section data-tv-guide-channel="<%= channel.external_id %>">
-          <h2>
-            <%= channel.display_names.first&.fetch("value", nil) ||
-                  channel.external_id %>
-          </h2>
+      <% reference_timeline = @timelines_by_channel.values.first %>
+      <% projected_height = @timeline_projection.position_for(reference_timeline.duration_minutes) %>
 
-          <ul>
-            <% programmes.each do |programme| %>
-              <li data-tv-guide-programme="<%= programme.id %>">
-                <time data-tv-guide-start>
-                  <%= programme.starts_at
-                               .in_time_zone("Europe/Paris")
-                               .strftime("%H:%M") %>
+      <div class="tv-guide-scroll">
+        <div
+          class="tv-guide-grid"
+          data-tv-guide-grid
+          data-tv-guide-minute-height="<%= @minute_height %>"
+          data-tv-guide-height-pixels="<%= projected_height %>"
+          style="
+            --tv-day-minutes:
+              <%= reference_timeline.duration_minutes %>;
+            --tv-minute-height: <%= @minute_height %>px;
+            --tv-day-height: <%= projected_height %>px;
+          "
+        >
+          <aside
+            class="tv-guide-time-axis"
+            data-tv-guide-time-axis
+          >
+            <div class="tv-guide-column-heading">Heure</div>
+
+            <div class="tv-guide-time-axis-body">
+              <% reference_timeline.ticks.each do |tick| %>
+                <% tick_top =
+                    @timeline_projection.position_for(tick.minute) %>
+                <time
+                  data-tv-guide-time-tick
+                  data-tv-guide-minute="<%= tick.minute %>"
+                  data-tv-guide-top-pixels="<%= tick_top %>"
+                  style="
+                    --tv-tick-minute: <%= tick.minute %>;
+                    --tv-tick-top: <%= tick_top %>px;
+                  "
+                >
+                  <%= tick.label %>
                 </time>
-                –
-                <time data-tv-guide-end>
-                  <%= programme.ends_at
-                               .in_time_zone("Europe/Paris")
-                               .strftime("%H:%M") %>
-                </time>
+              <% end %>
+            </div>
+          </aside>
 
-                <strong data-tv-guide-title>
-                  <%= tv_programme_title(programme) %>
-                </strong>
-
-                <% if (original_title = tv_programme_original_title(programme)) %>
-                  <div data-tv-guide-original-title>
-                    Titre original ou alternatif :
-                    <%= original_title %>
-                  </div>
+          <% @timelines_by_channel.each do |guide_channel, timeline| %>
+            <section
+              class="tv-guide-channel"
+              data-tv-guide-channel="<%= guide_channel.external_id %>"
+              data-tv-guide-timeline
+              data-tv-guide-duration-minutes="<%= timeline.duration_minutes %>"
+            >
+              <h2 class="tv-guide-column-heading">
+                <span class="badge text-bg-secondary">
+                  <%= guide_channel.channel.logical_number %>
+                </span>
+                <span data-tv-guide-channel-name>
+                  <%= guide_channel.channel.display_name %>
+                </span>
+              </h2>
+              <ol class="tv-guide-timeline">
+                <% timeline.ticks.each do |tick| %>
+                  <% tick_top =
+                      @timeline_projection.position_for(tick.minute) %>
+                  <li
+                    class="tv-guide-hour-line"
+                    data-tv-guide-hour-line
+                    data-tv-guide-minute="<%= tick.minute %>"
+                    data-tv-guide-top-pixels="<%= tick_top %>"
+                    aria-hidden="true"
+                    role="presentation"
+                    style="--tv-tick-top: <%= tick_top %>px;"
+                  ></li>
                 <% end %>
+                <% timeline.items.each do |item| %>
+                  <% programme = item.programme %>
+                  <% top_pixels =
+                      @timeline_projection.position_for(item.start_minute) %>
+                  <% height_pixels =
+                      @timeline_projection.height_between(
+                        item.start_minute,
+                        item.start_minute + item.duration_minutes
+                      ) %>
+                  <% single_line =
+                      height_pixels == @minimum_programme_height %>
+                  <li
+                    class="
+                      tv-guide-programme
+                      <%= "tv-guide-programme--single-line" if single_line %>
+                    "
+                    data-tv-guide-programme="<%= programme.id %>"
+                    tabindex="0"
+                    data-tv-guide-start-minute="<%= item.start_minute %>"
+                    data-tv-guide-duration-minutes="<%= item.duration_minutes %>"
+                    data-tv-guide-top-pixels="<%= top_pixels %>"
+                    data-tv-guide-height-pixels="<%= height_pixels %>"
+                    data-tv-guide-single-line="<%= single_line %>"
+                    style="
+                      --tv-start-minute: <%= item.start_minute %>;
+                      --tv-duration-minutes: <%= item.duration_minutes %>;
+                      --tv-top-pixels: <%= top_pixels %>px;
+                      --tv-height-pixels: <%= height_pixels %>px;
+                    "
+                  >
+                    <div class="tv-guide-programme-times">
+                      <time data-tv-guide-start>
+                        <%= programme.starts_at
+                                    .in_time_zone("Europe/Paris")
+                                    .strftime("%H:%M") %>
+                      </time>
+                      –
+                      <time data-tv-guide-end>
+                        <%= programme.ends_at
+                                    .in_time_zone("Europe/Paris")
+                                    .strftime("%H:%M") %>
+                      </time>
+                    </div>
 
-                <% if (episode = tv_programme_episode(programme)) %>
-                  <div data-tv-guide-episode>
-                    <%= episode %>
-                  </div>
-                <% end %>
+                    <strong data-tv-guide-title>
+                      <%= tv_programme_title(programme) %>
+                    </strong>
 
-                <% if (subtitle = tv_programme_subtitle(programme)) %>
-                  <div data-tv-guide-subtitle>
-                    <%= subtitle %>
-                  </div>
-                <% end %>
+                    <% if (episode = tv_programme_episode(programme)) %>
+                      <div data-tv-guide-episode>
+                        <%= episode %>
+                      </div>
+                    <% end %>
 
-                <% if (category = tv_programme_category(programme)) %>
-                  <div data-tv-guide-category>
-                    <%= category %>
-                  </div>
-                <% end %>
+                    <% if (subtitle = tv_programme_subtitle(programme)) %>
+                      <div data-tv-guide-subtitle>
+                        <%= subtitle %>
+                      </div>
+                    <% end %>
 
-                <% if (description = tv_programme_description(programme)) %>
-                  <p data-tv-guide-description>
-                    <%= description %>
-                  </p>
+
+                    <div data-tv-guide-secondary>
+                      <% if (original_title = tv_programme_original_title(programme)) %>
+                        <div data-tv-guide-original-title>
+                          Titre original ou alternatif :
+                          <%= original_title %>
+                        </div>
+                      <% end %>
+
+                      <% if (category = tv_programme_category(programme)) %>
+                        <div data-tv-guide-category>
+                          <%= category %>
+                        </div>
+                      <% end %>
+
+                      <% if (description = tv_programme_description(programme)) %>
+                        <p data-tv-guide-description>
+                          <%= description %>
+                        </p>
+                      <% end %>
+
+                    </div>
+                  </li>
                 <% end %>
-              </li>
-            <% end %>
-          </ul>
-        </section>
-      <% end %>
+              </ol>
+            </section>
+          <% end %>
+        </div>
+      </div>
     <% end %>
   </section>
 <% else %>

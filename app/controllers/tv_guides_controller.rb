@@ -1,11 +1,50 @@
 class TvGuidesController < ApplicationController
+  MINUTE_HEIGHTS = [1, 2, 4].freeze
+  DEFAULT_MINUTE_HEIGHT = 2
+  MINIMUM_PROGRAMME_HEIGHT = 24
+
   def show
     @guide_source = selected_guide_source
     @date = selected_date
+    @minute_height = selected_minute_height
     @programmes_by_channel = programmes_by_channel
+    @timelines_by_channel = timelines_by_channel
+    @minimum_programme_height = MINIMUM_PROGRAMME_HEIGHT
+    @timeline_projection = timeline_projection
   end
 
   private
+
+  def timeline_projection
+    timeline = @timelines_by_channel.values.first
+    return unless timeline
+
+    Tv::DailyGuideProjection.new(
+      duration_minutes: timeline.duration_minutes,
+      programme_ranges: programme_ranges,
+      pixels_per_minute: @minute_height,
+      minimum_programme_height: MINIMUM_PROGRAMME_HEIGHT
+    )
+  end
+
+  def programme_ranges
+    @timelines_by_channel.values.flat_map do |timeline|
+      timeline.items.map do |item|
+        [
+          item.start_minute,
+          item.start_minute + item.duration_minutes
+        ]
+      end
+    end
+  end
+
+  def selected_minute_height
+    requested_height = params[:zoom].to_i
+
+    return requested_height if MINUTE_HEIGHTS.include?(requested_height)
+
+    DEFAULT_MINUTE_HEIGHT
+  end
 
   def selected_guide_source
     enabled_sources = Tv::GuideSource.where(enabled: true).order(:id)
@@ -23,6 +62,15 @@ class TvGuidesController < ApplicationController
       .select { |channel, _| channel.channel&.enabled? }
       .sort_by { |channel, _| channel.channel.logical_number }
       .to_h
+  end
+
+  def timelines_by_channel
+    @programmes_by_channel.transform_values do |programmes|
+      Tv::DailyGuideTimeline.new(
+        date: @date,
+        programmes: programmes
+      ).call
+    end
   end
 
   def grouped_programmes

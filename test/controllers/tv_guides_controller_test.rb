@@ -58,7 +58,10 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
     assert_select(
       "[data-tv-guide-channel='France2.fr']"
     ) do
-      assert_select "h2", text: "France 2"
+      assert_select(
+        "[data-tv-guide-channel-name]",
+        text: "France 2"
+      )
 
       assert_select(
         "[data-tv-guide-programme='#{programme.id}']"
@@ -146,7 +149,8 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
 
   def assert_editorial_metadata(programme)
     assert_select(
-      "[data-tv-guide-programme='#{programme.id}']"
+      "[data-tv-guide-programme='#{programme.id}']" \
+      "[tabindex='0']"
     ) do
       editorial_expectations.each do |selector, text|
         assert_select selector, text: text
@@ -160,6 +164,7 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
       "[data-tv-guide-episode]" => /Saison 8.*épisode 43/i,
       "[data-tv-guide-subtitle]" => "Épisode du dimanche",
       "[data-tv-guide-category]" => "Série dramatique",
+      "[data-tv-guide-secondary] " \
       "[data-tv-guide-description]" => "Résumé de l’épisode."
     }
   end

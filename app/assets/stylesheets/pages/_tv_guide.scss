@@ -1,0 +1,187 @@
+.tv-guide-scroll {
+  max-height: calc(100vh - 12rem);
+  overflow: auto;
+  border: 1px solid $gray-300;
+  background: $white;
+}
+
+.tv-guide-grid {
+  --tv-minute-height: 1px;
+
+  display: grid;
+  grid-template-columns: 3.5rem;
+  grid-auto-columns: minmax(10.5rem, 12rem);
+  grid-auto-flow: column;
+  width: max-content;
+  min-width: 100%;
+}
+
+.tv-guide-column-heading {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  min-height: 3.5rem;
+  margin: 0;
+  padding: 0.375rem;
+  border-bottom: 1px solid $gray-400;
+  background: $white;
+  font-size: 0.875rem;
+}
+
+.tv-guide-time-axis {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: $white;
+}
+
+.tv-guide-time-axis-body,
+.tv-guide-timeline {
+  position: relative;
+  height: var(--tv-day-height);
+}
+
+.tv-guide-time-axis-body time {
+  position: absolute;
+  top: var(--tv-tick-top);
+  right: 0.5rem;
+  font-size: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.tv-guide-channel {
+  border-left: 1px solid $gray-300;
+}
+
+.tv-guide-timeline {
+  margin: 0;
+  padding: 0;
+  background-color: $gray-100;
+  list-style: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    $gray-300 0,
+    $gray-300 1px,
+    transparent 1px,
+    transparent 60px
+  );
+}
+
+.tv-guide-hour-line {
+  position: absolute;
+  top: var(--tv-tick-top);
+  right: 0;
+  left: 0;
+  z-index: 0;
+  border-top: 1px solid $gray-300;
+  pointer-events: none;
+}
+
+.tv-guide-programme {
+  z-index: 1;
+  position: absolute;
+  top: var(--tv-top-pixels);
+  right: 0.25rem;
+  left: 0.25rem;
+  height: var(--tv-height-pixels);
+  overflow: hidden;
+  padding: 0.25rem;
+  border: 1px solid $primary;
+  border-radius: 0.25rem;
+  background: rgba($primary, 0.12);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+.tv-guide-programme-times {
+  font-weight: 600;
+}
+
+.tv-guide-programme--single-line {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  white-space: nowrap;
+}
+
+.tv-guide-programme--single-line .tv-guide-programme-times {
+  flex: 0 0 auto;
+}
+
+.tv-guide-programme--single-line [data-tv-guide-title] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tv-guide-programme--single-line [data-tv-guide-episode],
+.tv-guide-programme--single-line [data-tv-guide-subtitle],
+.tv-guide-programme--single-line [data-tv-guide-secondary] {
+  display: none;
+}
+
+.tv-guide-programme p {
+  margin-bottom: 0;
+}
+
+.tv-guide-programme [data-tv-guide-secondary] {
+  display: none;
+  margin-top: 0.25rem;
+}
+
+.tv-guide-programme:hover [data-tv-guide-secondary],
+.tv-guide-programme:focus [data-tv-guide-secondary],
+.tv-guide-programme:focus-within [data-tv-guide-secondary] {
+  display: block;
+}
+
+.tv-guide-programme:hover,
+.tv-guide-programme:focus,
+.tv-guide-programme:focus-within {
+  right: auto;
+  z-index: 2;
+  width: 18rem;
+  max-width: calc(100vw - 2rem);
+  height: auto;
+  min-height: 6rem;
+  overflow: visible;
+  transform: translateX(0.5rem);
+  background: $white;
+  box-shadow: 0 0.25rem 0.75rem rgba($black, 0.2);
+}
+
+.tv-guide-programme--single-line:hover,
+.tv-guide-programme--single-line:focus,
+.tv-guide-programme--single-line:focus-within {
+  display: block;
+  padding: 0.5rem;
+  white-space: normal;
+}
+
+.tv-guide-programme--single-line:hover [data-tv-guide-title],
+.tv-guide-programme--single-line:focus [data-tv-guide-title],
+.tv-guide-programme--single-line:focus-within [data-tv-guide-title] {
+  display: block;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+}
+
+.tv-guide-programme--single-line:hover [data-tv-guide-episode],
+.tv-guide-programme--single-line:focus [data-tv-guide-episode],
+.tv-guide-programme--single-line:focus-within [data-tv-guide-episode],
+.tv-guide-programme--single-line:hover [data-tv-guide-subtitle],
+.tv-guide-programme--single-line:focus [data-tv-guide-subtitle],
+.tv-guide-programme--single-line:focus-within [data-tv-guide-subtitle],
+.tv-guide-programme--single-line:hover [data-tv-guide-secondary],
+.tv-guide-programme--single-line:focus [data-tv-guide-secondary],
+.tv-guide-programme--single-line:focus-within [data-tv-guide-secondary] {
+  display: block;
+}
+
+.tv-guide-programme:focus {
+  outline: 2px solid $primary;
+  outline-offset: 1px;
+}
