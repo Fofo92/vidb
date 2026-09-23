@@ -61,7 +61,57 @@ class TvGuidesChannelOrderingTest < ActionDispatch::IntegrationTest
     assert_equal ["TF1.fr"], displayed_channel_ids
   end
 
+  test "shows only favorite channels by default" do
+    create_channel_programme(
+      "TF1.fr", "TF1", 1,
+      "2026-09-18T10:00:00+02:00", "b" * 64
+    )
+    nonfavorite_channel = create_channel_programme(
+      "BFMTV.fr", "BFM TV", 14,
+      "2026-09-18T11:00:00+02:00", "c" * 64
+    )
+    nonfavorite_channel.channel.update!(favorite: false)
+
+    get tv_guide_url, params: {
+      date: "2026-09-18",
+      guide_source_id: @guide_source.id
+    }
+
+    assert_select(
+      "a[href='#{edit_tv_channel_preferences_path}']",
+      text: /Choisir les chaînes favorites/
+    )
+    assert_select all_channels_checkbox, count: 1
+    assert_select "#{all_channels_checkbox}[checked]", count: 0
+    assert_equal ["TF1.fr"], displayed_channel_ids
+  end
+
+  test "shows all enabled channels when requested" do
+    create_channel_programme(
+      "TF1.fr", "TF1", 1,
+      "2026-09-18T10:00:00+02:00", "b" * 64
+    )
+    nonfavorite_channel = create_channel_programme(
+      "BFMTV.fr", "BFM TV", 14,
+      "2026-09-18T11:00:00+02:00", "c" * 64
+    )
+    nonfavorite_channel.channel.update!(favorite: false)
+
+    get tv_guide_url, params: {
+      date: "2026-09-18",
+      guide_source_id: @guide_source.id,
+      all_channels: "1"
+    }
+
+    assert_select "#{all_channels_checkbox}[checked]", count: 1
+    assert_equal %w[TF1.fr BFMTV.fr], displayed_channel_ids
+  end
+
   private
+
+  def all_channels_checkbox
+    "input[type='checkbox'][name='all_channels'][value='1']"
+  end
 
   def create_channel_programme(
     external_id, display_name, logical_number, starts_at, fingerprint

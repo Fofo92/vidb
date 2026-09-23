@@ -55,55 +55,72 @@ class TvGuidesTimelineTest < ActionDispatch::IntegrationTest
   end
 
   test "keeps a short programme readable and interactive" do
-    paris = ActiveSupport::TimeZone["Europe/Paris"]
-    programme = create_programme(
-      paris.local(2026, 9, 18, 6, 20),
-      paris.local(2026, 9, 18, 6, 25)
-    )
+    programme = create_short_programme
 
     get tv_guide_url(date: "2026-09-18")
 
     assert_response :success
-    assert_select(
-      "[data-tv-guide-programme='#{programme.id}']" \
-      "[data-tv-guide-top-pixels='760']" \
-      "[data-tv-guide-height-pixels='24']" \
-      "[data-tv-guide-single-line='true']",
-      count: 1
-    )
-    assert_select(
-      "[data-tv-guide-grid]" \
-      "[data-tv-guide-height-pixels='2894']",
-      count: 1
-    )
-
-    assert_select(
-      "[data-tv-guide-time-tick]" \
-      "[data-tv-guide-minute='420']" \
-      "[data-tv-guide-top-pixels='854']",
-      count: 1
-    )
-
-    assert_select(
-      "[data-tv-guide-channel='#{programme.guide_channel.external_id}'] " \
-      "[data-tv-guide-hour-line]" \
-      "[data-tv-guide-minute='420']" \
-      "[data-tv-guide-top-pixels='854']",
-      count: 1
-    )
-
-    assert_select(
-      "[data-tv-guide-programme='#{programme.id}']",
-      text: /06:20\s+[–-]\s+06:25/
-    )
-    assert_select(
-      "[data-tv-guide-programme='#{programme.id}']" \
-      "[data-tv-guide-short]",
-      count: 0
-    )
+    assert_short_programme_geometry(programme)
+    assert_projected_hour(programme)
+    assert_short_programme_content(programme)
   end
 
   private
+
+  def create_short_programme
+    paris = ActiveSupport::TimeZone["Europe/Paris"]
+
+    create_programme(
+      paris.local(2026, 9, 18, 6, 20),
+      paris.local(2026, 9, 18, 6, 25)
+    )
+  end
+
+  def assert_short_programme_geometry(programme)
+    assert_select(
+      short_programme_selector(programme),
+      count: 1
+    )
+    assert_select(
+      "[data-tv-guide-grid][data-tv-guide-height-pixels='2894']",
+      count: 1
+    )
+  end
+
+  def short_programme_selector(programme)
+    "[data-tv-guide-programme='#{programme.id}']" \
+      "[data-tv-guide-top-pixels='760']" \
+      "[data-tv-guide-height-pixels='24']" \
+      "[data-tv-guide-single-line='true']"
+  end
+
+  def assert_projected_hour(programme)
+    assert_select(projected_tick_selector, count: 1)
+    assert_select(
+      projected_channel_line_selector(programme),
+      count: 1
+    )
+  end
+
+  def projected_tick_selector
+    "[data-tv-guide-time-tick]" \
+      "[data-tv-guide-minute='420']" \
+      "[data-tv-guide-top-pixels='854']"
+  end
+
+  def projected_channel_line_selector(programme)
+    "[data-tv-guide-channel='#{programme.guide_channel.external_id}'] " \
+      "[data-tv-guide-hour-line]" \
+      "[data-tv-guide-minute='420']" \
+      "[data-tv-guide-top-pixels='854']"
+  end
+
+  def assert_short_programme_content(programme)
+    selector = "[data-tv-guide-programme='#{programme.id}']"
+
+    assert_select(selector, text: /06:20\s+[–-]\s+06:25/)
+    assert_select("#{selector}[data-tv-guide-short]", count: 0)
+  end
 
   def create_user
     User.create!(email: "timeline@example.com", password: "password")

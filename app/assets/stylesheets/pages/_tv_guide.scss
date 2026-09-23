@@ -1,6 +1,8 @@
 .tv-guide-scroll {
-  max-height: calc(100vh - 12rem);
-  overflow: auto;
+  height: calc(100vh - 14rem);
+  overflow-x: scroll;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   border: 1px solid $gray-300;
   background: $white;
 }

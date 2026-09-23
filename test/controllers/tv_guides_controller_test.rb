@@ -39,6 +39,12 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
       "[data-tv-guide-day='2026-09-18']"
     )
     assert_select "[data-tv-guide-programme]", count: 0
+    assert_select(
+      "input[type='checkbox']" \
+      "[name='all_channels']" \
+      "[value='1']",
+      count: 1
+    )
   end
 
   test "groups programmes by channel with Paris times" do

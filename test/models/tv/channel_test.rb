@@ -25,6 +25,22 @@ module Tv
       assert_not channel.enabled?
     end
 
+    test "defaults to favorite" do
+      channel = Channel.new(display_name: "France 2")
+
+      assert channel.favorite?
+    end
+
+    test "accepts a nonfavorite channel" do
+      channel = Channel.new(
+        display_name: "BFM TV",
+        favorite: false
+      )
+
+      assert channel.valid?
+      assert_not channel.favorite?
+    end
+
     test "exposes its external guide channel mappings" do
       source = GuideSource.create!(
         name: "xml_tv_fr",

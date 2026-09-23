@@ -7,6 +7,7 @@ class TvGuidesController < ApplicationController
     @guide_source = selected_guide_source
     @date = selected_date
     @minute_height = selected_minute_height
+    @show_all_channels = show_all_channels?
     @programmes_by_channel = programmes_by_channel
     @timelines_by_channel = timelines_by_channel
     @minimum_programme_height = MINIMUM_PROGRAMME_HEIGHT
@@ -59,7 +60,7 @@ class TvGuidesController < ApplicationController
     return {} unless @guide_source
 
     grouped_programmes
-      .select { |channel, _| channel.channel&.enabled? }
+      .select { |channel, _| displayed_channel?(channel.channel) }
       .sort_by { |channel, _| channel.channel.logical_number }
       .to_h
   end
@@ -85,5 +86,15 @@ class TvGuidesController < ApplicationController
     return Date.iso8601(params[:date]) if params[:date].present?
 
     Time.find_zone!("Europe/Paris").today
+  end
+
+  def displayed_channel?(channel)
+    return false unless channel&.enabled?
+
+    show_all_channels? || channel.favorite?
+  end
+
+  def show_all_channels?
+    params[:all_channels] == "1"
   end
 end

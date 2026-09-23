@@ -23,6 +23,22 @@
       )
     ) %>
 
+    <div>
+      <%= check_box_tag(
+        :all_channels,
+        "1",
+        @show_all_channels
+      ) %>
+      <%= label_tag(
+        :all_channels,
+        "Toutes les chaînes disponibles"
+      ) %>
+      <%= link_to(
+        "Choisir les chaînes favorites",
+        edit_tv_channel_preferences_path
+      ) %>
+    </div>
+
     <%= submit_tag "Afficher", class: "btn btn-primary" %>
   <% end %>
 

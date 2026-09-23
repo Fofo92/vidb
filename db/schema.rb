@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_22_114601) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_23_105113) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -113,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_114601) do
     t.datetime "created_at", null: false
     t.string "display_name", null: false
     t.boolean "enabled", default: true, null: false
+    t.boolean "favorite", default: true, null: false
     t.integer "logical_number"
     t.datetime "updated_at", null: false
     t.index ["logical_number"], name: "index_tv_channels_on_logical_number", unique: true

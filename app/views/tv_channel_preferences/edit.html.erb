@@ -1,0 +1,46 @@
+<h1>Chaînes favorites</h1>
+
+<p>
+  Sélectionnez les chaînes affichées par défaut dans le guide TV.
+  Les autres chaînes disponibles resteront accessibles avec l’option
+  « Toutes les chaînes disponibles ».
+</p>
+
+<%= form_with(
+  url: tv_channel_preferences_path,
+  method: :patch,
+  scope: :tv_channel_preferences
+) do %>
+  <%= hidden_field_tag(
+    "tv_channel_preferences[channel_ids][]",
+    ""
+  ) %>
+
+  <ul>
+    <% @channels.each do |channel| %>
+      <% checkbox_id = "tv_channel_preference_#{channel.id}" %>
+
+      <li>
+        <%= check_box_tag(
+          "tv_channel_preferences[channel_ids][]",
+          channel.id,
+          channel.favorite?,
+          id: checkbox_id
+        ) %>
+        <%= label_tag checkbox_id do %>
+          <%= channel.logical_number %> —
+          <%= channel.display_name %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+
+  <%= submit_tag(
+    "Enregistrer les chaînes favorites",
+    class: "btn btn-primary"
+  ) %>
+<% end %>
+
+<p>
+  <%= link_to "Retour au guide TV", tv_guide_path %>
+</p>
