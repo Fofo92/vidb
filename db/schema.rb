@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_23_105113) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_23_192824) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -203,6 +203,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_23_105113) do
     t.index ["name"], name: "index_tv_guide_sources_on_name", unique: true
   end
 
+  create_table "tv_recording_intents", force: :cascade do |t|
+    t.bigint "broadcast_observation_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "effective_padding_after_seconds", default: 600, null: false
+    t.integer "effective_padding_before_seconds", default: 600, null: false
+    t.timestamptz "programme_ends_at", null: false
+    t.timestamptz "programme_starts_at", null: false
+    t.integer "requested_padding_after_seconds", default: 600, null: false
+    t.integer "requested_padding_before_seconds", default: 600, null: false
+    t.string "status", default: "selected", null: false
+    t.datetime "updated_at", null: false
+    t.index ["broadcast_observation_id"], name: "index_tv_recording_intents_on_broadcast_observation_id", unique: true
+    t.check_constraint "effective_padding_after_seconds >= 0", name: "tv_recording_intents_effective_padding_after_seconds_check"
+    t.check_constraint "effective_padding_before_seconds >= 0", name: "tv_recording_intents_effective_padding_before_seconds_check"
+    t.check_constraint "programme_ends_at > programme_starts_at", name: "tv_recording_intents_programme_interval_check"
+    t.check_constraint "requested_padding_after_seconds >= 0", name: "tv_recording_intents_requested_padding_after_seconds_check"
+    t.check_constraint "requested_padding_before_seconds >= 0", name: "tv_recording_intents_requested_padding_before_seconds_check"
+    t.check_constraint "status::text = ANY (ARRAY['selected'::character varying, 'cancelled'::character varying]::text[])", name: "tv_recording_intents_status_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -225,4 +245,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_23_105113) do
   add_foreign_key "tv_guide_import_observations", "tv_broadcast_observations", column: "broadcast_observation_id"
   add_foreign_key "tv_guide_import_observations", "tv_guide_imports", column: "guide_import_id"
   add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
+  add_foreign_key "tv_recording_intents", "tv_broadcast_observations", column: "broadcast_observation_id"
 end
