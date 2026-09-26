@@ -1,3 +1,58 @@
+.tv-guide-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid $gray-300;
+  border-radius: 0.5rem;
+  background: $gray-100;
+}
+
+.tv-guide-toolbar-date {
+  width: 10rem;
+}
+
+.tv-guide-toolbar-date .form-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tv-guide-toolbar-channels {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2rem;
+}
+
+.tv-guide-toolbar-scale {
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+}
+
+.tv-guide-toolbar-scale legend {
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 48rem) {
+  .tv-guide-toolbar {
+    align-items: stretch;
+  }
+
+  .tv-guide-toolbar-channels {
+    flex-wrap: wrap;
+  }
+
+  .tv-guide-toolbar-scale {
+    margin-left: 0;
+  }
+}
+
 .tv-guide-scroll {
   height: calc(100vh - 14rem);
   overflow-x: scroll;

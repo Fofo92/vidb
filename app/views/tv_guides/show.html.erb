@@ -3,43 +3,80 @@
 <% if @guide_source %>
   <%= form_with(
     url: tv_guide_path,
-    method: :get
+    method: :get,
+    data: {
+      controller: "auto-submit",
+      action: "change->auto-submit#submit"
+    }
   ) do %>
-    <%= hidden_field_tag :guide_source_id, @guide_source.id %>
+ <%= hidden_field_tag :guide_source_id, @guide_source.id %>
+    <div class="tv-guide-toolbar">
+      <div class="tv-guide-toolbar-date">
+        <%= label_tag(
+          :date,
+          "Journée",
+          class: "form-label"
+        ) %>
+        <%= date_field_tag(
+          :date,
+          @date.iso8601,
+          class: "form-control form-control-sm",
+          autocomplete: "off"
+        ) %>
+      </div>
 
-    <%= label_tag :date, "Journée" %>
-    <%= date_field_tag :date, @date.iso8601 %>
+      <div class="tv-guide-toolbar-channels">
+        <div class="form-check">
+          <%= check_box_tag(
+            :all_channels,
+            "1",
+            @show_all_channels,
+            class: "form-check-input"
+          ) %>
+          <%= label_tag(
+            :all_channels,
+            "Toutes les chaînes",
+            class: "form-check-label"
+          ) %>
+        </div>
 
-    <%= label_tag :zoom, "Échelle" %>
-    <%= select_tag(
-      :zoom,
-      options_for_select(
-        [
-          ["Compacte", 1],
-          ["Lisible", 2],
-          ["Détaillée", 4]
-        ],
-        @minute_height
-      )
-    ) %>
+        <%= link_to(
+          "Gérer mes chaînes favorites",
+          edit_tv_channel_preferences_path,
+          class: "btn btn-sm btn-outline-secondary"
+        ) %>
+      </div>
 
-    <div>
-      <%= check_box_tag(
-        :all_channels,
-        "1",
-        @show_all_channels
-      ) %>
-      <%= label_tag(
-        :all_channels,
-        "Toutes les chaînes disponibles"
-      ) %>
-      <%= link_to(
-        "Choisir les chaînes favorites",
-        edit_tv_channel_preferences_path
-      ) %>
+      <fieldset class="tv-guide-toolbar-scale">
+        <legend>Échelle</legend>
+
+        <div
+          class="btn-group"
+          role="group"
+          aria-label="Échelle temporelle">
+          <% [
+            ["Compacte", 1],
+            ["Lisible", 2],
+            ["Détaillée", 4]
+          ].each do |label, value| %>
+            <% input_id = "zoom_#{value}" %>
+
+            <%= radio_button_tag(
+              :zoom,
+              value,
+              @minute_height == value,
+              id: input_id,
+              class: "btn-check"
+            ) %>
+            <%= label_tag(
+              input_id,
+              label,
+              class: "btn btn-sm btn-outline-secondary"
+            ) %>
+          <% end %>
+        </div>
+      </fieldset>
     </div>
-
-    <%= submit_tag "Afficher", class: "btn btn-primary" %>
   <% end %>
 
   <section data-tv-guide-day="<%= @date.iso8601 %>">
@@ -53,8 +90,7 @@
         class="tv-guide-scroll"
         data-tv-guide-scroll
         data-controller="tv-guide-scroll"
-        data-action="submit->tv-guide-scroll#remember"
-      >
+        data-action="submit->tv-guide-scroll#remember">
         <div
           class="tv-guide-grid"
           data-tv-guide-grid
@@ -65,12 +101,10 @@
               <%= reference_timeline.duration_minutes %>;
             --tv-minute-height: <%= @minute_height %>px;
             --tv-day-height: <%= projected_height %>px;
-          "
-        >
+          ">
           <aside
             class="tv-guide-time-axis"
-            data-tv-guide-time-axis
-          >
+            data-tv-guide-time-axis>
             <div class="tv-guide-column-heading">Heure</div>
 
             <div class="tv-guide-time-axis-body">
@@ -84,8 +118,7 @@
                   style="
                     --tv-tick-minute: <%= tick.minute %>;
                     --tv-tick-top: <%= tick_top %>px;
-                  "
-                >
+                  ">
                   <%= tick.label %>
                 </time>
               <% end %>
@@ -97,8 +130,7 @@
               class="tv-guide-channel"
               data-tv-guide-channel="<%= guide_channel.external_id %>"
               data-tv-guide-timeline
-              data-tv-guide-duration-minutes="<%= timeline.duration_minutes %>"
-            >
+              data-tv-guide-duration-minutes="<%= timeline.duration_minutes %>">
               <h2 class="tv-guide-column-heading">
                 <span class="badge text-bg-secondary">
                   <%= guide_channel.channel.logical_number %>
@@ -117,8 +149,7 @@
                     data-tv-guide-top-pixels="<%= tick_top %>"
                     aria-hidden="true"
                     role="presentation"
-                    style="--tv-tick-top: <%= tick_top %>px;"
-                  ></li>
+                    style="--tv-tick-top: <%= tick_top %>px;"></li>
                 <% end %>
 
                 <% timeline.items.each do |item| %>
@@ -153,8 +184,7 @@
                       --tv-duration-minutes: <%= item.duration_minutes %>;
                       --tv-top-pixels: <%= top_pixels %>px;
                       --tv-height-pixels: <%= height_pixels %>px;
-                    "
-                  >
+                    ">
                     <div class="tv-guide-programme-times">
                       <time data-tv-guide-start>
                         <%= programme.starts_at

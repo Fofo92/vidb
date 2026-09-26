@@ -79,7 +79,7 @@ class TvGuidesChannelOrderingTest < ActionDispatch::IntegrationTest
 
     assert_select(
       "a[href='#{edit_tv_channel_preferences_path}']",
-      text: /Choisir les chaînes favorites/
+      text: /Gérer mes chaînes favorites/
     )
     assert_select all_channels_checkbox, count: 1
     assert_select "#{all_channels_checkbox}[checked]", count: 0

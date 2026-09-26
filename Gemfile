@@ -64,6 +64,7 @@ group :development, :test do
   gem "bundler-audit", require: false
   gem "dotenv-rails"
   gem "rubocop", require: false
+  gem "erb_lint", "~> 0.9.0"
 
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[mri windows]
