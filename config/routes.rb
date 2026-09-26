@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   resources :language_versions, except: :show
   resource :tv_guide, only: :show
   resource :tv_channel_preferences, only: %i[edit update]
-  resources :tv_recording_intents, only: %i[create destroy]
+  resources :tv_recording_intents, only: %i[index create destroy]
   resources :records do
     resource :hierarchy_placement,
              controller: "record_hierarchy_placements",

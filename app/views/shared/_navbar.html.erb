@@ -20,8 +20,16 @@
             <%= link_to "Programmes TV", tv_guide_path, class: "nav-link" %>
           </li>
 
+          <li class="nav-item">
+            <%= link_to(
+              "Enregistrements",
+              tv_recording_intents_path,
+              class: "nav-link"
+            ) %>
+          </li>
+
           <div class="nav-link dropdown">
-            <a id="navbarDropdown" data-bs-toggle="dropdown" >
+            <a id="navbarDropdown" data-bs-toggle="dropdown">
             Données d'application</a>
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
               <%= link_to "Genres cinématographiques", genders_path, class: "dropdown-item" %>
@@ -31,7 +39,7 @@
           </div>
           </li>
           <div class="nav-link dropdown">
-            <a id="navbarDropdown" data-bs-toggle="dropdown" >
+            <a id="navbarDropdown" data-bs-toggle="dropdown">
             Outils</a>
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
               <%= link_to "Importation csv", "#", class: "dropdown-item" %>

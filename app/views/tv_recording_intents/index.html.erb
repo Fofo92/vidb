@@ -1,0 +1,90 @@
+<h1>Enregistrements programmés</h1>
+
+<% if @recording_intents.empty? %>
+  <p
+    class="alert alert-info"
+    data-recording-intents-empty>
+    Aucun enregistrement n’est programmé.
+  </p>
+<% else %>
+  <% @recording_intents_by_date.each do |date, recording_intents| %>
+    <section
+      class="mb-4"
+      data-recording-day="<%= date.iso8601 %>">
+      <h2 class="h4">
+        <%= recording_intent_date_heading(date) %>
+      </h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle tv-recording-intents-table" data-recording-intents-table>
+          <colgroup>
+            <col class="tv-recording-intents-channel">
+            <col class="tv-recording-intents-name">
+            <col class="tv-recording-intents-programme">
+            <col class="tv-recording-intents-capture">
+          </colgroup>
+
+          <thead>
+            <tr>
+              <th scope="col">Chaîne</th>
+              <th scope="col">Nom</th>
+              <th scope="col">Programme</th>
+              <th scope="col">Capture</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% recording_intents.each do |recording_intent| %>
+              <tr data-recording-intent="<%= recording_intent.id %>">
+                <td data-recording-channel>
+                  <%= recording_intent_channel_name(recording_intent) %>
+                </td>
+
+                <td>
+                  <strong data-recording-title>
+                    <%= recording_intent_title(recording_intent) %>
+                  </strong>
+                </td>
+
+                <td
+                  class="text-nowrap"
+                  data-programme-window>
+                  <%= recording_intent_time(
+                    recording_intent.programme_starts_at
+                  ) %>
+                  –
+                  <%= recording_intent_time(
+                    recording_intent.programme_ends_at
+                  ) %>
+                </td>
+
+                <td>
+                  <div
+                    class="d-flex align-items-center justify-content-between gap-3">
+                    <span class="text-body-secondary text-nowrap" data-capture-window>
+                      <%= recording_intent_time(recording_intent.capture_starts_at) %>
+                      –
+                      <%= recording_intent_time(recording_intent.capture_ends_at) %>
+                    </span>
+
+                    <%= form_with(
+                      url: tv_recording_intent_path(recording_intent),
+                      method: :delete
+                    ) do %>
+                      <%= hidden_field_tag :return_to, "index" %>
+                      <%= button_tag(
+                        "Annuler",
+                        type: "submit",
+                        class: "btn btn-sm btn-outline-danger"
+                      ) %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+<% end %>
