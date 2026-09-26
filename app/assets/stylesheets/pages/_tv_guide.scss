@@ -96,6 +96,12 @@
   box-sizing: border-box;
 }
 
+.tv-guide-programme--recording-selected {
+  border-color: $success;
+  background: rgba($success, 0.18);
+  box-shadow: inset 0.25rem 0 0 $success;
+}
+
 .tv-guide-programme-times {
   font-weight: 600;
 }
@@ -104,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.125rem 0.25rem;
+  padding: 0.125rem 1.5rem 0.125rem 0.25rem;
   white-space: nowrap;
 }
 
@@ -133,17 +139,60 @@
   margin-top: 0.25rem;
 }
 
-.tv-guide-programme:hover [data-tv-guide-secondary],
-.tv-guide-programme:focus [data-tv-guide-secondary],
-.tv-guide-programme:focus-within [data-tv-guide-secondary] {
+.tv-guide-recording-form {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+}
+
+.tv-guide-recording-toggle {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tv-guide-information {
+  position: absolute;
+  top: calc(var(--tv-height-pixels) - 1.4rem);
+  right: 0.2rem;
+  z-index: 4;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 1px solid $primary;
+  border-radius: 50%;
+  background: $white;
+  color: $primary;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+
+.tv-guide-programme:has(
+  .tv-guide-recording-toggle:focus-visible
+) {
+  outline: 2px solid $primary;
+  outline-offset: 1px;
+}
+
+.tv-guide-programme:has(
+  .tv-guide-information:hover
+) [data-tv-guide-secondary],
+.tv-guide-programme:has(
+  .tv-guide-information:focus
+) [data-tv-guide-secondary] {
   display: block;
 }
 
-.tv-guide-programme:hover,
-.tv-guide-programme:focus,
-.tv-guide-programme:focus-within {
+.tv-guide-programme:has(.tv-guide-information:hover),
+.tv-guide-programme:has(.tv-guide-information:focus) {
   right: auto;
-  z-index: 2;
+  z-index: 5;
   width: 18rem;
   max-width: calc(100vw - 2rem);
   height: auto;
@@ -154,9 +203,12 @@
   box-shadow: 0 0.25rem 0.75rem rgba($black, 0.2);
 }
 
-.tv-guide-programme--single-line:hover,
-.tv-guide-programme--single-line:focus,
-.tv-guide-programme--single-line:focus-within {
+.tv-guide-programme--single-line:has(
+  .tv-guide-information:hover
+),
+.tv-guide-programme--single-line:has(
+  .tv-guide-information:focus
+) {
   display: block;
   padding: 0.5rem;
   white-space: normal;

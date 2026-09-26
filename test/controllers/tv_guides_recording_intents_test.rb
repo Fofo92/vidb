@@ -1,0 +1,158 @@
+require "test_helper"
+
+class TvGuidesRecordingIntentsTest <
+    ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+
+  setup do
+    sign_in User.create!(
+      email: "tv-guide-recording@example.com",
+      password: "password"
+    )
+
+    @source = create_source
+    guide_channel = create_guide_channel
+    guide_import = create_successful_import
+    @programme = create_programme(guide_channel, guide_import)
+  end
+
+  test "offers to select an unselected programme" do
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_scroll_restoration_hook
+
+    assert_select programme_selector("unselected") do
+      assert_select(
+        "form[action='#{tv_recording_intents_path}']" \
+        "[method='post']"
+      ) do
+        assert_select(
+          "input[name='broadcast_observation_id']" \
+          "[value='#{@programme.id}']"
+        )
+        assert_select(
+          "button[data-tv-guide-recording-toggle]",
+          count: 1
+        )
+      end
+      assert_information_button
+    end
+  end
+
+  test "offers to cancel a selected programme" do
+    intent = Tv::RecordingIntentSelector.new(
+      broadcast_observation: @programme
+    ).call
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_selected_programme(intent)
+  end
+
+  private
+
+  def assert_selected_programme(intent)
+    assert_select(selected_programme_selector, count: 1)
+
+    assert_select programme_selector("selected") do
+      assert_cancellation_form(intent)
+      assert_information_button
+      assert_select("form[action='#{tv_recording_intents_path}']", count: 0)
+    end
+  end
+
+  def selected_programme_selector
+    "#{programme_selector('selected')}" \
+      ".tv-guide-programme--recording-selected"
+  end
+
+  def assert_cancellation_form(intent)
+    assert_select(
+      "form[action='#{tv_recording_intent_path(intent)}']" \
+      "[method='post']"
+    ) do
+      assert_select "input[name='_method'][value='delete']"
+      assert_select(
+        "button[data-tv-guide-recording-toggle]",
+        count: 1
+      )
+    end
+  end
+
+  def assert_information_button
+    assert_select(
+      "button[data-tv-guide-information][type='button']",
+      text: "i",
+      count: 1
+    )
+  end
+
+  def assert_scroll_restoration_hook
+    assert_select(
+      "[data-tv-guide-scroll]" \
+      "[data-controller~='tv-guide-scroll']" \
+      "[data-action*='submit->tv-guide-scroll#remember']",
+      count: 1
+    )
+  end
+
+  def programme_selector(status)
+    "[data-tv-guide-programme='#{@programme.id}']" \
+      "[data-tv-guide-recording-status='#{status}']"
+  end
+
+  def guide_params
+    {
+      date: "2026-09-27",
+      guide_source_id: @source.id,
+      zoom: "4",
+      all_channels: "1"
+    }
+  end
+
+  def create_source
+    Tv::GuideSource.create!(
+      name: "xml_tv_fr",
+      display_name: "XML TV Fr"
+    )
+  end
+
+  def create_guide_channel
+    channel = Tv::Channel.create!(
+      display_name: "France 2",
+      logical_number: 2
+    )
+
+    @source.guide_channels.create!(
+      external_id: "France2.fr",
+      channel: channel
+    )
+  end
+
+  def create_successful_import
+    @source.guide_imports.create!(
+      document_sha256: "a" * 64,
+      document_byte_size: 100,
+      status: "succeeded",
+      started_at: Time.utc(2026, 9, 26, 8),
+      finished_at: Time.utc(2026, 9, 26, 8, 1)
+    )
+  end
+
+  def create_programme(guide_channel, guide_import)
+    programme = guide_channel.broadcast_observations.create!(
+      fingerprint: "b" * 64,
+      starts_at: Time.utc(2026, 9, 27, 18),
+      ends_at: Time.utc(2026, 9, 27, 19, 30),
+      titles: [{ "value" => "Film du soir", "language" => "fr" }]
+    )
+
+    guide_import.guide_import_observations.create!(
+      broadcast_observation: programme
+    )
+
+    programme
+  end
+end

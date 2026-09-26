@@ -49,7 +49,12 @@
       <% reference_timeline = @timelines_by_channel.values.first %>
       <% projected_height = @timeline_projection.position_for(reference_timeline.duration_minutes) %>
 
-      <div class="tv-guide-scroll">
+      <div
+        class="tv-guide-scroll"
+        data-tv-guide-scroll
+        data-controller="tv-guide-scroll"
+        data-action="submit->tv-guide-scroll#remember"
+      >
         <div
           class="tv-guide-grid"
           data-tv-guide-grid
@@ -104,8 +109,7 @@
               </h2>
               <ol class="tv-guide-timeline">
                 <% timeline.ticks.each do |tick| %>
-                  <% tick_top =
-                      @timeline_projection.position_for(tick.minute) %>
+                  <% tick_top = @timeline_projection.position_for(tick.minute) %>
                   <li
                     class="tv-guide-hour-line"
                     data-tv-guide-hour-line
@@ -116,8 +120,11 @@
                     style="--tv-tick-top: <%= tick_top %>px;"
                   ></li>
                 <% end %>
+
                 <% timeline.items.each do |item| %>
                   <% programme = item.programme %>
+                  <% recording_intent = programme.recording_intent %>
+                  <% recording_selected = recording_intent&.status_selected? %>
                   <% top_pixels =
                       @timeline_projection.position_for(item.start_minute) %>
                   <% height_pixels =
@@ -131,8 +138,10 @@
                     class="
                       tv-guide-programme
                       <%= "tv-guide-programme--single-line" if single_line %>
+                      <%= "tv-guide-programme--recording-selected" if recording_selected %>
                     "
                     data-tv-guide-programme="<%= programme.id %>"
+                    data-tv-guide-recording-status="<%= recording_selected ? "selected" : "unselected" %>"
                     tabindex="0"
                     data-tv-guide-start-minute="<%= item.start_minute %>"
                     data-tv-guide-duration-minutes="<%= item.duration_minutes %>"
@@ -176,9 +185,32 @@
                       </div>
                     <% end %>
 
+                    <% if recording_selected %>
+                      <% recording_url =
+                          tv_recording_intent_path(recording_intent) %>
+                      <% recording_method = :delete %>
+                      <% recording_label =
+                          "Annuler la sélection de #{tv_programme_title(programme)}" %>
+                    <% else %>
+                      <% recording_url = tv_recording_intents_path %>
+                      <% recording_method = :post %>
+                      <% recording_label =
+                          "Sélectionner #{tv_programme_title(programme)} pour enregistrement" %>
+                    <% end %>
+
+                    <%= button_tag(
+                      "i",
+                      type: "button",
+                      class: "tv-guide-information",
+                      data: { tv_guide_information: true },
+                      aria: {
+                        label: "Informations sur #{tv_programme_title(programme)}"
+                      }
+                    ) %>
 
                     <div data-tv-guide-secondary>
-                      <% if (original_title = tv_programme_original_title(programme)) %>
+                      <% if (original_title =
+                          tv_programme_original_title(programme)) %>
                         <div data-tv-guide-original-title>
                           Titre original ou alternatif :
                           <%= original_title %>
@@ -191,13 +223,44 @@
                         </div>
                       <% end %>
 
-                      <% if (description = tv_programme_description(programme)) %>
+                      <% if (description =
+                          tv_programme_description(programme)) %>
                         <p data-tv-guide-description>
                           <%= description %>
                         </p>
                       <% end %>
-
                     </div>
+
+                    <%= form_with(
+                      url: recording_url,
+                      method: recording_method,
+                      html: { class: "tv-guide-recording-form" }
+                    ) do %>
+                      <%= hidden_field_tag(
+                        :broadcast_observation_id,
+                        programme.id
+                      ) %>
+                      <%= hidden_field_tag :date, @date.iso8601 %>
+                      <%= hidden_field_tag(
+                        :guide_source_id,
+                        @guide_source.id
+                      ) %>
+                      <%= hidden_field_tag :zoom, @minute_height %>
+                      <% if @show_all_channels %>
+                        <%= hidden_field_tag :all_channels, "1" %>
+                      <% end %>
+
+                      <%= button_tag(
+                        type: "submit",
+                        class: "tv-guide-recording-toggle",
+                        data: { tv_guide_recording_toggle: true },
+                        aria: { label: recording_label }
+                      ) do %>
+                        <span class="visually-hidden">
+                          <%= recording_label %>
+                        </span>
+                      <% end %>
+                    <% end %>
                   </li>
                 <% end %>
               </ol>
