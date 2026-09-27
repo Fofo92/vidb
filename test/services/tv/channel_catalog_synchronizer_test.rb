@@ -19,6 +19,12 @@ module Tv
           { "value" => "Canal+", "language" => "fr" }
         ]
       )
+      @france_three = @source.guide_channels.create!(
+        external_id: "France3.fr",
+        display_names: [
+          { "value" => "France 3", "language" => "fr" }
+        ]
+      )
     end
 
     test "maps selected external channels to business channels" do
@@ -28,6 +34,14 @@ module Tv
 
       assert_equal "TF1", channel.display_name
       assert_equal channel, @tf1.reload.channel
+      france_three = Channel.find_by!(logical_number: 3)
+
+      assert_equal "France 3", france_three.display_name
+      assert_equal(
+        "F3 Paris Ile-de-France",
+        france_three.kaffeine_name
+      )
+      assert_equal france_three, @france_three.reload.channel
       assert_nil @canal_plus.reload.channel
     end
 

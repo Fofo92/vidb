@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_23_192824) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_091121) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -114,8 +114,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_23_192824) do
     t.string "display_name", null: false
     t.boolean "enabled", default: true, null: false
     t.boolean "favorite", default: true, null: false
+    t.string "kaffeine_name"
     t.integer "logical_number"
     t.datetime "updated_at", null: false
+    t.index ["kaffeine_name"], name: "index_tv_channels_on_kaffeine_name", unique: true
     t.index ["logical_number"], name: "index_tv_channels_on_logical_number", unique: true
     t.check_constraint "logical_number > 0", name: "tv_channels_logical_number_positive_check"
   end

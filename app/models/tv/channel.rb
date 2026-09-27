@@ -10,5 +10,8 @@ module Tv
               },
               uniqueness: true,
               allow_nil: true
+    validates :kaffeine_name,
+              uniqueness: true,
+              allow_nil: true
   end
 end

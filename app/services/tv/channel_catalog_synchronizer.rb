@@ -22,6 +22,7 @@ module Tv
         logical_number: entry.logical_number
       )
       channel.display_name = entry.display_name
+      channel.kaffeine_name = entry.kaffeine_name
       channel.save!
 
       guide_channel.update!(channel: channel)
