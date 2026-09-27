@@ -1,4 +1,5 @@
 <h1>Enregistrements programmés</h1>
+<p class="text-body-secondary">Une sélection doit être programmée dans Kaffeine pour être enregistrée.</p>
 
 <% if @recording_intents.empty? %>
   <p
@@ -22,6 +23,7 @@
             <col class="tv-recording-intents-name">
             <col class="tv-recording-intents-programme">
             <col class="tv-recording-intents-capture">
+            <col class="tv-recording-intents-kaffeine">
           </colgroup>
 
           <thead>
@@ -30,6 +32,7 @@
               <th scope="col">Nom</th>
               <th scope="col">Programme</th>
               <th scope="col">Capture</th>
+              <th scope="col">Kaffeine</th>
             </tr>
           </thead>
 
@@ -79,6 +82,25 @@
                       ) %>
                     <% end %>
                   </div>
+                </td>
+
+                <td data-kaffeine-schedule>
+                  <% if (link = recording_intent.kaffeine_schedule_link) %>
+                    <span class="text-success">Programmée (n° <%= link.kaffeine_key %>)</span>
+                  <% elsif recording_intent.broadcast_observation.guide_channel.channel&.kaffeine_name.present? %>
+                    <%= form_with(
+                      url: tv_recording_intent_schedule_path(recording_intent),
+                      method: :post
+                    ) do %>
+                      <%= button_tag(
+                        "Programmer dans Kaffeine",
+                        type: "submit",
+                        class: "btn btn-sm btn-outline-primary"
+                      ) %>
+                    <% end %>
+                  <% else %>
+                    <span class="text-body-secondary">Chaîne non reliée</span>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

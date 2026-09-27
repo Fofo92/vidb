@@ -107,11 +107,41 @@ class TvRecordingIntentsIndexTest <
     assert_response :success
     assert_select "[data-recording-intents-table]" do
       assert_equal(
-        ["Chaîne", "Nom", "Programme", "Capture"],
+        ["Chaîne", "Nom", "Programme", "Capture", "Kaffeine"],
         recording_table_headers
       )
       assert_select recording_intent_selector(intent), count: 1
     end
+  end
+
+  test "offers explicit scheduling then displays the linked Kaffeine key" do
+    channel = Tv::Channel.create!(display_name: "France 2", kaffeine_name: "France 2")
+    @guide_channel.update!(channel:)
+    intent = create_intent(hour: 18, fingerprint: "2" * 64)
+
+    get tv_recording_intents_url
+
+    assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}'] button",
+                  text: "Programmer dans Kaffeine"
+
+    attributes = Tv::RecordingIntentScheduleAttributes.new(recording_intent: intent).call
+    schedule = Tv::KaffeineSchedule.new(key: 982, **attributes, non_inactive: false)
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+
+    get tv_recording_intents_url
+
+    assert_select "[data-kaffeine-schedule]", text: /Programmée \(n° 982\)/
+    assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']", count: 0
+  end
+
+  test "explains when a channel has no Kaffeine mapping" do
+    intent = create_intent(hour: 18, fingerprint: "3" * 64)
+
+    get tv_recording_intents_url
+
+    assert_select "#{recording_intent_selector(intent)} [data-kaffeine-schedule]",
+                  text: "Chaîne non reliée"
+    assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']", count: 0
   end
 
   private
