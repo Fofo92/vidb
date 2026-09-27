@@ -51,6 +51,22 @@ class TvRecordingIntentsControllerTest <
     assert_redirected_to tv_guide_path(guide_params)
   end
 
+  test "does not claim to cancel a Kaffeine schedule that remains active" do
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @observation).call
+    schedule = Tv::KaffeineSchedule.new(
+      key: 982, name: "Le film", channel: "France 2",
+      starts_at: intent.capture_starts_at, duration_seconds: 6600,
+      repeat: 0, non_inactive: false
+    )
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+
+    delete tv_recording_intent_url(intent), params: guide_params
+
+    assert intent.reload.status_selected?
+    assert_redirected_to tv_guide_path(guide_params)
+    assert_match(/Kaffeine/, flash[:alert])
+  end
+
   private
 
   def request_params

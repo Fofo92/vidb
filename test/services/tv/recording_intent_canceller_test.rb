@@ -44,6 +44,19 @@ module Tv
       end
     end
 
+    test "does not cancel an intent linked to a Kaffeine schedule" do
+      schedule = KaffeineSchedule.new(
+        key: 982, name: "Le film", channel: "France 2",
+        starts_at: @intent.capture_starts_at, duration_seconds: 6600,
+        repeat: 0, non_inactive: false
+      )
+      KaffeineScheduleLink.attach!(recording_intent: @intent, schedule:, origin: :created_by_vidb)
+
+      assert_raises(RecordingIntentCanceller::ScheduledInKaffeine) { cancel_intent }
+      assert @intent.reload.status_selected?
+      assert_equal 982, @intent.kaffeine_schedule_link.kaffeine_key
+    end
+
     private
 
     def cancel_intent

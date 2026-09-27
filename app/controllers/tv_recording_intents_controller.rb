@@ -30,9 +30,18 @@ class TvRecordingIntentsController < ApplicationController
       recording_intent_redirect_path,
       notice: "L’enregistrement programmé a été annulé."
     )
+  rescue Tv::RecordingIntentCanceller::ScheduledInKaffeine
+    redirect_to_blocked_cancellation
   end
 
   private
+
+  def redirect_to_blocked_cancellation
+    redirect_to(
+      recording_intent_redirect_path,
+      alert: "La programmation Kaffeine doit être retirée avant d’annuler cette sélection."
+    )
+  end
 
   def selected_recording_intents
     Tv::RecordingIntent.status_selected
