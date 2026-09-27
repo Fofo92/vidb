@@ -41,6 +41,8 @@ module Tv
 
       assert_equal 619, schedule.key
       assert_equal [expected_attributes], client.created
+      assert_equal 619, @intent.reload.kaffeine_schedule_link.kaffeine_key
+      assert @intent.kaffeine_schedule_link.origin_created_by_vidb?
     end
 
     test "reuses an identical schedule without creating another" do
@@ -49,6 +51,8 @@ module Tv
 
       assert_equal existing, scheduler(client).call
       assert_empty client.created
+      assert_equal 618, @intent.reload.kaffeine_schedule_link.kaffeine_key
+      assert @intent.kaffeine_schedule_link.origin_preexisting?
     end
 
     test "refuses an ambiguous match without creating another" do
@@ -66,6 +70,33 @@ module Tv
 
       assert_raises(RecordingIntentScheduleAttributes::Unavailable) { scheduler(client).call }
       assert_empty client.created
+    end
+
+    test "reuses a linked schedule without creating another" do
+      client = FakeClient.new
+      first = scheduler(client).call
+
+      assert_equal first, scheduler(client).call
+      assert_equal 1, client.created.length
+      assert_equal 1, KaffeineScheduleLink.where(recording_intent: @intent).count
+    end
+
+    test "refuses a linked schedule missing from Kaffeine" do
+      client = FakeClient.new
+      scheduler(client).call
+      client.schedules.clear
+
+      assert_raises(RecordingIntentScheduler::LinkedScheduleMismatch) { scheduler(client).call }
+      assert_equal 1, client.created.length
+    end
+
+    test "refuses a changed linked schedule" do
+      client = FakeClient.new
+      scheduler(client).call
+      client.schedules[0] = client.schedules.fetch(0).with(channel: "TF1")
+
+      assert_raises(RecordingIntentScheduler::LinkedScheduleMismatch) { scheduler(client).call }
+      assert_equal 1, client.created.length
     end
 
     private
