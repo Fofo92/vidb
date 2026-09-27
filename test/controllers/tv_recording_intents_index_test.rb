@@ -107,7 +107,7 @@ class TvRecordingIntentsIndexTest <
     assert_response :success
     assert_select "[data-recording-intents-table]" do
       assert_equal(
-        ["Chaîne", "Nom", "Programme", "Capture", "Kaffeine"],
+        ["Chaîne", "Nom", "Programme", "Capture"],
         recording_table_headers
       )
       assert_select recording_intent_selector(intent), count: 1
