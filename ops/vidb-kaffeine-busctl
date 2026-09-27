@@ -1,0 +1,63 @@
+#!/usr/bin/python3
+"""Restricted Kaffeine D-Bus entry point, run as the session owner via sudo."""
+
+import datetime
+import os
+import pwd
+import re
+import sys
+
+
+def reject(message):
+    print(message, file=sys.stderr)
+    sys.exit(2)
+
+
+arguments = sys.argv[1:]
+if arguments == ["ListProgramSchedule"]:
+    pass
+elif len(arguments) == 3 and arguments[:2] == ["RemoveProgram", "u"]:
+    key = arguments[2]
+    if not key.isascii() or not key.isdecimal() or not 1 <= int(key) <= 4294967295:
+        reject("Invalid schedule key")
+elif len(arguments) == 7 and arguments[:2] == ["ScheduleProgram", "ssssi"]:
+    _, _, name, channel, start, duration, repeat = arguments
+    if not name.strip() or not channel.strip() or len(name) > 512 or len(channel) > 256:
+        reject("Invalid programme or channel")
+    try:
+        when = datetime.datetime.fromisoformat(start.replace("Z", "+00:00"))
+        if when.tzinfo is None or when.utcoffset() != datetime.timedelta(0):
+            reject("Start time must be UTC")
+    except ValueError:
+        reject("Invalid start time")
+    if not re.fullmatch(r"\d{2}:\d{2}:\d{2}", duration):
+        reject("Invalid duration")
+    hours, minutes, seconds = map(int, duration.split(":"))
+    if not 1 <= hours * 3600 + minutes * 60 + seconds <= 86399 or minutes >= 60 or seconds >= 60:
+        reject("Invalid duration")
+    if not repeat.isascii() or not repeat.isdecimal() or not 0 <= int(repeat) <= 127:
+        reject("Invalid repeat mask")
+else:
+    reject("Unsupported Kaffeine operation")
+
+uid = os.getuid()
+session_user = pwd.getpwuid(uid)
+runtime = f"/run/user/{uid}"
+if not os.path.isdir(runtime):
+    reject("Kaffeine session is unavailable")
+
+environment = {
+    "HOME": session_user.pw_dir,
+    "XDG_RUNTIME_DIR": runtime,
+    "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime}/bus",
+    "PATH": "/usr/bin:/bin",
+}
+os.execve(
+    "/usr/bin/busctl",
+    [
+        "busctl", "--user", "--json=short", "call",
+        "org.kde.kaffeine", "/Television", "org.freedesktop.MediaPlayer",
+        *arguments,
+    ],
+    environment,
+)

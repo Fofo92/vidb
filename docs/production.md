@@ -144,6 +144,43 @@ La base de production canonique est `vidb_production`, détenue par le rôle
 PostgreSQL `vidb`. Une sauvegarde PostgreSQL au format personnalisé doit être
 faite avant toute opération structurelle ou destructive.
 
+## Accès de production à Kaffeine
+
+Kaffeine appartient à une session utilisateur locale. Le service `vidb` ne
+peut pas utiliser directement son bus D-Bus. Le programme
+`ops/vidb-kaffeine-busctl` limite les appels aux trois méthodes nécessaires,
+et `sudoers` autorise seulement ce programme sous le compte de la session.
+
+Installation initiale sur Zeus, avec la session `pascal` active :
+
+```sh
+sudo install -D -o root -g root -m 0755 ops/vidb-kaffeine-busctl \
+  /usr/local/libexec/vidb-kaffeine-busctl
+printf '%s\n' 'vidb ALL=(pascal) NOPASSWD: /usr/local/libexec/vidb-kaffeine-busctl *' \
+  | sudo tee /etc/sudoers.d/vidb-kaffeine >/dev/null
+sudo chmod 0440 /etc/sudoers.d/vidb-kaffeine
+sudo visudo -cf /etc/sudoers.d/vidb-kaffeine
+sudo -u vidb sudo -n -u pascal /usr/local/libexec/vidb-kaffeine-busctl \
+  ListProgramSchedule
+```
+
+La dernière commande est une lecture seule et doit afficher les
+programmations JSON. Si elle échoue, ne pas utiliser les actions Kaffeine
+depuis la production. Garder ce programme installé par root, hors des releases
+modifiables par `vidb`.
+
+Ajouter dans `/etc/vidb/vidb.env`, sans afficher ses autres valeurs :
+
+```sh
+VIDB_KAFFEINE_BRIDGE=1
+VIDB_KAFFEINE_USER=pascal
+```
+
+La configuration de sudoers doit correspondre à l'utilisateur choisi. En
+développement, en l'absence de `VIDB_KAFFEINE_BRIDGE=1`, vidb continue de
+contacter directement le bus de la session courante. La session Kaffeine doit
+être en cours d'exécution pour les opérations de production.
+
 ## Certificat TLS
 
 Le certificat Let’s Encrypt est obtenu par le défi DNS-01 Gandi avec `lego`.

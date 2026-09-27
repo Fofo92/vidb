@@ -13,7 +13,7 @@ module Tv
     REMOVE_COMMAND = [*COMMAND_PREFIX, "RemoveProgram", "u"].freeze
 
     def schedules_command
-      SCHEDULES_COMMAND
+      [*command_prefix, "ListProgramSchedule"]
     end
 
     def create_schedule_command(name:, channel:, starts_at:, duration_seconds:, repeat:)
@@ -21,7 +21,7 @@ module Tv
       repeat_mask = validated_repeat(repeat)
 
       [
-        *CREATE_COMMAND,
+        *command_prefix, "ScheduleProgram", "ssssi",
         String(name),
         String(channel),
         starts_at.to_time.utc.iso8601,
@@ -35,10 +35,19 @@ module Tv
       message = "key must be between 1 and 4294967295"
       raise ArgumentError, message unless key.between?(1, 4_294_967_295)
 
-      [*REMOVE_COMMAND, key.to_s]
+      [*command_prefix, "RemoveProgram", "u", key.to_s]
     end
 
     private
+
+    def command_prefix
+      return COMMAND_PREFIX unless ENV["VIDB_KAFFEINE_BRIDGE"] == "1"
+
+      user = ENV.fetch("VIDB_KAFFEINE_USER")
+      raise ArgumentError, "invalid Kaffeine session user" unless user.match?(/\A[a-z_][a-z0-9_-]*\z/)
+
+      ["sudo", "-n", "-u", user, "/usr/local/libexec/vidb-kaffeine-busctl"]
+    end
 
     def validated_duration(value)
       duration = Integer(value)

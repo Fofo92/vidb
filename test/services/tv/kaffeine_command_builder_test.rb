@@ -10,6 +10,20 @@ module Tv
       ], builder.schedules_command
     end
 
+    test "uses the restricted bridge when configured" do
+      ENV["VIDB_KAFFEINE_BRIDGE"] = "1"
+      ENV["VIDB_KAFFEINE_USER"] = "pascal"
+      prefix = ["sudo", "-n", "-u", "pascal", "/usr/local/libexec/vidb-kaffeine-busctl"]
+
+      assert_equal [*prefix, "ListProgramSchedule"], builder.schedules_command
+      assert_equal [*prefix, "RemoveProgram", "u", "619"], builder.remove_schedule_command(619)
+      assert_equal [*prefix, "ScheduleProgram", "ssssi", "Test", "TF1",
+                    "2030-01-01T12:00:00Z", "00:02:00", "0"], create_command
+    ensure
+      ENV.delete("VIDB_KAFFEINE_BRIDGE")
+      ENV.delete("VIDB_KAFFEINE_USER")
+    end
+
     test "builds a schedule command with UTC time and duration" do
       assert_equal [
         "busctl", "--user", "--json=short", "call",
