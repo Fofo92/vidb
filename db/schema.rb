@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_091121) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_115500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -205,6 +205,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_091121) do
     t.index ["name"], name: "index_tv_guide_sources_on_name", unique: true
   end
 
+  create_table "tv_kaffeine_schedule_links", force: :cascade do |t|
+    t.string "channel", null: false
+    t.datetime "created_at", null: false
+    t.integer "duration_seconds", null: false
+    t.bigint "kaffeine_key", null: false
+    t.string "name", null: false
+    t.string "origin", null: false
+    t.bigint "recording_intent_id", null: false
+    t.integer "repeat_mask", null: false
+    t.timestamptz "starts_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kaffeine_key"], name: "index_tv_kaffeine_schedule_links_on_kaffeine_key", unique: true
+    t.index ["recording_intent_id"], name: "index_tv_kaffeine_schedule_links_on_recording_intent_id", unique: true
+    t.check_constraint "duration_seconds >= 1 AND duration_seconds <= 86399", name: "tv_kaffeine_schedule_links_duration_check"
+    t.check_constraint "kaffeine_key >= 1 AND kaffeine_key <= '4294967295'::bigint", name: "tv_kaffeine_schedule_links_key_check"
+    t.check_constraint "origin::text = ANY (ARRAY['created_by_vidb'::character varying, 'preexisting'::character varying]::text[])", name: "tv_kaffeine_schedule_links_origin_check"
+    t.check_constraint "repeat_mask >= 0 AND repeat_mask <= 127", name: "tv_kaffeine_schedule_links_repeat_check"
+  end
+
   create_table "tv_recording_intents", force: :cascade do |t|
     t.bigint "broadcast_observation_id", null: false
     t.datetime "created_at", null: false
@@ -247,5 +266,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_091121) do
   add_foreign_key "tv_guide_import_observations", "tv_broadcast_observations", column: "broadcast_observation_id"
   add_foreign_key "tv_guide_import_observations", "tv_guide_imports", column: "guide_import_id"
   add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
+  add_foreign_key "tv_kaffeine_schedule_links", "tv_recording_intents", column: "recording_intent_id"
   add_foreign_key "tv_recording_intents", "tv_broadcast_observations", column: "broadcast_observation_id"
 end

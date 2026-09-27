@@ -1,6 +1,7 @@
 module Tv
   class RecordingIntent < ApplicationRecord
     belongs_to :broadcast_observation
+    has_one :kaffeine_schedule_link, dependent: :restrict_with_error
 
     PADDING_FIELDS = %i[
       requested_padding_before_seconds
