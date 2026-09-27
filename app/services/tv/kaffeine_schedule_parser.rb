@@ -2,10 +2,6 @@ require "json"
 require "time"
 
 module Tv
-  KaffeineSchedule = Data.define(
-    :key, :name, :channel, :starts_at, :duration_seconds, :repeat, :non_inactive
-  )
-
   class KaffeineScheduleParser
     class InvalidResponse < StandardError; end
 
