@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   resources :language_versions, except: :show
   resource :tv_guide, only: :show
   resource :tv_channel_preferences, only: %i[edit update]
+  resources :tv_kaffeine_schedules, only: :index
   resources :tv_recording_intents, only: %i[index create destroy] do
     resource :schedule, only: :create, controller: "tv_recording_intent_schedules"
   end

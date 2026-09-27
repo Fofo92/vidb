@@ -56,6 +56,7 @@ class TvRecordingIntentsIndexTest <
 
     assert_response :success
     assert_recording_details(intent)
+    assert_select "a[href='#{tv_kaffeine_schedules_path}']", text: "Voir toutes les programmations Kaffeine"
   end
 
   test "cancels a selection and returns to the summary" do
