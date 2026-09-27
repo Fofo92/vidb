@@ -1,4 +1,5 @@
 require "test_helper"
+require "minitest/mock"
 
 class TvRecordingIntentsControllerTest <
     ActionDispatch::IntegrationTest
@@ -51,23 +52,60 @@ class TvRecordingIntentsControllerTest <
     assert_redirected_to tv_guide_path(guide_params)
   end
 
-  test "does not claim to cancel a Kaffeine schedule that remains active" do
+  test "removes a linked Kaffeine schedule before cancelling" do
     intent = Tv::RecordingIntentSelector.new(broadcast_observation: @observation).call
-    schedule = Tv::KaffeineSchedule.new(
+    schedule = linked_schedule(intent)
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+    client = fake_client([schedule])
+
+    Tv::KaffeineDbus.stub(:new, client) do
+      delete tv_recording_intent_url(intent), params: guide_params
+    end
+
+    assert_equal [982], client.removed
+    assert intent.reload.status_cancelled?
+    assert_nil intent.kaffeine_schedule_link
+    assert_redirected_to tv_guide_path(guide_params)
+  end
+
+  test "keeps the intent selected when Kaffeine changed the linked schedule" do
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @observation).call
+    schedule = linked_schedule(intent)
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+    client = fake_client([schedule.with(channel: "TF1")])
+
+    Tv::KaffeineDbus.stub(:new, client) do
+      delete tv_recording_intent_url(intent), params: guide_params
+    end
+
+    assert_empty client.removed
+    assert intent.reload.status_selected?
+    assert_match(/Annulation non confirmée/, flash[:alert])
+  end
+
+  private
+
+  def linked_schedule(intent)
+    Tv::KaffeineSchedule.new(
       key: 982, name: "Le film", channel: "France 2",
       starts_at: intent.capture_starts_at, duration_seconds: 6600,
       repeat: 0, non_inactive: false
     )
-    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
-
-    delete tv_recording_intent_url(intent), params: guide_params
-
-    assert intent.reload.status_selected?
-    assert_redirected_to tv_guide_path(guide_params)
-    assert_match(/Kaffeine/, flash[:alert])
   end
 
-  private
+  def fake_client(entries)
+    client_class = Struct.new(:entries, :removed) do
+      def schedules
+        entries
+      end
+
+      def remove_schedule(key)
+        removed << key
+        entries.reject! { |entry| entry.key == key }
+      end
+    end
+    client_class.new(entries, [])
+  end
 
   def request_params
     {

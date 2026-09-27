@@ -21,25 +21,37 @@ class TvRecordingIntentsController < ApplicationController
 
   def destroy
     intent = Tv::RecordingIntent.find(params[:id])
-
-    Tv::RecordingIntentCanceller.new(
-      recording_intent: intent
-    ).call
-
-    redirect_to(
-      recording_intent_redirect_path,
-      notice: "L’enregistrement programmé a été annulé."
-    )
-  rescue Tv::RecordingIntentCanceller::ScheduledInKaffeine
+    cancel_intent(intent)
+    redirect_to_cancelled_intent
+  rescue Tv::RecordingIntentScheduleCanceller::LinkedScheduleMismatch,
+         Tv::RecordingIntentScheduleCanceller::TooLateToCancel,
+         Tv::KaffeineScheduleManager::VerificationError,
+         Tv::KaffeineCommandRunner::CommandError,
+         Tv::KaffeineScheduleParser::InvalidResponse,
+         Tv::KaffeineScheduleLock::Busy
     redirect_to_blocked_cancellation
   end
 
   private
 
+  def cancel_intent(intent)
+    Tv::RecordingIntentScheduleCanceller.new(
+      recording_intent: intent,
+      client: Tv::KaffeineDbus.new
+    ).call
+  end
+
+  def redirect_to_cancelled_intent
+    redirect_to(
+      recording_intent_redirect_path,
+      notice: "L’enregistrement programmé a été annulé."
+    )
+  end
+
   def redirect_to_blocked_cancellation
     redirect_to(
       recording_intent_redirect_path,
-      alert: "La programmation Kaffeine doit être retirée avant d’annuler cette sélection."
+      alert: "Annulation non confirmée : vérifiez la programmation dans Kaffeine."
     )
   end
 
