@@ -28,6 +28,15 @@ module Tv
       )
     end
 
+    test "includes the season and episode in a new Kaffeine schedule" do
+      @intent.broadcast_observation.update!(
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
+      )
+
+      assert_equal "Le film — Saison 11, épisode 5", attributes.fetch(:name)
+      assert_equal "Le film", RecordingIntentScheduleAttributes.new(recording_intent: @intent).base_name
+    end
+
     test "rejects a cancelled intent" do
       @intent.update!(status: "cancelled")
 

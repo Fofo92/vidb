@@ -56,5 +56,20 @@ module Tv
       assert_equal attributes, result.attributes
       assert_equal 1, client.reads
     end
+
+    test "recognizes a preexisting schedule named with the title alone" do
+      @intent.broadcast_observation.update!(
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
+      )
+      attributes = RecordingIntentScheduleAttributes.new(recording_intent: @intent).call
+      legacy = KaffeineSchedule.new(key: 1049, **attributes.merge(name: "Le film"), non_inactive: false)
+      client = FakeClient.new([legacy])
+
+      result = RecordingSchedulePlan.new(recording_intent: @intent, client:).call
+
+      assert_equal legacy, result.existing_schedule
+      assert_equal "Le film — Saison 11, épisode 5", result.attributes.fetch(:name)
+      assert_equal 1, client.reads
+    end
   end
 end

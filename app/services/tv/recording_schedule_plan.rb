@@ -12,8 +12,13 @@ module Tv
     end
 
     def call
-      attributes = RecordingIntentScheduleAttributes.new(recording_intent: @recording_intent).call
-      existing = KaffeineScheduleMatcher.new(schedules: @client.schedules).find(attributes)
+      builder = RecordingIntentScheduleAttributes.new(recording_intent: @recording_intent)
+      attributes = builder.call
+      matcher = KaffeineScheduleMatcher.new(schedules: @client.schedules)
+      existing = matcher.find(attributes)
+      if !existing && attributes[:name] != builder.base_name
+        existing = matcher.find(attributes.merge(name: builder.base_name))
+      end
 
       Result.new(attributes:, existing_schedule: existing)
     end

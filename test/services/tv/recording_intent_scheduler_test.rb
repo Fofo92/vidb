@@ -81,6 +81,18 @@ module Tv
       assert_equal 1, KaffeineScheduleLink.where(recording_intent: @intent).count
     end
 
+    test "keeps an existing linked title-only schedule after an episode is identified" do
+      client = FakeClient.new
+      original_schedule = scheduler(client).call
+      @intent.broadcast_observation.update!(
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
+      )
+
+      assert_equal original_schedule, scheduler(client).call
+      assert_equal 1, client.created.length
+      assert_equal original_schedule.key, @intent.reload.kaffeine_schedule_link.kaffeine_key
+    end
+
     test "refuses a linked schedule missing from Kaffeine" do
       client = FakeClient.new
       scheduler(client).call

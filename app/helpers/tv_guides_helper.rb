@@ -32,15 +32,7 @@ module TvGuidesHelper
   end
 
   def tv_programme_episode(programme)
-    entry = programme.episode_numbers.find do |number|
-      number["system"] == "xmltv_ns"
-    end
-    match = entry&.fetch("value", nil)&.match(
-      /\A(\d+)\.(\d+)\./
-    )
-    return unless match
-
-    "Saison #{match[1].to_i + 1}, épisode #{match[2].to_i + 1}"
+    Tv::ProgrammeEpisodeLabel.call(programme)
   end
 
   private

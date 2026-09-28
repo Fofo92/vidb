@@ -155,7 +155,9 @@ class TvRecordingIntentsIndexTest <
       episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
     )
     attributes = Tv::RecordingIntentScheduleAttributes.new(recording_intent: intent).call
-    schedule = Tv::KaffeineSchedule.new(key: 982, **attributes, non_inactive: false)
+    schedule = Tv::KaffeineSchedule.new(
+      key: 982, **attributes.merge(name: "Programme de 18 h"), non_inactive: false
+    )
     Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :preexisting)
 
     get tv_recording_intents_url

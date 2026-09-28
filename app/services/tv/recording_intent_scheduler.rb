@@ -33,7 +33,8 @@ module Tv
 
     def verified_link(link, attributes)
       schedule = @client.schedules.find { |entry| entry.key == link.kaffeine_key }
-      matches_intent = schedule && KaffeineScheduleMatcher.new(schedules: [schedule]).find(attributes)
+      expected = attributes.merge(name: link.name)
+      matches_intent = schedule && KaffeineScheduleMatcher.new(schedules: [schedule]).find(expected)
       return schedule if schedule && link.matches?(schedule) && matches_intent
 
       raise LinkedScheduleMismatch, "linked Kaffeine schedule #{link.kaffeine_key} is missing or changed"

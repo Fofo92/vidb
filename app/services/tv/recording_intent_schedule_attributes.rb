@@ -18,15 +18,20 @@ module Tv
       }
     end
 
-    private
-
-    def programme_name
+    def base_name
       titles = @recording_intent.broadcast_observation.titles
       title = titles.find { |entry| entry["language"] == "fr" && entry["value"].present? } ||
               titles.find { |entry| entry["value"].present? }
       raise Unavailable, "programme has no title" unless title
 
       title.fetch("value")
+    end
+
+    private
+
+    def programme_name
+      episode = ProgrammeEpisodeLabel.call(@recording_intent.broadcast_observation)
+      episode ? "#{base_name} — #{episode}" : base_name
     end
 
     def kaffeine_name
