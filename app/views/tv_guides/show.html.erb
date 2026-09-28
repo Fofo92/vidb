@@ -138,13 +138,39 @@
               data-tv-guide-channel="<%= guide_channel.external_id %>"
               data-tv-guide-timeline
               data-tv-guide-duration-minutes="<%= timeline.duration_minutes %>">
-              <h2 class="tv-guide-column-heading">
-                <span class="badge text-bg-secondary">
-                  <%= guide_channel.channel.logical_number %>
-                </span>
-                <span data-tv-guide-channel-name>
-                  <%= guide_channel.channel.display_name %>
-                </span>
+              <h2 class="tv-guide-column-heading" aria-label="<%= guide_channel.channel.display_name %>">
+                <% if (france_number = tv_france_channel_number(guide_channel.channel)) %>
+                  <span class="badge text-bg-secondary">
+                    <%= guide_channel.channel.logical_number %>
+                  </span>
+                  <span class="tv-guide-france-number tv-guide-france-number--<%= france_number %>"
+                        aria-hidden="true" data-tv-guide-france-number>
+                    <%= france_number %>
+                  </span>
+                  <span class="visually-hidden" data-tv-guide-channel-name>
+                    <%= guide_channel.channel.display_name %>
+                  </span>
+                <% else %>
+                  <span class="badge text-bg-secondary">
+                    <%= guide_channel.channel.logical_number %>
+                  </span>
+                  <span class="tv-guide-channel-identity" data-controller="tv-channel-logo">
+                    <% if (logo_url = tv_channel_logo_url(guide_channel.channel)) %>
+                      <%= image_tag logo_url,
+                                    alt: "",
+                                    class: "tv-guide-channel-logo #{tv_channel_logo_class(guide_channel.channel)}",
+                                    loading: "lazy",
+                                    referrerpolicy: "no-referrer",
+                                    data: {
+                                      tv_channel_logo_target: "image",
+                                      action: "load->tv-channel-logo#loaded error->tv-channel-logo#failed"
+                                    } %>
+                    <% end %>
+                    <span data-tv-guide-channel-name data-tv-channel-logo-target="name">
+                      <%= guide_channel.channel.display_name %>
+                    </span>
+                  </span>
+                <% end %>
               </h2>
               <ol class="tv-guide-timeline">
                 <% timeline.ticks.each do |tick| %>

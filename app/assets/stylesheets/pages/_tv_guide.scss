@@ -98,6 +98,60 @@
   text-overflow: ellipsis;
 }
 
+.tv-guide-channel-identity {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.tv-guide-channel-logo {
+  max-width: 4.5rem;
+  height: 1rem;
+  object-fit: contain;
+}
+
+.tv-guide-channel-logo--arte {
+  max-width: 3.5rem;
+  height: 0.75rem;
+}
+
+.tv-guide-channel-logo--w9 {
+  max-width: 3.7rem;
+  height: 0.8rem;
+}
+
+.tv-guide-channel-logo--novo19 {
+  max-width: 3.25rem;
+  height: 0.75rem;
+}
+
+.tv-guide-channel-logo--t18 {
+  max-width: 1.3rem;
+  height: 1.3rem;
+}
+
+.tv-guide-france-number {
+  display: inline-grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+  border-radius: 0.25rem;
+  color: $white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tv-guide-france-number--2 { background: #e52a34; }
+.tv-guide-france-number--3 { background: #0088d1; }
+.tv-guide-france-number--4 { background: #7155bc; }
+.tv-guide-france-number--5 { background: #00a978; }
+
+.tv-guide-channel-identity [hidden] {
+  display: none;
+}
+
 .tv-guide-time-axis {
   position: sticky;
   left: 0;

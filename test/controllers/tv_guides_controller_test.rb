@@ -79,6 +79,40 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "shows a compact coloured number for France 2 and keeps other channel names" do
+    guide_import = create_successful_import
+    channel = create_france_two_guide_channel
+    create_programme(
+      guide_import, channel,
+      title: "Un si grand soleil",
+      starts_at: "2026-09-18T20:55:00+02:00",
+      ends_at: "2026-09-18T22:30:00+02:00"
+    )
+
+    get tv_guide_url, params: { date: "2026-09-18", guide_source_id: @guide_source.id }
+
+    assert_select "[data-tv-guide-channel='France2.fr']" do
+      assert_select ".badge", text: "2", count: 1
+      assert_select "[data-tv-guide-france-number]", text: "2", count: 1
+      assert_select "img", count: 0
+      assert_select "[data-tv-guide-channel-name]", text: "France 2"
+    end
+
+    @france_two.update!(display_name: "Chaîne de test")
+    get tv_guide_url, params: { date: "2026-09-18", guide_source_id: @guide_source.id }
+
+    assert_select "[data-tv-guide-channel='France2.fr'] img", count: 0
+    assert_select "[data-tv-guide-channel-name]", text: "Chaîne de test"
+
+    @france_two.update!(display_name: "RMC Découverte")
+    get tv_guide_url, params: { date: "2026-09-18", guide_source_id: @guide_source.id }
+    assert_select "[data-tv-guide-channel='France2.fr'] img[src*='RMC_D']", count: 1
+
+    @france_two.update!(display_name: "France Info")
+    get tv_guide_url, params: { date: "2026-09-18", guide_source_id: @guide_source.id }
+    assert_select "[data-tv-guide-channel='France2.fr'] img[src*='Franceinfo.svg']", count: 1
+  end
+
   test "defaults to the first enabled source and the current Paris day" do
     travel_to Time.utc(2026, 9, 18, 10) do
       get tv_guide_url
