@@ -22,7 +22,7 @@ class TvRecordingIntentsEmptyTest <
     )
     assert_select(
       "a[href='#{tv_recording_intents_path}']",
-      text: "Enregistrements"
+      text: "Enregistrements TV"
     )
   end
 end

@@ -47,8 +47,8 @@
         ) %>
       </div>
 
-      <fieldset class="tv-guide-toolbar-scale">
-        <legend>Échelle</legend>
+      <div class="tv-guide-toolbar-scale">
+        <span aria-hidden="true">Échelle</span>
 
         <div
           class="btn-group"
@@ -75,7 +75,7 @@
             ) %>
           <% end %>
         </div>
-      </fieldset>
+      </div>
     </div>
   <% end %>
 
@@ -95,7 +95,9 @@
           mouseover->tv-guide-information#open
           mouseout->tv-guide-information#close
           focusin->tv-guide-information#open
-          focusout->tv-guide-information#close">
+          focusout->tv-guide-information#close
+          click->tv-guide-information#toggle
+          keydown.esc->tv-guide-information#dismiss">
         <div
           class="tv-guide-grid"
           data-tv-guide-grid
@@ -220,7 +222,7 @@
                       </div>
                     <% end %>
 
-                  <% if recording_selected %>
+                    <% if recording_selected %>
                       <% recording_url =
                           tv_recording_intent_path(recording_intent) %>
                       <% recording_method = :delete %>
@@ -230,13 +232,21 @@
                       <% recording_url = tv_recording_intents_path %>
                       <% recording_method = :post %>
                       <% recording_label =
-                          "Sélectionner #{tv_programme_title(programme)} pour enregistrement" %>
-                  <% end %>
+                          if guide_channel.channel.kaffeine_name.present?
+                            "Programmer #{tv_programme_title(programme)} dans Kaffeine"
+                          else
+                            "Sélectionner #{tv_programme_title(programme)} pour enregistrement"
+                          end %>
+                    <% end %>
 
                     <% if recording_selected %>
                       <% if (link = recording_intent.kaffeine_schedule_link) %>
-                        <span class="tv-guide-schedule-status" data-tv-guide-schedule>
-                          Programmée (n° <%= link.kaffeine_key %>)
+                        <span
+                          class="tv-guide-schedule-status tv-guide-schedule-status--confirmed"
+                          data-tv-guide-schedule
+                          aria-label="Programmée dans Kaffeine, numéro <%= link.kaffeine_key %>"
+                          title="Programmée dans Kaffeine (n° <%= link.kaffeine_key %>)">
+                          <%= link.kaffeine_key %>
                         </span>
                       <% elsif guide_channel.channel.kaffeine_name.present? %>
                         <%= form_with(
@@ -271,7 +281,8 @@
                       class: "tv-guide-information",
                       data: { tv_guide_information: true },
                       aria: {
-                        label: "Informations sur #{tv_programme_title(programme)}"
+                        label: "Informations sur #{tv_programme_title(programme)}",
+                        expanded: false
                       }
                     ) %>
 

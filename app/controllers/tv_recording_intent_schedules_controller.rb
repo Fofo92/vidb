@@ -1,14 +1,5 @@
 class TvRecordingIntentSchedulesController < ApplicationController
-  SCHEDULING_ERRORS = [
-    Tv::RecordingIntentScheduleAttributes::Unavailable,
-    Tv::KaffeineScheduleMatcher::AmbiguousMatch,
-    Tv::RecordingIntentScheduler::LinkedScheduleMismatch,
-    Tv::KaffeineScheduleManager::Error,
-    Tv::KaffeineCommandRunner::CommandError,
-    Tv::KaffeineScheduleParser::InvalidResponse,
-    Tv::KaffeineScheduleLock::Busy,
-    ActiveRecord::RecordInvalid
-  ].freeze
+  SCHEDULING_ERRORS = Tv::RecordingIntentScheduler::ERRORS
 
   def create
     intent = Tv::RecordingIntent.find(params[:tv_recording_intent_id])

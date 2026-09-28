@@ -54,7 +54,7 @@ class TvGuidesControlsTest < ActionDispatch::IntegrationTest
       count: 3
     )
     assert_select(
-      "input[type='radio'][name='zoom'][value='2'][checked]",
+      "input[type='radio'][name='zoom'][value='1'][checked]",
       count: 1
     )
   end

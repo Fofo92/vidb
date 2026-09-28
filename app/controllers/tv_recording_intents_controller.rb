@@ -1,4 +1,6 @@
 class TvRecordingIntentsController < ApplicationController
+  SCHEDULING_ERRORS = Tv::RecordingIntentScheduler::ERRORS
+
   def index
     @recording_intents = selected_recording_intents
     @recording_intents_by_date = recording_intents_by_date
@@ -9,14 +11,13 @@ class TvRecordingIntentsController < ApplicationController
       params.require(:broadcast_observation_id)
     )
 
-    Tv::RecordingIntentSelector.new(
+    intent = Tv::RecordingIntentSelector.new(
       broadcast_observation: observation
     ).call
 
-    redirect_to(
-      tv_guide_path(guide_params),
-      notice: "Le programme a été sélectionné pour enregistrement."
-    )
+    redirect_to_selected_intent(schedule_selected_intent(intent))
+  rescue *SCHEDULING_ERRORS => e
+    redirect_to_unscheduled_intent(e)
   end
 
   def destroy
@@ -33,6 +34,34 @@ class TvRecordingIntentsController < ApplicationController
   end
 
   private
+
+  def redirect_to_selected_intent(schedule)
+    notice = if schedule
+               "Programmation Kaffeine confirmée (n° #{schedule.key})."
+             else
+               "Programme sélectionné, mais chaîne non reliée à Kaffeine."
+             end
+
+    redirect_to tv_guide_path(guide_params), notice:
+  end
+
+  def redirect_to_unscheduled_intent(error)
+    Rails.logger.warn("Kaffeine scheduling rejected: #{error.class}: #{error.message}")
+    redirect_to(
+      tv_guide_path(guide_params),
+      alert: "Programmation non confirmée : le programme reste sélectionné. Vérifiez Kaffeine avant de réessayer."
+    )
+  end
+
+  def schedule_selected_intent(intent)
+    channel = intent.broadcast_observation.guide_channel.channel
+    return unless channel&.kaffeine_name.present?
+
+    Tv::RecordingIntentScheduler.new(
+      recording_intent: intent,
+      client: Tv::KaffeineDbus.new
+    ).call
+  end
 
   def cancel_intent(intent)
     Tv::RecordingIntentScheduleCanceller.new(

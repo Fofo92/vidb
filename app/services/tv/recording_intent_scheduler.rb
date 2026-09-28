@@ -2,6 +2,17 @@ module Tv
   class RecordingIntentScheduler
     class LinkedScheduleMismatch < StandardError; end
 
+    ERRORS = [
+      RecordingIntentScheduleAttributes::Unavailable,
+      KaffeineScheduleMatcher::AmbiguousMatch,
+      LinkedScheduleMismatch,
+      KaffeineScheduleManager::Error,
+      KaffeineCommandRunner::CommandError,
+      KaffeineScheduleParser::InvalidResponse,
+      KaffeineScheduleLock::Busy,
+      ActiveRecord::RecordInvalid
+    ].freeze
+
     def initialize(recording_intent:, client:, manager: nil, lock: KaffeineScheduleLock.new)
       @recording_intent = recording_intent
       @client = client

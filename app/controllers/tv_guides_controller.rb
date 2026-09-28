@@ -1,6 +1,6 @@
 class TvGuidesController < ApplicationController
   MINUTE_HEIGHTS = [1, 2, 4].freeze
-  DEFAULT_MINUTE_HEIGHT = 2
+  DEFAULT_MINUTE_HEIGHT = 1
   MINIMUM_PROGRAMME_HEIGHT = 24
 
   def show

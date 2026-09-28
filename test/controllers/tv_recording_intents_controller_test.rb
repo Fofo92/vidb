@@ -40,6 +40,42 @@ class TvRecordingIntentsControllerTest <
     assert_redirected_to tv_guide_path(guide_params)
   end
 
+  test "selects and schedules a linked channel in one request" do
+    connect_channel_to_kaffeine
+    client = fake_client([])
+    client.define_singleton_method(:create_schedule) do |**attributes|
+      entries << Tv::KaffeineSchedule.new(key: 986, **attributes, non_inactive: false)
+      986
+    end
+
+    Tv::KaffeineDbus.stub(:new, client) do
+      post tv_recording_intents_url, params: request_params
+    end
+
+    intent = Tv::RecordingIntent.find_by!(broadcast_observation: @observation)
+    assert_equal 986, intent.kaffeine_schedule_link.kaffeine_key
+    assert_redirected_to tv_guide_path(guide_params)
+    assert_match(/Programmation Kaffeine confirmée/, flash[:notice])
+  end
+
+  test "keeps the selection visible if Kaffeine is unavailable" do
+    connect_channel_to_kaffeine
+    client = fake_client([])
+    client.define_singleton_method(:schedules) do
+      raise Tv::KaffeineCommandRunner::CommandError, "session unavailable"
+    end
+
+    Tv::KaffeineDbus.stub(:new, client) do
+      post tv_recording_intents_url, params: request_params
+    end
+
+    intent = Tv::RecordingIntent.find_by!(broadcast_observation: @observation)
+    assert intent.status_selected?
+    assert_nil intent.kaffeine_schedule_link
+    assert_redirected_to tv_guide_path(guide_params)
+    assert_match(/Programmation non confirmée/, flash[:alert])
+  end
+
   test "cancels a selection and returns to the same guide view" do
     intent = Tv::RecordingIntentSelector.new(
       broadcast_observation: @observation
@@ -86,6 +122,12 @@ class TvRecordingIntentsControllerTest <
   end
 
   private
+
+  def connect_channel_to_kaffeine
+    channel = Tv::Channel.create!(display_name: "France 2", kaffeine_name: "France 2")
+    @observation.guide_channel.update!(channel:)
+    @observation.update!(titles: [{ "value" => "Le film", "language" => "fr" }])
+  end
 
   def linked_schedule(intent)
     Tv::KaffeineSchedule.new(

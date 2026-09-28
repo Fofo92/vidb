@@ -32,7 +32,7 @@ class TvGuidesTimelineTest < ActionDispatch::IntegrationTest
     assert_select "[data-tv-guide-time-tick]", count: 24
     assert_select(
       "[data-tv-guide-grid]" \
-      "[data-tv-guide-minute-height='2']"
+      "[data-tv-guide-minute-height='1']"
     )
   end
 
@@ -57,7 +57,7 @@ class TvGuidesTimelineTest < ActionDispatch::IntegrationTest
   test "keeps a short programme readable and interactive" do
     programme = create_short_programme
 
-    get tv_guide_url(date: "2026-09-18")
+    get tv_guide_url(date: "2026-09-18", zoom: "2")
 
     assert_response :success
     assert_short_programme_geometry(programme)

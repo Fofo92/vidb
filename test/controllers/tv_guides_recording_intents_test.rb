@@ -32,11 +32,24 @@ class TvGuidesRecordingIntentsTest <
           "[value='#{@programme.id}']"
         )
         assert_select(
-          "button[data-tv-guide-recording-toggle]",
+          "button[data-tv-guide-recording-toggle]" \
+          "[aria-label*='Sélectionner']",
           count: 1
         )
       end
       assert_information_button
+    end
+  end
+
+  test "offers one click scheduling for an unselected linked channel" do
+    @programme.guide_channel.channel.update!(kaffeine_name: "France 2")
+
+    get tv_guide_url, params: guide_params
+
+    assert_select programme_selector("unselected") do
+      assert_select "button[data-tv-guide-recording-toggle]" \
+                    "[aria-label*='Programmer'][aria-label*='Kaffeine']"
+      assert_select "form button[data-tv-guide-information]", count: 0
     end
   end
 
@@ -58,12 +71,35 @@ class TvGuidesRecordingIntentsTest <
 
     get tv_guide_url, params: guide_params
 
+    assert_select programme_selector("selected") do
+      assert_select "button[data-tv-guide-recording-toggle][aria-label*='Annuler']"
+    end
     assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']" do
       assert_select "input[name='return_to'][value='guide']"
       assert_select "input[name='date'][value='2026-09-27']"
       assert_select "button[type='submit'][aria-label='Programmer dans Kaffeine']",
                     text: "Kaffeine"
     end
+  end
+
+  test "shows only the Kaffeine number on a confirmed programme" do
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    schedule = Tv::KaffeineSchedule.new(
+      key: 986,
+      name: "Film du soir",
+      channel: "France 2",
+      starts_at: intent.capture_starts_at,
+      duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
+      repeat: 0,
+      non_inactive: false
+    )
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+
+    get tv_guide_url, params: guide_params
+
+    assert_select "#{programme_selector('selected')} [data-tv-guide-schedule]" \
+                  "[aria-label*='numéro 986']", text: /986/
+    assert_equal "986", css_select("[data-tv-guide-schedule]").first.text.strip
   end
 
   private
@@ -98,7 +134,8 @@ class TvGuidesRecordingIntentsTest <
 
   def assert_information_button
     assert_select(
-      "button[data-tv-guide-information][type='button']",
+      "button[data-tv-guide-information][type='button']" \
+      "[aria-expanded='false']",
       text: "i",
       count: 1
     )
