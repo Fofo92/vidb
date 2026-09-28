@@ -147,6 +147,27 @@ class TvRecordingIntentsIndexTest <
     assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']", count: 0
   end
 
+  test "explains a linked Kaffeine title without an XMLTV episode" do
+    channel = Tv::Channel.create!(display_name: "France 2", kaffeine_name: "France 2")
+    @guide_channel.update!(channel:)
+    intent = create_intent(hour: 18, fingerprint: "4" * 64)
+    intent.broadcast_observation.update!(
+      episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
+    )
+    attributes = Tv::RecordingIntentScheduleAttributes.new(recording_intent: intent).call
+    schedule = Tv::KaffeineSchedule.new(key: 982, **attributes, non_inactive: false)
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :preexisting)
+
+    get tv_recording_intents_url
+
+    assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
+                  text: "Programme de 18 h — Saison 11, épisode 5"
+    assert_select "#{recording_intent_selector(intent)} [data-kaffeine-schedule]",
+                  text: /Programmée \(n° 982\)/
+    assert_select "#{recording_intent_selector(intent)} [data-kaffeine-name]",
+                  text: /Nom Kaffeine à la liaison : Programme de 18 h/
+  end
+
   test "explains when a channel has no Kaffeine mapping" do
     intent = create_intent(hour: 18, fingerprint: "3" * 64)
 

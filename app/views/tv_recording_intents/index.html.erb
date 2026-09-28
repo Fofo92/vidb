@@ -85,6 +85,11 @@
                   <div class="mt-2" data-kaffeine-schedule>
                     <% if (link = recording_intent.kaffeine_schedule_link) %>
                       <span class="text-success">Programmée (n° <%= link.kaffeine_key %>)</span>
+                      <% if link.name != recording_intent_title(recording_intent) %>
+                        <small class="d-block text-body-secondary" data-kaffeine-name>
+                          Nom Kaffeine à la liaison : <%= link.name %>
+                        </small>
+                      <% end %>
                     <% elsif recording_intent.broadcast_observation.guide_channel.channel&.kaffeine_name.present? %>
                       <%= form_with(
                         url: tv_recording_intent_schedule_path(recording_intent),
