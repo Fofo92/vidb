@@ -207,35 +207,23 @@
                     </div>
 
                     <strong data-tv-guide-title>
-                      <%= tv_programme_title(programme) %>
+                      <%= tv_programme_label(programme) %>
                     </strong>
-
-                    <% if (episode = tv_programme_episode(programme)) %>
-                      <div data-tv-guide-episode>
-                        <%= episode %>
-                      </div>
-                    <% end %>
-
-                    <% if (subtitle = tv_programme_subtitle(programme)) %>
-                      <div data-tv-guide-subtitle>
-                        <%= subtitle %>
-                      </div>
-                    <% end %>
 
                     <% if recording_selected %>
                       <% recording_url =
                           tv_recording_intent_path(recording_intent) %>
                       <% recording_method = :delete %>
                       <% recording_label =
-                          "Annuler la sélection de #{tv_programme_title(programme)}" %>
+                          "Annuler la sélection de #{tv_programme_label(programme)}" %>
                     <% else %>
                       <% recording_url = tv_recording_intents_path %>
                       <% recording_method = :post %>
                       <% recording_label =
                           if guide_channel.channel.kaffeine_name.present?
-                            "Programmer #{tv_programme_title(programme)} dans Kaffeine"
+                            "Programmer #{tv_programme_label(programme)} dans Kaffeine"
                           else
-                            "Sélectionner #{tv_programme_title(programme)} pour enregistrement"
+                            "Sélectionner #{tv_programme_label(programme)} pour enregistrement"
                           end %>
                     <% end %>
 
@@ -281,7 +269,7 @@
                       class: "tv-guide-information",
                       data: { tv_guide_information: true },
                       aria: {
-                        label: "Informations sur #{tv_programme_title(programme)}",
+                        label: "Informations sur #{tv_programme_label(programme)}",
                         expanded: false
                       }
                     ) %>

@@ -68,7 +68,20 @@ class TvRecordingIntentsIndexTest <
     get tv_recording_intents_url
 
     assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
-                  text: "Programme de 18 h — Saison 3, épisode 8"
+                  text: "Programme de 18 h - S03 E08"
+  end
+
+  test "uses the episode subtitle in the recording name" do
+    intent = create_intent(hour: 18, fingerprint: "5" * 64)
+    intent.broadcast_observation.update!(
+      episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.7." }],
+      subtitles: [{ "value" => "Le départ", "language" => "fr" }]
+    )
+
+    get tv_recording_intents_url
+
+    assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
+                  text: "Programme de 18 h - S03 E08 - Le départ"
   end
 
   test "cancels a selection and returns to the summary" do
@@ -163,7 +176,7 @@ class TvRecordingIntentsIndexTest <
     get tv_recording_intents_url
 
     assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
-                  text: "Programme de 18 h — Saison 11, épisode 5"
+                  text: "Programme de 18 h - S11 E05"
     assert_select "#{recording_intent_selector(intent)} [data-kaffeine-schedule]",
                   text: /Programmée \(n° 982\)/
     assert_select "#{recording_intent_selector(intent)} [data-kaffeine-name]",

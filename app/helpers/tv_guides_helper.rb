@@ -1,7 +1,10 @@
 module TvGuidesHelper
   def tv_programme_title(programme)
-    localized_value(programme.titles, "fr") ||
-      first_value(programme.titles)
+    Tv::ProgrammeDisplayName.title(programme)
+  end
+
+  def tv_programme_label(programme)
+    Tv::ProgrammeDisplayName.call(programme)
   end
 
   def tv_programme_original_title(programme)
@@ -14,8 +17,7 @@ module TvGuidesHelper
   end
 
   def tv_programme_subtitle(programme)
-    localized_value(programme.subtitles, "fr") ||
-      first_value(programme.subtitles)
+    Tv::ProgrammeDisplayName.subtitle(programme)
   end
 
   def tv_programme_category(programme)

@@ -45,7 +45,7 @@ module Tv
       assert_equal @replacement, result
       assert_equal [@original, @attributes], @manager.replaced
       assert_equal 1050, link.reload.kaffeine_key
-      assert_equal "La stagiaire — Saison 11, épisode 5", link.name
+      assert_equal "La stagiaire - S11 E05", link.name
     end
 
     test "does nothing when the linked schedule already has the full name" do

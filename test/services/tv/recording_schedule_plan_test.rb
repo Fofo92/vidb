@@ -68,8 +68,25 @@ module Tv
       result = RecordingSchedulePlan.new(recording_intent: @intent, client:).call
 
       assert_equal legacy, result.existing_schedule
-      assert_equal "Le film — Saison 11, épisode 5", result.attributes.fetch(:name)
+      assert_equal "Le film - S11 E05", result.attributes.fetch(:name)
       assert_equal 1, client.reads
     end
+    test "recognizes the former season and episode spelling" do
+      @intent.broadcast_observation.update!(
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
+      )
+      attributes = RecordingIntentScheduleAttributes.new(recording_intent: @intent).call
+      old = KaffeineSchedule.new(
+        key: 1050, **attributes.merge(name: "Le film — Saison 11, épisode 5"),
+        non_inactive: false
+      )
+      client = FakeClient.new([old])
+
+      result = RecordingSchedulePlan.new(recording_intent: @intent, client:).call
+
+      assert_equal old, result.existing_schedule
+      assert_equal "Le film - S11 E05", result.attributes.fetch(:name)
+    end
+
   end
 end

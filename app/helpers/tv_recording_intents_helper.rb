@@ -11,10 +11,7 @@ module TvRecordingIntentsHelper
 
   def recording_intent_title(recording_intent)
     programme = recording_intent.broadcast_observation
-    title = tv_programme_title(programme).presence || "Programme sans titre"
-    episode = tv_programme_episode(programme)
-
-    episode ? "#{title} — #{episode}" : title
+    tv_programme_label(programme).presence || "Programme sans titre"
   end
 
   def recording_intent_time(time)

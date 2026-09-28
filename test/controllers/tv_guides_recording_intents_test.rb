@@ -41,6 +41,18 @@ class TvGuidesRecordingIntentsTest <
     end
   end
 
+  test "uses the same episode name as the recording and Kaffeine" do
+    @programme.update!(
+      episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.7." }],
+      subtitles: [{ "value" => "Le départ", "language" => "fr" }]
+    )
+
+    get tv_guide_url, params: guide_params
+
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-title]",
+                  text: "Film du soir - S03 E08 - Le départ"
+  end
+
   test "offers one click scheduling for an unselected linked channel" do
     @programme.guide_channel.channel.update!(kaffeine_name: "France 2")
 

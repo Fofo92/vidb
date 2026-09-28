@@ -33,8 +33,17 @@ module Tv
         episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }]
       )
 
-      assert_equal "Le film — Saison 11, épisode 5", attributes.fetch(:name)
+      assert_equal "Le film - S11 E05", attributes.fetch(:name)
       assert_equal "Le film", RecordingIntentScheduleAttributes.new(recording_intent: @intent).base_name
+    end
+
+    test "adds the episode subtitle when available" do
+      @intent.broadcast_observation.update!(
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "10.4." }],
+        subtitles: [{ "value" => "Un nouveau départ", "language" => "fr" }]
+      )
+
+      assert_equal "Le film - S11 E05 - Un nouveau départ", attributes.fetch(:name)
     end
 
     test "rejects a cancelled intent" do

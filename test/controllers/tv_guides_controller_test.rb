@@ -167,8 +167,7 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
   def editorial_expectations
     {
       "[data-tv-guide-original-title]" => /Chronicles of the Sun/,
-      "[data-tv-guide-episode]" => /Saison 8.*épisode 43/i,
-      "[data-tv-guide-subtitle]" => "Épisode du dimanche",
+      "[data-tv-guide-title]" => "Un si grand soleil - S08 E43 - Épisode du dimanche",
       "[data-tv-guide-category]" => "Série dramatique",
       "[data-tv-guide-secondary] " \
       "[data-tv-guide-description]" => "Résumé de l’épisode."
