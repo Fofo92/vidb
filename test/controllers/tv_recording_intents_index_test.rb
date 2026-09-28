@@ -71,6 +71,40 @@ class TvRecordingIntentsIndexTest <
                   text: "Programme de 18 h - S03 E08"
   end
 
+  test "allows confirming a completed capture and removing the confirmation" do
+    intent = create_intent(hour: 18, fingerprint: "7" * 64)
+    schedule = Tv::KaffeineSchedule.new(
+      key: 982, name: "Programme de 18 h", channel: "France 2",
+      starts_at: intent.capture_starts_at,
+      duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
+      repeat: 0, non_inactive: false
+    )
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+
+    travel_to paris.local(2026, 9, 28, 12) do
+      get tv_recording_intents_url
+      assert_select "form[action='#{tv_recording_intent_recording_confirmation_path(intent)}'] button",
+                    text: "J’ai vérifié le fichier"
+
+      post tv_recording_intent_recording_confirmation_url(intent)
+      assert_predicate intent.reload, :recording_verified_at?
+
+      delete tv_recording_intent_recording_confirmation_url(intent)
+      assert_nil intent.reload.recording_verified_at
+    end
+  end
+
+  test "rejects confirmation without a link even after the capture has finished" do
+    intent = create_intent(hour: 18, fingerprint: "8" * 64)
+
+    travel_to paris.local(2026, 9, 28, 12) do
+      post tv_recording_intent_recording_confirmation_url(intent)
+    end
+
+    assert_nil intent.reload.recording_verified_at
+    assert_redirected_to tv_recording_intents_url
+  end
+
   test "uses the episode subtitle in the recording name" do
     intent = create_intent(hour: 18, fingerprint: "5" * 64)
     intent.broadcast_observation.update!(

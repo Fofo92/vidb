@@ -53,6 +53,54 @@ class TvGuidesRecordingIntentsTest <
                   text: "Film du soir - S03 E08 - Le départ"
   end
 
+  test "marks a rerun only after a previous recording was verified" do
+    @programme.update!(episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.7." }])
+    previous = @programme.guide_channel.broadcast_observations.create!(
+      fingerprint: "c" * 64,
+      starts_at: Time.utc(2026, 9, 25, 18),
+      ends_at: Time.utc(2026, 9, 25, 19, 30),
+      titles: @programme.titles,
+      episode_numbers: @programme.episode_numbers
+    )
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: previous).call
+    schedule = Tv::KaffeineSchedule.new(
+      key: 970, name: "Film du soir - S03 E08", channel: "France 2",
+      starts_at: intent.capture_starts_at,
+      duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
+      repeat: 0, non_inactive: false
+    )
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+
+    get tv_guide_url, params: guide_params
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording]", count: 0
+
+    intent.update!(recording_verified_at: Time.utc(2026, 9, 26, 12))
+    get tv_guide_url, params: guide_params
+
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording]",
+                  text: /Déjà enregistré/
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording-detail]",
+                  text: /25\/09\/2026/
+    assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
+  end
+
+  test "does not confuse a different episode with a verified recording" do
+    @programme.update!(episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.8." }])
+    previous = @programme.guide_channel.broadcast_observations.create!(
+      fingerprint: "c" * 64,
+      starts_at: Time.utc(2026, 9, 25, 18),
+      ends_at: Time.utc(2026, 9, 25, 19, 30),
+      titles: @programme.titles,
+      episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.7." }]
+    )
+    Tv::RecordingIntentSelector.new(broadcast_observation: previous).call
+      .update!(recording_verified_at: Time.utc(2026, 9, 26, 12))
+
+    get tv_guide_url, params: guide_params
+
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording]", count: 0
+  end
+
   test "offers one click scheduling for an unselected linked channel" do
     @programme.guide_channel.channel.update!(kaffeine_name: "France 2")
 

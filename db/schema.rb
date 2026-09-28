@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_115500) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -231,6 +231,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_115500) do
     t.integer "effective_padding_before_seconds", default: 600, null: false
     t.timestamptz "programme_ends_at", null: false
     t.timestamptz "programme_starts_at", null: false
+    t.datetime "recording_verified_at"
     t.integer "requested_padding_after_seconds", default: 600, null: false
     t.integer "requested_padding_before_seconds", default: 600, null: false
     t.string "status", default: "selected", null: false

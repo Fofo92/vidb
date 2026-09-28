@@ -29,6 +29,10 @@ module Tv
       programme_ends_at + effective_padding_after_seconds.seconds
     end
 
+    def recording_confirmable?
+      status_selected? && kaffeine_schedule_link.present? && capture_ends_at <= Time.current
+    end
+
     private
 
     def validate_programme_interval

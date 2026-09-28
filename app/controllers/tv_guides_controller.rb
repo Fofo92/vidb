@@ -8,13 +8,20 @@ class TvGuidesController < ApplicationController
     @date = selected_date
     @minute_height = selected_minute_height
     @show_all_channels = show_all_channels?
-    @programmes_by_channel = programmes_by_channel
+    load_programmes
     @timelines_by_channel = timelines_by_channel
     @minimum_programme_height = MINIMUM_PROGRAMME_HEIGHT
     @timeline_projection = timeline_projection
   end
 
   private
+
+  def load_programmes
+    @programmes_by_channel = programmes_by_channel
+    @previous_recordings = Tv::PreviouslyRecordedEpisodes.new.call(
+      @programmes_by_channel.values.flatten
+    )
+  end
 
   def timeline_projection
     timeline = @timelines_by_channel.values.first

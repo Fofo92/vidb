@@ -90,6 +90,19 @@
                           Nom Kaffeine à la liaison : <%= link.name %>
                         </small>
                       <% end %>
+                      <% if recording_intent.recording_verified_at? %>
+                        <span class="d-block text-success" data-recording-verified>
+                          Fichier vérifié
+                        </span>
+                        <%= button_to "Retirer la confirmation",
+                                      tv_recording_intent_recording_confirmation_path(recording_intent),
+                                      method: :delete,
+                                      class: "btn btn-sm btn-outline-secondary" %>
+                      <% elsif recording_intent.recording_confirmable? %>
+                        <%= button_to "J’ai vérifié le fichier",
+                                      tv_recording_intent_recording_confirmation_path(recording_intent),
+                                      class: "btn btn-sm btn-outline-success" %>
+                      <% end %>
                     <% elsif recording_intent.broadcast_observation.guide_channel.channel&.kaffeine_name.present? %>
                       <%= form_with(
                         url: tv_recording_intent_schedule_path(recording_intent),
