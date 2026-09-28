@@ -51,6 +51,21 @@ class TvGuidesRecordingIntentsTest <
     assert_selected_programme(intent)
   end
 
+  test "offers Kaffeine scheduling from the guide when the channel is linked" do
+    channel = @programme.guide_channel.channel
+    channel.update!(kaffeine_name: "France 2")
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+
+    get tv_guide_url, params: guide_params
+
+    assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']" do
+      assert_select "input[name='return_to'][value='guide']"
+      assert_select "input[name='date'][value='2026-09-27']"
+      assert_select "button[type='submit'][aria-label='Programmer dans Kaffeine']",
+                    text: "Kaffeine"
+    end
+  end
+
   private
 
   def assert_selected_programme(intent)

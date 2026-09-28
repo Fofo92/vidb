@@ -78,7 +78,10 @@ class TvGuidesController < ApplicationController
     Tv::DailyGuide.new(
       guide_source: @guide_source,
       date: @date
-    ).call.includes(:recording_intent, guide_channel: :channel).group_by(&:guide_channel)
+    ).call.includes(
+      recording_intent: :kaffeine_schedule_link,
+      guide_channel: :channel
+    ).group_by(&:guide_channel)
   end
 
   def selected_date

@@ -2,6 +2,7 @@
 <p class="text-body-secondary">Une sélection doit être programmée dans Kaffeine pour être enregistrée.</p>
 <p><%= link_to "Voir toutes les programmations Kaffeine", tv_kaffeine_schedules_path %></p>
 
+<div data-controller="recording-intents-scroll" data-action="submit->recording-intents-scroll#remember">
 <% if @recording_intents.empty? %>
   <p
     class="alert alert-info"
@@ -108,3 +109,4 @@
     </section>
   <% end %>
 <% end %>
+</div>

@@ -28,8 +28,8 @@ class TvRecordingIntentsController < ApplicationController
          Tv::KaffeineScheduleManager::VerificationError,
          Tv::KaffeineCommandRunner::CommandError,
          Tv::KaffeineScheduleParser::InvalidResponse,
-         Tv::KaffeineScheduleLock::Busy
-    redirect_to_blocked_cancellation
+         Tv::KaffeineScheduleLock::Busy => e
+    redirect_to_blocked_cancellation(e)
   end
 
   private
@@ -48,7 +48,8 @@ class TvRecordingIntentsController < ApplicationController
     )
   end
 
-  def redirect_to_blocked_cancellation
+  def redirect_to_blocked_cancellation(error)
+    Rails.logger.warn("Kaffeine cancellation rejected: #{error.class}: #{error.message}")
     redirect_to(
       recording_intent_redirect_path,
       alert: "Annulation non confirmée : vérifiez la programmation dans Kaffeine."

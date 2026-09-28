@@ -59,6 +59,18 @@ class TvRecordingIntentsIndexTest <
     assert_select "a[href='#{tv_kaffeine_schedules_path}']", text: "Voir toutes les programmations Kaffeine"
   end
 
+  test "shows season and episode when XMLTV supplies them" do
+    intent = create_intent(hour: 18, fingerprint: "9" * 64)
+    intent.broadcast_observation.update!(
+      episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.7." }]
+    )
+
+    get tv_recording_intents_url
+
+    assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
+                  text: "Programme de 18 h — Saison 3, épisode 8"
+  end
+
   test "cancels a selection and returns to the summary" do
     intent = create_intent(
       hour: 18,

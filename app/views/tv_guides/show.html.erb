@@ -89,8 +89,13 @@
       <div
         class="tv-guide-scroll"
         data-tv-guide-scroll
-        data-controller="tv-guide-scroll"
-        data-action="submit->tv-guide-scroll#remember">
+        data-controller="tv-guide-scroll tv-guide-information"
+        data-action="
+          submit->tv-guide-scroll#remember
+          mouseover->tv-guide-information#open
+          mouseout->tv-guide-information#close
+          focusin->tv-guide-information#open
+          focusout->tv-guide-information#close">
         <div
           class="tv-guide-grid"
           data-tv-guide-grid
@@ -215,7 +220,7 @@
                       </div>
                     <% end %>
 
-                    <% if recording_selected %>
+                  <% if recording_selected %>
                       <% recording_url =
                           tv_recording_intent_path(recording_intent) %>
                       <% recording_method = :delete %>
@@ -226,6 +231,38 @@
                       <% recording_method = :post %>
                       <% recording_label =
                           "Sélectionner #{tv_programme_title(programme)} pour enregistrement" %>
+                  <% end %>
+
+                    <% if recording_selected %>
+                      <% if (link = recording_intent.kaffeine_schedule_link) %>
+                        <span class="tv-guide-schedule-status" data-tv-guide-schedule>
+                          Programmée (n° <%= link.kaffeine_key %>)
+                        </span>
+                      <% elsif guide_channel.channel.kaffeine_name.present? %>
+                        <%= form_with(
+                          url: tv_recording_intent_schedule_path(recording_intent),
+                          method: :post,
+                          html: { class: "tv-guide-schedule-form" }
+                        ) do %>
+                          <%= hidden_field_tag :return_to, "guide" %>
+                          <%= hidden_field_tag :date, @date.iso8601 %>
+                          <%= hidden_field_tag :guide_source_id, @guide_source.id %>
+                          <%= hidden_field_tag :zoom, @minute_height %>
+                          <% if @show_all_channels %>
+                            <%= hidden_field_tag :all_channels, "1" %>
+                          <% end %>
+                          <%= button_tag(
+                            "Kaffeine",
+                            type: "submit",
+                            class: "tv-guide-schedule-button",
+                            aria: { label: "Programmer dans Kaffeine" }
+                          ) %>
+                        <% end %>
+                      <% else %>
+                        <span class="tv-guide-schedule-status" data-tv-guide-schedule>
+                          Chaîne non reliée à Kaffeine
+                        </span>
+                      <% end %>
                     <% end %>
 
                     <%= button_tag(

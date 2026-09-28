@@ -1,4 +1,6 @@
 module TvRecordingIntentsHelper
+  include TvGuidesHelper
+
   def recording_intent_channel_name(recording_intent)
     guide_channel =
       recording_intent.broadcast_observation.guide_channel
@@ -8,11 +10,11 @@ module TvRecordingIntentsHelper
   end
 
   def recording_intent_title(recording_intent)
-    recording_intent.broadcast_observation
-                    .titles
-                    .first
-                    &.fetch("value", nil) ||
-      "Programme sans titre"
+    programme = recording_intent.broadcast_observation
+    title = tv_programme_title(programme).presence || "Programme sans titre"
+    episode = tv_programme_episode(programme)
+
+    episode ? "#{title} — #{episode}" : title
   end
 
   def recording_intent_time(time)

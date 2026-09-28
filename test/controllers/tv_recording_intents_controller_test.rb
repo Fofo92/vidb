@@ -19,10 +19,11 @@ class TvRecordingIntentsControllerTest <
     guide_channel = @source.guide_channels.create!(
       external_id: "France2.fr"
     )
+    start_time = 2.days.from_now.change(usec: 0)
     @observation = guide_channel.broadcast_observations.create!(
       fingerprint: "a" * 64,
-      starts_at: Time.utc(2026, 9, 27, 18, 0),
-      ends_at: Time.utc(2026, 9, 27, 19, 30)
+      starts_at: start_time,
+      ends_at: start_time + 90.minutes
     )
   end
 
@@ -55,7 +56,8 @@ class TvRecordingIntentsControllerTest <
   test "removes a linked Kaffeine schedule before cancelling" do
     intent = Tv::RecordingIntentSelector.new(broadcast_observation: @observation).call
     schedule = linked_schedule(intent)
-    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+    link = Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+    assert link.reload.matches?(schedule)
     client = fake_client([schedule])
 
     Tv::KaffeineDbus.stub(:new, client) do
@@ -115,7 +117,7 @@ class TvRecordingIntentsControllerTest <
 
   def guide_params
     {
-      date: "2026-09-27",
+      date: @observation.starts_at.in_time_zone("Europe/Paris").to_date.iso8601,
       guide_source_id: @source.id,
       zoom: "4",
       all_channels: "1"

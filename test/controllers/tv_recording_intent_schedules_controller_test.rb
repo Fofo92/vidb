@@ -62,4 +62,22 @@ class TvRecordingIntentSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 982, @intent.reload.kaffeine_schedule_link.kaffeine_key
     assert_match(/non confirmée/, flash[:alert])
   end
+
+  test "returns to the guide and shows the confirmed schedule" do
+    client = FakeClient.new
+    guide_params = {
+      return_to: "guide",
+      date: "2030-09-30",
+      guide_source_id: @intent.broadcast_observation.guide_channel.guide_source_id.to_s,
+      zoom: "1",
+      all_channels: "1"
+    }
+
+    Tv::KaffeineDbus.stub(:new, client) do
+      post tv_recording_intent_schedule_url(@intent), params: guide_params
+    end
+
+    assert_redirected_to tv_guide_url(guide_params.except(:return_to))
+    assert_equal 983, @intent.reload.kaffeine_schedule_link.kaffeine_key
+  end
 end
