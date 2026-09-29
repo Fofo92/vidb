@@ -4,7 +4,7 @@ module Tv
       by_episode = confirmed_episodes
 
       programmes.each_with_object({}) do |programme, matches|
-        key = episode_key(programme)
+        key = ProgrammeEpisodeKey.call(programme)
         intent = by_episode[key]&.select do |candidate|
           candidate.programme_ends_at < programme.starts_at
         end&.max_by(&:programme_starts_at)
@@ -19,20 +19,11 @@ module Tv
                                 .where.not(recording_verified_at: nil)
                                 .includes(:broadcast_observation)
       previous.each_with_object({}) do |intent, matches|
-        key = episode_key(intent.broadcast_observation)
+        key = ProgrammeEpisodeKey.call(intent.broadcast_observation)
         next unless key
 
         (matches[key] ||= []) << intent
       end
-    end
-
-    def episode_key(programme)
-      title = ProgrammeDisplayName.title(programme)&.squish&.downcase
-      entry = programme.episode_numbers.find { |number| number["system"] == "xmltv_ns" }
-      episode = entry&.fetch("value", nil)&.match(/\A(\d+)\.(\d+)\./)
-      return if title.blank? || !episode
-
-      [title, episode[1].to_i, episode[2].to_i]
     end
   end
 end

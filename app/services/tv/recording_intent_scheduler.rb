@@ -1,6 +1,7 @@
 module Tv
   class RecordingIntentScheduler
     class LinkedScheduleMismatch < StandardError; end
+    class ScheduledEpisodeDuplicate < StandardError; end
 
     ERRORS = [
       RecordingIntentScheduleAttributes::Unavailable,
@@ -11,6 +12,7 @@ module Tv
       KaffeineScheduleParser::InvalidResponse,
       KaffeineScheduleLock::Busy,
       MultiplexCapacityGuard::Warning,
+      ScheduledEpisodeDuplicate,
       ActiveRecord::RecordInvalid
     ].freeze
 
@@ -51,8 +53,21 @@ module Tv
     end
 
     def create_with_capacity_check(attributes)
-      MultiplexCapacityGuard.new(schedules: @client.schedules, attributes:).check!
+      schedules = @client.schedules
+      check_duplicate!(schedules)
+      MultiplexCapacityGuard.new(schedules:, attributes:).check!
       @manager.create(**attributes)
+    end
+
+    def check_duplicate!(schedules)
+      programme = @recording_intent.broadcast_observation
+      existing = ScheduledEpisodeDuplicates.new(schedules:).call([programme])[programme.id]
+      return unless existing
+
+      label = ProgrammeDisplayName.call(programme)
+      date = existing.programme_starts_at.in_time_zone("Europe/Paris").strftime("%d/%m à %H:%M")
+      raise ScheduledEpisodeDuplicate, "#{label} est déjà programmé le #{date} (Kaffeine n° " \
+                                       "#{existing.kaffeine_schedule_link.kaffeine_key})."
     end
   end
 end

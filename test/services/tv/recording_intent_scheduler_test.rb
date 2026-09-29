@@ -91,6 +91,53 @@ module Tv
       assert_equal 619, scheduler(client).call.key
     end
 
+    test "rejects a programmed episode on another day and channel" do
+      @intent.broadcast_observation.update!(
+        titles: [{ "value" => "9-1-1", "language" => "fr" }],
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "3.3." }]
+      )
+      other_channel = Channel.create!(display_name: "6Ter", kaffeine_name: "6Ter")
+      guide_channel = @intent.broadcast_observation.guide_channel.guide_source
+                             .guide_channels.create!(external_id: "6Ter.fr", channel: other_channel)
+      other = guide_channel.broadcast_observations.create!(
+        fingerprint: "b" * 64,
+        starts_at: Time.utc(2030, 1, 2, 18),
+        ends_at: Time.utc(2030, 1, 2, 19),
+        titles: @intent.broadcast_observation.titles,
+        episode_numbers: @intent.broadcast_observation.episode_numbers
+      )
+      selected = RecordingIntent.create!(broadcast_observation: other)
+      attributes = RecordingIntentScheduleAttributes.new(recording_intent: selected).call
+      scheduled = KaffeineSchedule.new(key: 700, **attributes, non_inactive: false)
+      KaffeineScheduleLink.attach!(recording_intent: selected, schedule: scheduled, origin: :created_by_vidb)
+      client = FakeClient.new(entries: [scheduled])
+
+      error = assert_raises(RecordingIntentScheduler::ScheduledEpisodeDuplicate) { scheduler(client).call }
+
+      assert_match(/9-1-1.*déjà programmé/, error.message)
+      assert_empty client.created
+      assert_nil @intent.reload.kaffeine_schedule_link
+    end
+
+    test "does not reject a stale Kaffeine link for the same episode" do
+      @intent.broadcast_observation.update!(
+        episode_numbers: [{ "system" => "xmltv_ns", "value" => "3.3." }]
+      )
+      other = @intent.broadcast_observation.guide_channel.broadcast_observations.create!(
+        fingerprint: "b" * 64, starts_at: Time.utc(2030, 1, 2, 18),
+        ends_at: Time.utc(2030, 1, 2, 19),
+        titles: @intent.broadcast_observation.titles,
+        episode_numbers: @intent.broadcast_observation.episode_numbers
+      )
+      selected = RecordingIntent.create!(broadcast_observation: other)
+      attributes = RecordingIntentScheduleAttributes.new(recording_intent: selected).call
+      scheduled = KaffeineSchedule.new(key: 700, **attributes, non_inactive: false)
+      KaffeineScheduleLink.attach!(recording_intent: selected, schedule: scheduled, origin: :created_by_vidb)
+      client = FakeClient.new
+
+      assert_equal 619, scheduler(client).call.key
+    end
+
     test "warns about an unknown overlapping Kaffeine channel" do
       client = FakeClient.new(entries: [concurrent(101, "Chaîne inconnue")])
 

@@ -7,15 +7,11 @@ class TvRecordingIntentsController < ApplicationController
   end
 
   def create
-    observation = Tv::BroadcastObservation.find(params.require(:broadcast_observation_id))
-
-    intent = Tv::RecordingIntentSelector.new(
-      broadcast_observation: observation
-    ).call
-
-    redirect_to_selected_intent(schedule_selected_intent(intent))
+    redirect_to_selected_intent(select_and_schedule)
   rescue Tv::MultiplexCapacityGuard::Warning => e
     redirect_to_capacity_warning(e)
+  rescue Tv::RecordingIntentScheduler::ScheduledEpisodeDuplicate => e
+    redirect_to_duplicate_warning(e)
   rescue *SCHEDULING_ERRORS => e
     redirect_to_unscheduled_intent(e)
   end
@@ -34,6 +30,16 @@ class TvRecordingIntentsController < ApplicationController
   end
 
   private
+
+  def select_and_schedule
+    observation = Tv::BroadcastObservation.find(params.require(:broadcast_observation_id))
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: observation).call
+    schedule_selected_intent(intent)
+  end
+
+  def redirect_to_duplicate_warning(error)
+    redirect_to tv_guide_path(guide_params), alert: "#{error.message} Le programme reste sélectionné."
+  end
 
   def redirect_to_capacity_warning(error)
     redirect_to tv_guide_path(guide_params),

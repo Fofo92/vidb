@@ -242,6 +242,12 @@
                       </span>
                     <% end %>
 
+                    <% if (scheduled_duplicate = @scheduled_duplicates[programme.id]) %>
+                      <span class="tv-guide-previous-recording" data-tv-guide-scheduled-duplicate>
+                        Épisode déjà programmé
+                      </span>
+                    <% end %>
+
                     <% if recording_selected %>
                       <% recording_url =
                           tv_recording_intent_path(recording_intent) %>
@@ -307,6 +313,15 @@
                     ) %>
 
                     <div data-tv-guide-secondary>
+                      <% if scheduled_duplicate %>
+                        <div data-tv-guide-scheduled-duplicate-detail>
+                          Même épisode programmé le
+                          <%= scheduled_duplicate.programme_starts_at
+                                                 .in_time_zone("Europe/Paris")
+                                                 .strftime("%d/%m/%Y à %H:%M") %>
+                          (Kaffeine n° <%= scheduled_duplicate.kaffeine_schedule_link.kaffeine_key %>).
+                        </div>
+                      <% end %>
                       <% if previous_intent %>
                         <div data-tv-guide-previous-recording-detail>
                           Fichier d’un précédent enregistrement vérifié dans vidb
