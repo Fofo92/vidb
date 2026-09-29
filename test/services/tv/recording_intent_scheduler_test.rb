@@ -64,6 +64,40 @@ module Tv
       assert_empty client.created
     end
 
+    test "rejects a fifth multiplex even when existing captures share a multiplex" do
+      client = FakeClient.new(entries: [
+        concurrent(101, "Gulli"),
+        concurrent(102, "T18"),
+        concurrent(103, "Arte"),
+        concurrent(104, "TF1"),
+        concurrent(105, "RMC STORY")
+      ])
+
+      error = assert_raises(MultiplexCapacityGuard::Warning) { scheduler(client).call }
+
+      assert_match(/5 multiplex pour 4 tuners/, error.message)
+      assert_empty client.created
+      assert_nil @intent.reload.kaffeine_schedule_link
+    end
+
+    test "allows four multiplexes when two recordings share one" do
+      client = FakeClient.new(entries: [
+        concurrent(101, "Gulli"),
+        concurrent(102, "T18"),
+        concurrent(103, "Arte"),
+        concurrent(104, "TF1")
+      ])
+
+      assert_equal 619, scheduler(client).call.key
+    end
+
+    test "warns about an unknown overlapping Kaffeine channel" do
+      client = FakeClient.new(entries: [concurrent(101, "Chaîne inconnue")])
+
+      assert_raises(MultiplexCapacityGuard::Warning) { scheduler(client).call }
+      assert_empty client.created
+    end
+
     test "refuses a cancelled intent without creating a schedule" do
       @intent.update!(status: "cancelled")
       client = FakeClient.new
@@ -115,6 +149,14 @@ module Tv
 
     def scheduler(client)
       RecordingIntentScheduler.new(recording_intent: @intent, client:)
+    end
+
+    def concurrent(key, channel)
+      KaffeineSchedule.new(
+        key:, name: "Autre émission", channel:,
+        starts_at: Time.utc(2030, 1, 1, 18),
+        duration_seconds: 3600, repeat: 0, non_inactive: false
+      )
     end
 
     def expected_attributes

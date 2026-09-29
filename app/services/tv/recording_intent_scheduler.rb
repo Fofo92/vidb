@@ -10,6 +10,7 @@ module Tv
       KaffeineCommandRunner::CommandError,
       KaffeineScheduleParser::InvalidResponse,
       KaffeineScheduleLock::Busy,
+      MultiplexCapacityGuard::Warning,
       ActiveRecord::RecordInvalid
     ].freeze
 
@@ -42,16 +43,16 @@ module Tv
 
     def create_or_adopt
       plan = RecordingSchedulePlan.new(recording_intent: @recording_intent, client: @client).call
-      if plan.already_scheduled?
-        schedule = plan.existing_schedule
-        origin = :preexisting
-      else
-        schedule = @manager.create(**plan.attributes)
-        origin = :created_by_vidb
-      end
+      schedule = plan.already_scheduled? ? plan.existing_schedule : create_with_capacity_check(plan.attributes)
+      origin = plan.already_scheduled? ? :preexisting : :created_by_vidb
 
       KaffeineScheduleLink.attach!(recording_intent: @recording_intent, schedule:, origin:)
       schedule
+    end
+
+    def create_with_capacity_check(attributes)
+      MultiplexCapacityGuard.new(schedules: @client.schedules, attributes:).check!
+      @manager.create(**attributes)
     end
   end
 end

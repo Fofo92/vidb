@@ -7,15 +7,15 @@ class TvRecordingIntentsController < ApplicationController
   end
 
   def create
-    observation = Tv::BroadcastObservation.find(
-      params.require(:broadcast_observation_id)
-    )
+    observation = Tv::BroadcastObservation.find(params.require(:broadcast_observation_id))
 
     intent = Tv::RecordingIntentSelector.new(
       broadcast_observation: observation
     ).call
 
     redirect_to_selected_intent(schedule_selected_intent(intent))
+  rescue Tv::MultiplexCapacityGuard::Warning => e
+    redirect_to_capacity_warning(e)
   rescue *SCHEDULING_ERRORS => e
     redirect_to_unscheduled_intent(e)
   end
@@ -34,6 +34,11 @@ class TvRecordingIntentsController < ApplicationController
   end
 
   private
+
+  def redirect_to_capacity_warning(error)
+    redirect_to tv_guide_path(guide_params),
+                alert: "Programmation suspendue : #{error.message} Le programme reste sélectionné."
+  end
 
   def redirect_to_selected_intent(schedule)
     notice = if schedule

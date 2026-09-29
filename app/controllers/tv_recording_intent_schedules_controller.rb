@@ -5,6 +5,8 @@ class TvRecordingIntentSchedulesController < ApplicationController
     intent = Tv::RecordingIntent.find(params[:tv_recording_intent_id])
     schedule = schedule_intent(intent)
     redirect_to(return_path, notice: "Programmation Kaffeine confirmée (n° #{schedule.key}).")
+  rescue Tv::MultiplexCapacityGuard::Warning => e
+    redirect_to(return_path, alert: "Programmation suspendue : #{e.message}")
   rescue *SCHEDULING_ERRORS
     redirect_to(
       return_path,
