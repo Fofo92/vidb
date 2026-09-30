@@ -1,6 +1,12 @@
 <h1>Programmes TV</h1>
 
 <% if @guide_source %>
+  <% if @latest_guide_import %>
+    <p class="text-body-secondary" data-tv-guide-last-import>
+      Guide actualisé le
+      <%= @latest_guide_import.finished_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>.
+    </p>
+  <% end %>
   <%= form_with(
     url: tv_guide_path,
     method: :get,

@@ -1,0 +1,19 @@
+[Unit]
+Description=Actualisation du guide XMLTV de vidb
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=30min
+User=vidb
+Group=vidb
+EnvironmentFile=/etc/vidb/vidb.env
+Environment=HOME=/srv/vidb
+Environment=PATH=/opt/rubies/4.0.6/bin:/usr/bin:/bin
+Environment=BUNDLE_DEPLOYMENT=1
+Environment=BUNDLE_PATH=/srv/vidb/shared/bundle
+Environment=BUNDLE_WITHOUT=development:test
+Environment=RAILS_ENV=production
+WorkingDirectory=/srv/vidb/current
+ExecStart=/opt/rubies/4.0.6/bin/bundle _2.7.1_ exec ./bin/refresh-tv-guide

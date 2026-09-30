@@ -5,6 +5,7 @@ class TvGuidesController < ApplicationController
 
   def show
     @guide_source = selected_guide_source
+    @latest_guide_import = @guide_source&.latest_successful_import
     @date = selected_date
     @minute_height = selected_minute_height
     @show_all_channels = show_all_channels?

@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require_relative "../config/environment"
+
+source = Tv::GuideSource.find_by!(name: "xml_tv_fr")
+Tv::XmltvRefresh.new(guide_source: source).call
