@@ -37,10 +37,16 @@ module Tv
 
       puts "Période commune : #{review.starts_at} – #{review.ends_at}"
       puts "Inchangés : #{review.unchanged} ; retirés ou modifiés : #{review.removed} ; nouveaux : #{review.added}"
-      return if review.missing_intent_ids.empty?
+      puts "Sélections futures : #{review.renamed_intent_ids.size} variation(s) de présentation ou de métadonnées."
+      report_intents("Numérotation discordante à examiner", review.numbering_intent_ids)
+      report_intents(
+        "Sélections sans correspondant fiable à la même plage (Kaffeine inchangé)",
+        review.missing_intent_ids
+      )
+    end
 
-      puts "Sélections vidb dont l’observation a changé ou disparu (programmation Kaffeine inchangée) : " \
-           "#{review.missing_intent_ids.join(', ')}"
+    def report_intents(label, ids)
+      puts "#{label} : #{ids.join(', ')}" if ids.any?
     end
   end
 end

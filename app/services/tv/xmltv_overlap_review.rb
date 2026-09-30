@@ -3,7 +3,10 @@ module Tv
   class XmltvOverlapReview
     class InsufficientCoverage < StandardError; end
 
-    Result = Data.define(:starts_at, :ends_at, :unchanged, :removed, :added, :missing_intent_ids)
+    Result = Data.define(
+      :starts_at, :ends_at, :unchanged, :removed, :added,
+      :renamed_intent_ids, :numbering_intent_ids, :missing_intent_ids
+    )
     MINIMUM_CHANNEL_RATIO = 0.7
     HORIZON_TOLERANCE = 6.hours
 
@@ -69,14 +72,25 @@ module Tv
     def compare(existing, incoming, starts_at, ends_at)
       old_keys = existing.to_set(&:fingerprint)
       new_keys = incoming.to_set { |entry| fingerprint(entry) }
-      missing = existing.reject { |entry| new_keys.include?(entry.fingerprint) }.map(&:id)
-      selected = RecordingIntent.status_selected.where(broadcast_observation_id: missing).pluck(:id)
+      missing = existing.reject { |entry| new_keys.include?(entry.fingerprint) }.to_set(&:id)
+      reviewed = review_changed_selections(existing, incoming, missing)
 
+      comparison_result(old_keys, new_keys, reviewed, starts_at, ends_at)
+    end
+
+    def comparison_result(old_keys, new_keys, reviewed, starts_at, ends_at)
       Result.new(
         starts_at:, ends_at:, unchanged: (old_keys & new_keys).size,
         removed: (old_keys - new_keys).size, added: (new_keys - old_keys).size,
-        missing_intent_ids: selected
+        renamed_intent_ids: reviewed.renamed_intent_ids,
+        numbering_intent_ids: reviewed.numbering_intent_ids,
+        missing_intent_ids: reviewed.missing_intent_ids
       )
+    end
+
+    def review_changed_selections(existing, incoming, missing)
+      changed = existing.select { |entry| missing.include?(entry.id) }
+      XmltvSelectedIntentReview.new(existing: changed, incoming:).call
     end
 
     def fingerprint(entry)
