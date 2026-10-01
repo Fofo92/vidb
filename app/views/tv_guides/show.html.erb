@@ -137,6 +137,8 @@
           focusin->tv-guide-information#open
           focusout->tv-guide-information#close
           click->tv-guide-information#toggle
+          keydown.enter->tv-guide-information#toggle
+          keydown.space->tv-guide-information#toggle
           keydown.esc->tv-guide-information#dismiss">
         <div
           class="tv-guide-grid"
@@ -345,6 +347,8 @@
                     <% if (warnings = @selection_alerts.by_programme[programme.id]).present? %>
                       <div class="tv-guide-refresh-alert" tabindex="0"
                             data-tv-guide-refresh-alert
+                            role="button"
+                            aria-expanded="false"
                             aria-label="Alerte sur la sélection vidb"
                             aria-describedby="tv-guide-alert-<%= programme.id %>">
                         !

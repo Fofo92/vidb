@@ -381,7 +381,7 @@
   background: #ffe2a0;
   color: #503000;
   font-weight: 700;
-  cursor: help;
+  cursor: pointer;
 }
 
 .tv-guide-refresh-alert-detail {
@@ -416,13 +416,15 @@
 }
 
 .tv-guide-programme:has(.tv-guide-refresh-alert:hover),
-.tv-guide-programme:has(.tv-guide-refresh-alert:focus-within) {
+.tv-guide-programme:has(.tv-guide-refresh-alert:focus-within),
+.tv-guide-programme:has(.tv-guide-refresh-alert--pinned) {
   overflow: visible;
   z-index: 6;
 }
 
 .tv-guide-refresh-alert:hover .tv-guide-refresh-alert-detail,
-.tv-guide-refresh-alert:focus-within .tv-guide-refresh-alert-detail {
+.tv-guide-refresh-alert:focus-within .tv-guide-refresh-alert-detail,
+.tv-guide-refresh-alert--pinned .tv-guide-refresh-alert-detail {
   display: block;
 }
 
@@ -467,7 +469,7 @@
 .tv-guide-schedule-status--confirmed {
   top: calc(var(--tv-height-pixels) - 1.4rem);
   right: auto;
-  left: 3.2rem;
+  left: 1.9rem;
   width: 2.25rem;
   border-radius: 999px;
   background: mix($success, $white, 55%);
@@ -484,7 +486,7 @@
 
 .tv-guide-programme--single-line .tv-guide-schedule-status--confirmed {
   right: auto;
-  left: 3.2rem;
+  left: 1.9rem;
 }
 
 .tv-guide-programme:has(
