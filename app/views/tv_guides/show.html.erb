@@ -227,7 +227,8 @@
 
                 <% timeline.items.each do |item| %>
                   <% programme = item.programme %>
-                  <% recording_intent = programme.recording_intent %>
+                  <% recording_intent = @selection_alerts.linked_intents_by_programme[programme.id] ||
+                                        programme.recording_intent %>
                   <% recording_selected = recording_intent&.status_selected? %>
                   <% top_pixels =
                       @timeline_projection.position_for(item.start_minute) %>
@@ -354,7 +355,7 @@
                             <% summary, old_line, new_line = warning.split("\n", 3) %>
                             <p><%= summary %></p>
                             <ul>
-                              <li><strong>Ancien guide : <%= old_line.delete_prefix("Ancien guide : ") %></strong></li>
+                              <li><strong>Ancien guide (Kaffeine) : <%= old_line.delete_prefix("Ancien guide (Kaffeine) : ") %></strong></li>
                               <li><strong>Nouveau guide : <%= new_line.delete_prefix("Nouveau guide : ") %></strong></li>
                             </ul>
                           <% end %>

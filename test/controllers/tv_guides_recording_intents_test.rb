@@ -195,7 +195,8 @@ class TvGuidesRecordingIntentsTest <
       subtitles: [{ "value" => "Meurtres à Amiens", "language" => "fr" }],
       episode_numbers: [{ "system" => "xmltv_ns", "value" => "8.0." }]
     )
-    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent, name: Tv::ProgrammeDisplayName.call(@programme))
     current = replace_guide(episode_numbers: [{ "system" => "xmltv_ns", "value" => "8.10." }])
 
     get tv_guide_url, params: guide_params
@@ -203,10 +204,11 @@ class TvGuidesRecordingIntentsTest <
     assert_response :success
     assert_select "[data-tv-guide-programme='#{current.id}'] [data-tv-guide-refresh-alert]",
                   text: /!/, count: 1
+    assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='selected']"
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
-                  text: /Numérotation discordante/
+                  text: /Intitulé Kaffeine différent/
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
-                  text: /Ancien guide : Meurtres à\.\.\. - Saison 9 - S09 E01 - Meurtres à Amiens/
+                  text: /Ancien guide \(Kaffeine\) : Meurtres à\.\.\. - Saison 9 - S09 E01 - Meurtres à Amiens/
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
                   text: /Nouveau guide : Meurtres à\.\.\. - S09 E11 - Meurtres à Amiens/
   end
@@ -214,20 +216,23 @@ class TvGuidesRecordingIntentsTest <
   test "does not warn when only the guide presentation changed" do
     prepare_future_alert
     @programme.update!(titles: [{ "value" => "MacGyver - Saison 1", "language" => "fr" }])
-    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
-    replace_guide
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent, name: "MacGyver")
+    current = replace_guide
 
     get tv_guide_url, params: guide_params
 
     assert_response :success
     assert_select "[data-tv-guide-refresh-alert]", count: 0
     assert_select "[data-tv-guide-unplaced-alerts]", count: 0
+    assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='selected']"
   end
 
   test "does not warn for a hidden subtitle change on a documentary" do
     prepare_future_alert
     @programme.update!(subtitles: [{ "value" => "Documentaire", "language" => "fr" }])
-    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent)
     current = replace_guide
     current.update!(subtitles: [{ "value" => "Santé", "language" => "fr" }])
 
@@ -239,7 +244,8 @@ class TvGuidesRecordingIntentsTest <
 
   test "shows both titles when the broadcast at the selected time changed" do
     prepare_future_alert
-    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent)
     current = replace_guide
     current.update!(titles: [{ "value" => "Autre film", "language" => "fr" }])
 
@@ -247,9 +253,9 @@ class TvGuidesRecordingIntentsTest <
 
     assert_response :success
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
-                  text: /Ancien guide : Film du soir.*Nouveau guide : Autre film/m
+                  text: /Ancien guide \(Kaffeine\) : Film du soir.*Nouveau guide : Autre film/m
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail ul li strong",
-                  text: /Ancien guide : Film du soir/
+                  text: /Ancien guide \(Kaffeine\) : Film du soir/
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail ul li strong",
                   text: /Nouveau guide : Autre film/
   end
@@ -269,24 +275,43 @@ class TvGuidesRecordingIntentsTest <
       assert_select "input[name='broadcast_observation_id'][value='#{current.id}']"
       assert_select "button[data-tv-guide-rename]", text: /Utiliser ce titre/
     end
+
+    intent.kaffeine_schedule_link.update!(name: "Autre film")
+    get tv_guide_url, params: guide_params
+    assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='selected']"
+    assert_select "[data-tv-guide-programme='#{current.id}'] [data-tv-guide-refresh-alert]", count: 0
+  end
+
+  test "leaves a new guide programme unselected without a Kaffeine link" do
+    prepare_future_alert
+    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    current = replace_guide
+    current.update!(titles: [{ "value" => "Autre film", "language" => "fr" }])
+
+    get tv_guide_url, params: guide_params
+
+    assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='unselected']"
+    assert_select "[data-tv-guide-programme='#{current.id}'] [data-tv-guide-refresh-alert]", count: 0
   end
 
   test "shows a separate warning when the old time slot disappeared" do
     prepare_future_alert
-    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
-    replace_guide(starts_at: @programme.starts_at + 2.hours)
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent)
+    current = replace_guide(starts_at: @programme.starts_at + 2.hours)
 
     get tv_guide_url, params: guide_params
 
     assert_response :success
     assert_select "[data-tv-guide-unplaced-alerts]", text: /aucune plage aux mêmes horaires/
+    assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='unselected']"
   end
 
   private
 
-  def link_for(intent)
+  def link_for(intent, name: "Film du soir")
     schedule = Tv::KaffeineSchedule.new(
-      key: 123, name: "Film du soir", channel: "France 2",
+      key: 123, name:, channel: "France 2",
       starts_at: intent.capture_starts_at,
       duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
       repeat: 0, non_inactive: false
