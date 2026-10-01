@@ -342,16 +342,44 @@
                     <% end %>
 
                     <% if (warnings = @selection_alerts.by_programme[programme.id]).present? %>
-                      <span class="tv-guide-refresh-alert" tabindex="0"
+                      <div class="tv-guide-refresh-alert" tabindex="0"
                             data-tv-guide-refresh-alert
                             aria-label="Alerte sur la sélection vidb"
                             aria-describedby="tv-guide-alert-<%= programme.id %>">
                         !
-                        <span class="tv-guide-refresh-alert-detail" role="tooltip"
+                        <div class="tv-guide-refresh-alert-detail" role="group"
+                              aria-label="Écart entre les guides"
                               id="tv-guide-alert-<%= programme.id %>">
-                          <%= warnings.join("\n\n") %>
-                        </span>
-                      </span>
+                          <% warnings.each do |warning| %>
+                            <% summary, old_line, new_line = warning.split("\n", 3) %>
+                            <p><%= summary %></p>
+                            <ul>
+                              <li><strong>Ancien guide : <%= old_line.delete_prefix("Ancien guide : ") %></strong></li>
+                              <li><strong>Nouveau guide : <%= new_line.delete_prefix("Nouveau guide : ") %></strong></li>
+                            </ul>
+                          <% end %>
+                          <% if (candidates = @selection_alerts.rename_by_programme[programme.id])&.one? %>
+                            <% intent = candidates.first %>
+                            <p>Nom Kaffeine actuel : <%= intent.kaffeine_schedule_link.name %></p>
+                            <%= form_with(
+                              url: tv_recording_intent_schedule_title_path(intent),
+                              method: :post,
+                              html: { class: "tv-guide-rename-form" }
+                            ) do %>
+                              <%= hidden_field_tag :broadcast_observation_id, programme.id %>
+                              <%= hidden_field_tag :date, @date.iso8601 %>
+                              <%= hidden_field_tag :guide_source_id, @guide_source.id %>
+                              <%= hidden_field_tag :zoom, @minute_height %>
+                              <% if @show_all_channels %>
+                                <%= hidden_field_tag :all_channels, "1" %>
+                              <% end %>
+                              <%= button_tag "Utiliser ce titre dans Kaffeine", type: "submit",
+                                             class: "btn btn-sm btn-outline-warning",
+                                             data: { tv_guide_rename: true } %>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </div>
                     <% end %>
 
                     <%= button_tag(

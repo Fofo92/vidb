@@ -2,17 +2,19 @@ module Tv
   class RecordingIntentScheduleRenamer
     class Unavailable < StandardError; end
 
-    def initialize(recording_intent:, client:, manager: nil, lock: KaffeineScheduleLock.new)
+    def initialize(recording_intent:, client:, manager: nil, lock: KaffeineScheduleLock.new, target_name: nil)
       @recording_intent = recording_intent
       @client = client
       @manager = manager || KaffeineScheduleManager.new(client:)
       @lock = lock
+      @target_name = target_name
     end
 
     def call
       @lock.synchronize do
         link = managed_link
         attributes = RecordingIntentScheduleAttributes.new(recording_intent: @recording_intent).call
+        attributes = attributes.merge(name: @target_name) if @target_name
         schedule = verified_schedule(link, attributes)
         return schedule if schedule.name == attributes.fetch(:name)
 

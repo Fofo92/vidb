@@ -248,6 +248,27 @@ class TvGuidesRecordingIntentsTest <
     assert_response :success
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
                   text: /Ancien guide : Film du soir.*Nouveau guide : Autre film/m
+    assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail ul li strong",
+                  text: /Ancien guide : Film du soir/
+    assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail ul li strong",
+                  text: /Nouveau guide : Autre film/
+  end
+
+  test "offers the current guide title for a vidb managed Kaffeine schedule" do
+    prepare_future_alert
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent)
+    current = replace_guide
+    current.update!(titles: [{ "value" => "Autre film", "language" => "fr" }])
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_select "[data-tv-guide-programme='#{current.id}'] " \
+                  "form[action='#{tv_recording_intent_schedule_title_path(intent)}']" do
+      assert_select "input[name='broadcast_observation_id'][value='#{current.id}']"
+      assert_select "button[data-tv-guide-rename]", text: /Utiliser ce titre/
+    end
   end
 
   test "shows a separate warning when the old time slot disappeared" do
@@ -262,6 +283,16 @@ class TvGuidesRecordingIntentsTest <
   end
 
   private
+
+  def link_for(intent)
+    schedule = Tv::KaffeineSchedule.new(
+      key: 123, name: "Film du soir", channel: "France 2",
+      starts_at: intent.capture_starts_at,
+      duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
+      repeat: 0, non_inactive: false
+    )
+    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+  end
 
   def prepare_future_alert
     @alert_date = "2030-09-27"

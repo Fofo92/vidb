@@ -1,7 +1,7 @@
 module Tv
   # Reviews selected captures whose original observation left the displayed guide.
   class GuideSelectionAlerts
-    Result = Data.define(:by_programme, :unplaced)
+    Result = Data.define(:by_programme, :unplaced, :rename_by_programme)
 
     def initialize(guide_source:, date:, programmes:)
       @guide_source = guide_source
@@ -13,13 +13,16 @@ module Tv
     end
 
     def call
-      return Result.new({}, []) unless @guide_source
+      return Result.new({}, [], {}) unless @guide_source
 
       alerts = Hash.new { |hash, key| hash[key] = [] }
       unplaced = []
+      rename_candidates = Hash.new { |hash, key| hash[key] = [] }
       reviewer = XmltvSelectedIntentReview.new(existing: [], incoming: @programmes)
-      obsolete_intents.each { |intent| classify_intent(intent, reviewer, alerts, unplaced) }
-      Result.new(alerts, unplaced)
+      obsolete_intents.each do |intent|
+        classify_intent(intent, reviewer, alerts, unplaced, rename_candidates)
+      end
+      Result.new(alerts, unplaced, rename_candidates)
     end
 
     private
@@ -31,10 +34,10 @@ module Tv
                      .where(tv_guide_channels: { guide_source_id: @guide_source.id })
                      .where("programme_starts_at < ? AND programme_ends_at > ?", day_end, day_start)
                      .where.not(broadcast_observation_id: current_ids)
-                     .includes(broadcast_observation: :guide_channel)
+                     .includes(:kaffeine_schedule_link, broadcast_observation: :guide_channel)
     end
 
-    def classify_intent(intent, reviewer, alerts, unplaced)
+    def classify_intent(intent, reviewer, alerts, unplaced, rename_candidates)
       return if intent.capture_ends_at <= Time.current
 
       old = intent.broadcast_observation
@@ -43,21 +46,40 @@ module Tv
 
       slot = @by_slot.fetch([old.guide_channel_id, old.starts_at, old.ends_at], [])
       message = warning(intent, slot, classification)
-      slot.empty? ? unplaced << message : slot.each { |programme| alerts[programme.id] << message }
+      return unplaced << message if slot.empty?
+
+      add_alerts(slot, message, intent, alerts, rename_candidates)
+    end
+
+    def add_alerts(slot, message, intent, alerts, rename_candidates)
+      slot.each do |programme|
+        alerts[programme.id] << message
+        add_rename_candidate(rename_candidates, programme, intent)
+      end
+    end
+
+    def add_rename_candidate(candidates, programme, intent)
+      link = intent.kaffeine_schedule_link
+      return unless link&.origin_created_by_vidb?
+
+      name = ProgrammeDisplayName.call(programme)
+      candidates[programme.id] << intent if name.present? && name != link.name
     end
 
     def warning(intent, slot, classification)
       old = intent.broadcast_observation
       prefix = "Sélection vidb #{intent.id}.\nAncien guide : #{description(old)}."
-      missing = "#{prefix}\nNouveau guide : aucune plage aux mêmes horaires. Kaffeine inchangé."
+      missing = "#{prefix}\nNouveau guide : aucune plage aux mêmes horaires. L’import ne modifie pas Kaffeine."
       return missing if slot.empty?
 
       comparison = "#{prefix}\nNouveau guide : #{description(slot.first)}."
-      if classification == :numbering
-        return "#{comparison} Numérotation discordante ; vérifier le titre de l’épisode. Kaffeine inchangé."
-      end
+      return numbering_message(comparison) if classification == :numbering
 
-      "#{comparison} #{difference_message(old, slot.first)} Kaffeine inchangé."
+      "#{comparison} #{difference_message(old, slot.first)}"
+    end
+
+    def numbering_message(comparison)
+      "#{comparison} Numérotation discordante ; vérifier le titre de l’épisode."
     end
 
     def difference_message(old, current)

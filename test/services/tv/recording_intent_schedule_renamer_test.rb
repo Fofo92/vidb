@@ -58,6 +58,22 @@ module Tv
       assert_nil @manager.replaced
     end
 
+    test "uses an explicitly selected title after verifying the linked schedule" do
+      KaffeineScheduleLink.attach!(
+        recording_intent: @intent, schedule: @original, origin: :created_by_vidb
+      )
+      selected_name = "La stagiaire - S11 E05 - Le retour"
+      manager = FakeManager.new(@replacement.with(name: selected_name))
+
+      result = RecordingIntentScheduleRenamer.new(
+        recording_intent: @intent, client: @client, manager:, target_name: selected_name
+      ).call
+
+      assert_equal selected_name, result.name
+      assert_equal selected_name, manager.replaced.last.fetch(:name)
+      assert_equal selected_name, @intent.kaffeine_schedule_link.reload.name
+    end
+
     test "does not replace when another identical schedule already exists" do
       KaffeineScheduleLink.attach!(
         recording_intent: @intent, schedule: @original, origin: :created_by_vidb

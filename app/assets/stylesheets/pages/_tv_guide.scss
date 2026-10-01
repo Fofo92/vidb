@@ -389,7 +389,8 @@
   position: absolute;
   bottom: 1.35rem;
   left: 0;
-  width: 16rem;
+  width: 20rem;
+  max-width: calc(100vw - 2rem);
   padding: 0.5rem;
   border: 1px solid #9a6200;
   border-radius: 0.35rem;
@@ -397,18 +398,31 @@
   color: $black;
   font-weight: 400;
   line-height: 1.35;
-  white-space: pre-line;
+  white-space: normal;
   box-shadow: 0 0.25rem 0.75rem rgba($black, 0.2);
 }
 
+.tv-guide-refresh-alert-detail ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1rem;
+}
+
+.tv-guide-refresh-alert-detail p {
+  margin: 0;
+}
+
+.tv-guide-rename-form {
+  margin-top: 0.35rem;
+}
+
 .tv-guide-programme:has(.tv-guide-refresh-alert:hover),
-.tv-guide-programme:has(.tv-guide-refresh-alert:focus-visible) {
+.tv-guide-programme:has(.tv-guide-refresh-alert:focus-within) {
   overflow: visible;
   z-index: 6;
 }
 
 .tv-guide-refresh-alert:hover .tv-guide-refresh-alert-detail,
-.tv-guide-refresh-alert:focus-visible .tv-guide-refresh-alert-detail {
+.tv-guide-refresh-alert:focus-within .tv-guide-refresh-alert-detail {
   display: block;
 }
 
