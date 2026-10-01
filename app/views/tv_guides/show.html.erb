@@ -1,12 +1,6 @@
 <h1>Programmes TV</h1>
 
 <% if @guide_source %>
-  <% if @latest_guide_import %>
-    <p class="text-body-secondary" data-tv-guide-last-import>
-      Guide actualisé le
-      <%= @latest_guide_import.finished_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>.
-    </p>
-  <% end %>
   <%= form_with(
     url: tv_guide_path,
     method: :get,
@@ -17,18 +11,47 @@
   ) do %>
  <%= hidden_field_tag :guide_source_id, @guide_source.id %>
     <div class="tv-guide-toolbar">
-      <div class="tv-guide-toolbar-date">
-        <%= label_tag(
-          :date,
-          "Journée",
-          class: "form-label"
-        ) %>
+      <div class="tv-guide-toolbar-date" data-controller="tv-guide-date">
+        <%= link_to "‹", tv_guide_day_path(@date.prev_day),
+                    class: "tv-guide-day-step",
+                    aria: { label: "Journée précédente" },
+                    data: { tv_guide_previous_day: true } %>
+        <%= button_tag type: "button", class: "tv-guide-date-trigger",
+                       data: { action: "tv-guide-date#open" },
+                       aria: { label: "Choisir une journée : #{tv_guide_long_date(@date)}" } do %>
+          <time datetime="<%= @date.iso8601 %>" data-tv-guide-long-date>
+            <%= tv_guide_long_date(@date) %>
+          </time>
+        <% end %>
+        <%= link_to "›", tv_guide_day_path(@date.next_day),
+                    class: "tv-guide-day-step",
+                    aria: { label: "Journée suivante" },
+                    data: { tv_guide_next_day: true } %>
         <%= date_field_tag(
           :date,
           @date.iso8601,
-          class: "form-control form-control-sm",
+          class: "tv-guide-date-picker",
+          data: { tv_guide_date_target: "input" },
+          tabindex: "-1",
+          aria: { label: "Choisir une autre journée" },
           autocomplete: "off"
         ) %>
+      </div>
+
+      <div class="tv-guide-toolbar-updated">
+        <% if @latest_guide_import %>
+          <span data-tv-guide-last-import>
+            Guide actualisé le
+            <%= @latest_guide_import.finished_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>
+          </span>
+        <% end %>
+        <% if @latest_scheduled_date %>
+          <span data-tv-guide-last-scheduled>
+            <%= @latest_guide_import ? "avec un dernier enregistrement" : "Dernier enregistrement" %>
+            programmé pour le <%= tv_guide_long_date(@latest_scheduled_date) %>
+            à <%= @latest_scheduled_at.strftime("%H:%M") %>
+          </span>
+        <% end %>
       </div>
 
       <div class="tv-guide-toolbar-channels">
@@ -322,10 +345,11 @@
                       <span class="tv-guide-refresh-alert" tabindex="0"
                             data-tv-guide-refresh-alert
                             aria-label="Alerte sur la sélection vidb"
-                            title="<%= warnings.join(' ') %>">
+                            aria-describedby="tv-guide-alert-<%= programme.id %>">
                         !
-                        <span class="tv-guide-refresh-alert-detail" role="tooltip">
-                          <%= warnings.join(' ') %>
+                        <span class="tv-guide-refresh-alert-detail" role="tooltip"
+                              id="tv-guide-alert-<%= programme.id %>">
+                          <%= warnings.join("\n\n") %>
                         </span>
                       </span>
                     <% end %>

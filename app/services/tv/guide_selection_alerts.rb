@@ -48,15 +48,23 @@ module Tv
 
     def warning(intent, slot, classification)
       old = intent.broadcast_observation
-      title = ProgrammeDisplayName.call(old)
-      time = old.starts_at.in_time_zone("Europe/Paris").strftime("%d/%m à %H:%M")
-      prefix = "Sélection vidb #{intent.id} : #{title} (#{time})."
-      return "#{prefix} La plage n’apparaît plus dans le guide actuel ; Kaffeine reste inchangé." if slot.empty?
+      prefix = "Sélection vidb #{intent.id}.\nAncien guide : #{description(old)}."
+      missing = "#{prefix}\nNouveau guide : aucune plage aux mêmes horaires. Kaffeine inchangé."
+      return missing if slot.empty?
+
+      comparison = "#{prefix}\nNouveau guide : #{description(slot.first)}."
       if classification == :numbering
-        return "#{prefix} Numérotation différente dans le guide ; vérifier le titre de l’épisode."
+        return "#{comparison} Numérotation discordante ; vérifier le titre de l’épisode. Kaffeine inchangé."
       end
 
-      "#{prefix} Le programme du guide a changé ; vérifier la sélection et Kaffeine."
+      "#{comparison} Intitulé différent ; vérifier la sélection. Kaffeine inchangé."
+    end
+
+    def description(programme)
+      zone = Time.find_zone!("Europe/Paris")
+      starts_at = programme.starts_at.in_time_zone(zone).strftime("%d/%m %H:%M")
+      ends_at = programme.ends_at.in_time_zone(zone).strftime("%d/%m %H:%M")
+      "#{ProgrammeDisplayName.call(programme)} (#{starts_at}–#{ends_at})"
     end
 
     def day_start

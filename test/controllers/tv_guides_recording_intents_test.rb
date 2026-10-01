@@ -204,7 +204,11 @@ class TvGuidesRecordingIntentsTest <
     assert_select "[data-tv-guide-programme='#{current.id}'] [data-tv-guide-refresh-alert]",
                   text: /!/, count: 1
     assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
-                  text: /Numérotation différente/
+                  text: /Numérotation discordante/
+    assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
+                  text: /Ancien guide : Meurtres à\.\.\. - Saison 9 - S09 E01 - Meurtres à Amiens/
+    assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
+                  text: /Nouveau guide : Meurtres à\.\.\. - S09 E11 - Meurtres à Amiens/
   end
 
   test "does not warn when only the guide presentation changed" do
@@ -220,6 +224,19 @@ class TvGuidesRecordingIntentsTest <
     assert_select "[data-tv-guide-unplaced-alerts]", count: 0
   end
 
+  test "shows both titles when the broadcast at the selected time changed" do
+    prepare_future_alert
+    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    current = replace_guide
+    current.update!(titles: [{ "value" => "Autre film", "language" => "fr" }])
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
+                  text: /Ancien guide : Film du soir.*Nouveau guide : Autre film/m
+  end
+
   test "shows a separate warning when the old time slot disappeared" do
     prepare_future_alert
     Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
@@ -228,7 +245,7 @@ class TvGuidesRecordingIntentsTest <
     get tv_guide_url, params: guide_params
 
     assert_response :success
-    assert_select "[data-tv-guide-unplaced-alerts]", text: /plage n’apparaît plus/
+    assert_select "[data-tv-guide-unplaced-alerts]", text: /aucune plage aux mêmes horaires/
   end
 
   private

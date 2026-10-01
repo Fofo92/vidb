@@ -5,7 +5,7 @@ class TvGuidesController < ApplicationController
 
   def show
     @guide_source = selected_guide_source
-    @latest_guide_import = @guide_source&.latest_successful_import
+    load_header
     @date = selected_date
     @minute_height = selected_minute_height
     @show_all_channels = show_all_channels?
@@ -16,6 +16,15 @@ class TvGuidesController < ApplicationController
   end
 
   private
+
+  def load_header
+    @latest_guide_import = @guide_source&.latest_successful_import
+    latest = Tv::RecordingIntent.status_selected
+                                .joins(:kaffeine_schedule_link)
+                                .maximum(:programme_starts_at)
+    @latest_scheduled_at = latest&.in_time_zone("Europe/Paris")
+    @latest_scheduled_date = @latest_scheduled_at&.to_date
+  end
 
   def load_programmes
     @programmes_by_channel = programmes_by_channel
