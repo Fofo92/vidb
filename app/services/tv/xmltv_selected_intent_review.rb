@@ -5,7 +5,10 @@ module Tv
 
     def initialize(existing:, incoming:)
       @existing = existing
-      @by_slot = incoming.group_by { |entry| [entry.channel_id, entry.starts_at, entry.ends_at] }
+      @by_slot = incoming.group_by do |entry|
+        channel = entry.respond_to?(:channel_id) ? entry.channel_id : entry.guide_channel.external_id
+        [channel, entry.starts_at, entry.ends_at]
+      end
     end
 
     def call
@@ -15,9 +18,17 @@ module Tv
         intent = selected[entry.id]
         next unless intent && intent.capture_ends_at > Time.current
 
-        groups.fetch(classify(entry)) << intent.id
+        groups.fetch(classify_entry(entry)) << intent.id
       end
       Result.new(groups[:equivalent], groups[:numbering], groups[:missing])
+    end
+
+    def classify_entry(entry)
+      candidates = @by_slot.fetch([entry.guide_channel.external_id, entry.starts_at, entry.ends_at], [])
+      return :equivalent if candidates.any? { |candidate| equivalent?(entry, candidate) }
+      return :numbering if candidates.any? { |candidate| numbering_changed?(entry, candidate) }
+
+      :missing
     end
 
     private
@@ -26,14 +37,6 @@ module Tv
       RecordingIntent.status_selected
                      .where(broadcast_observation_id: @existing.map(&:id))
                      .index_by(&:broadcast_observation_id)
-    end
-
-    def classify(entry)
-      candidates = @by_slot.fetch([entry.guide_channel.external_id, entry.starts_at, entry.ends_at], [])
-      return :equivalent if candidates.any? { |candidate| equivalent?(entry, candidate) }
-      return :numbering if candidates.any? { |candidate| numbering_changed?(entry, candidate) }
-
-      :missing
     end
 
     def equivalent?(first, second)

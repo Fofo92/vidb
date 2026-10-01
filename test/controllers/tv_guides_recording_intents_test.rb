@@ -188,7 +188,81 @@ class TvGuidesRecordingIntentsTest <
     assert_equal "986", css_select("[data-tv-guide-schedule]").first.text.strip
   end
 
+  test "shows an episode numbering alert on the replacement programme" do
+    prepare_future_alert
+    @programme.update!(
+      titles: [{ "value" => "Meurtres à... - Saison 9", "language" => "fr" }],
+      subtitles: [{ "value" => "Meurtres à Amiens", "language" => "fr" }],
+      episode_numbers: [{ "system" => "xmltv_ns", "value" => "8.0." }]
+    )
+    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    current = replace_guide(episode_numbers: [{ "system" => "xmltv_ns", "value" => "8.10." }])
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_select "[data-tv-guide-programme='#{current.id}'] [data-tv-guide-refresh-alert]",
+                  text: /!/, count: 1
+    assert_select "[data-tv-guide-programme='#{current.id}'] .tv-guide-refresh-alert-detail",
+                  text: /Numérotation différente/
+  end
+
+  test "does not warn when only the guide presentation changed" do
+    prepare_future_alert
+    @programme.update!(titles: [{ "value" => "MacGyver - Saison 1", "language" => "fr" }])
+    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    replace_guide
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_select "[data-tv-guide-refresh-alert]", count: 0
+    assert_select "[data-tv-guide-unplaced-alerts]", count: 0
+  end
+
+  test "shows a separate warning when the old time slot disappeared" do
+    prepare_future_alert
+    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    replace_guide(starts_at: @programme.starts_at + 2.hours)
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_select "[data-tv-guide-unplaced-alerts]", text: /plage n’apparaît plus/
+  end
+
   private
+
+  def prepare_future_alert
+    @alert_date = "2030-09-27"
+    @programme.update!(
+      starts_at: Time.utc(2030, 9, 27, 18),
+      ends_at: Time.utc(2030, 9, 27, 19, 30)
+    )
+  end
+
+  def replace_guide(episode_numbers: @programme.episode_numbers, starts_at: @programme.starts_at)
+    current = replacement_programme(episode_numbers, starts_at)
+    replacement_import.guide_import_observations.create!(broadcast_observation: current)
+    current
+  end
+
+  def replacement_import
+    @source.guide_imports.create!(
+      document_sha256: "d" * 64, document_byte_size: 100,
+      status: "succeeded", started_at: Time.utc(2030, 9, 27),
+      finished_at: Time.utc(2030, 9, 27, 0, 1)
+    )
+  end
+
+  def replacement_programme(episode_numbers, starts_at)
+    @programme.guide_channel.broadcast_observations.create!(
+      fingerprint: "e" * 64, starts_at:, ends_at: starts_at + 90.minutes,
+      titles: [{ "value" => @programme.titles.first.fetch("value").sub(/ - Saison \d+\z/, ""),
+                 "language" => "fr" }],
+      subtitles: @programme.subtitles, episode_numbers:
+    )
+  end
 
   def assert_selected_programme(intent)
     assert_select(selected_programme_selector, count: 1)
@@ -243,7 +317,7 @@ class TvGuidesRecordingIntentsTest <
 
   def guide_params
     {
-      date: "2026-09-27",
+      date: @alert_date || "2026-09-27",
       guide_source_id: @source.id,
       zoom: "4",
       all_channels: "1"

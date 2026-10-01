@@ -25,6 +25,14 @@ class TvGuidesController < ApplicationController
     @scheduled_duplicates = Tv::ScheduledEpisodeDuplicates.new.call(
       @programmes_by_channel.values.flatten
     )
+    @selection_alerts = selection_alerts
+  end
+
+  def selection_alerts
+    Tv::GuideSelectionAlerts.new(
+      guide_source: @guide_source, date: @date,
+      programmes: @programmes_by_channel.values.flatten
+    ).call
   end
 
   def timeline_projection

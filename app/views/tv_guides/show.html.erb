@@ -85,6 +85,17 @@
     </div>
   <% end %>
 
+  <% if @selection_alerts.unplaced.any? %>
+    <div class="alert alert-warning" data-tv-guide-unplaced-alerts>
+      <strong>Sélections à vérifier hors de la grille actuelle :</strong>
+      <ul>
+        <% @selection_alerts.unplaced.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
   <section data-tv-guide-day="<%= @date.iso8601 %>">
     <% if @programmes_by_channel.empty? %>
       <p>Aucun programme disponible pour cette journée.</p>
@@ -305,6 +316,18 @@
                           Chaîne non reliée à Kaffeine
                         </span>
                       <% end %>
+                    <% end %>
+
+                    <% if (warnings = @selection_alerts.by_programme[programme.id]).present? %>
+                      <span class="tv-guide-refresh-alert" tabindex="0"
+                            data-tv-guide-refresh-alert
+                            aria-label="Alerte sur la sélection vidb"
+                            title="<%= warnings.join(' ') %>">
+                        !
+                        <span class="tv-guide-refresh-alert-detail" role="tooltip">
+                          <%= warnings.join(' ') %>
+                        </span>
+                      </span>
                     <% end %>
 
                     <%= button_tag(
