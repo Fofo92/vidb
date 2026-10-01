@@ -40,7 +40,10 @@ module Tv
     end
 
     def equivalent?(first, second)
-      same_titles?(first, second) && episode(first) == episode(second)
+      return false unless title(first) == title(second) && episode(first) == episode(second)
+      return true unless episode(first)
+
+      subtitle(first) == subtitle(second)
     end
 
     def numbering_changed?(first, second)

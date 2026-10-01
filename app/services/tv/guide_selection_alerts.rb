@@ -57,7 +57,19 @@ module Tv
         return "#{comparison} Numérotation discordante ; vérifier le titre de l’épisode. Kaffeine inchangé."
       end
 
-      "#{comparison} Intitulé différent ; vérifier la sélection. Kaffeine inchangé."
+      "#{comparison} #{difference_message(old, slot.first)} Kaffeine inchangé."
+    end
+
+    def difference_message(old, current)
+      old_name = ProgrammeDisplayName.call(old).to_s.squish
+      new_name = ProgrammeDisplayName.call(current).to_s.squish
+      return "Intitulé différent ; vérifier la sélection." unless old_name == new_name
+
+      old_subtitle = ProgrammeDisplayName.subtitle(old)
+      new_subtitle = ProgrammeDisplayName.subtitle(current)
+      return "Sous-titre XMLTV : «#{old_subtitle}» → «#{new_subtitle}»." unless old_subtitle == new_subtitle
+
+      "Métadonnées XMLTV différentes ; intitulé affiché identique."
     end
 
     def description(programme)

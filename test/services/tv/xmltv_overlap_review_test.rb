@@ -64,6 +64,19 @@ module Tv
       assert_empty result.missing_intent_ids
     end
 
+    test "ignores a subtitle change when neither guide displays an episode" do
+      old = programme(0, "Ménopause, le corps en transition", subtitle: "Documentaire")
+      observation = add_current(old, 1)
+      intent = RecordingIntent.create!(broadcast_observation: observation)
+      incoming = programme(0, "Ménopause, le corps en transition", subtitle: "Santé")
+
+      result = review([incoming])
+
+      assert_equal [intent.id], result.renamed_intent_ids
+      assert_empty result.numbering_intent_ids
+      assert_empty result.missing_intent_ids
+    end
+
     test "refuses a new guide without any shared period" do
       add_current(programme(0, "Premier"), 1)
 

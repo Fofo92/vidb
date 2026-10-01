@@ -224,6 +224,19 @@ class TvGuidesRecordingIntentsTest <
     assert_select "[data-tv-guide-unplaced-alerts]", count: 0
   end
 
+  test "does not warn for a hidden subtitle change on a documentary" do
+    prepare_future_alert
+    @programme.update!(subtitles: [{ "value" => "Documentaire", "language" => "fr" }])
+    Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    current = replace_guide
+    current.update!(subtitles: [{ "value" => "Santé", "language" => "fr" }])
+
+    get tv_guide_url, params: guide_params
+
+    assert_response :success
+    assert_select "[data-tv-guide-programme='#{current.id}'] [data-tv-guide-refresh-alert]", count: 0
+  end
+
   test "shows both titles when the broadcast at the selected time changed" do
     prepare_future_alert
     Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
