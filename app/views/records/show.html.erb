@@ -1,3 +1,5 @@
+<div data-controller="record-states" data-record-states-url-value="<%= record_states_path(@record) %>">
+  <div class="small" role="status" aria-live="polite" data-record-states-target="message"></div>
 
 <div class="d-flex flex-row justify-content-between align-items-center">
   <h4>
@@ -42,7 +44,9 @@
   <strong>, disponible sur : </strong><%= @record.media.map(&:long_name).join(", ") || "Néant" %>
   <strong>, version linguistique : </strong><%= @record.language_version.nil? ? "n/a" : @record.language_version.long_name %>
 </p>
-<%= render "state_summary", record: @record %>
+<div data-record-states-target="summary">
+  <%= render "state_summary", record: @record %>
+</div>
 <%= render "video_assets", record: @record %>
 <p><strong>Abrégé : </strong><%= @record.abstract %></p>
 <div class="d-flex flex-row justify-content-between align-items-center">
@@ -80,43 +84,15 @@
         <th>Pays</th>
         <th>Version</th>
         <th>Support</th>
-        <%= render "state_columns", header: true %>
+        <%= render "state_columns", record: @record, header: true %>
         <th><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
-    <tbody>
-      <% @record.children.order(:rank).each do |record| %>
-        <tr>
-          <td><%= record.id %></td>
-          <td><%= record.rank %></td>
-          <td>
-            <%= link_to record_path(record) do %>
-              <%= record.french_title.blank? ? "" : record.french_title %>
-              <%= record.original_title.blank? ? "" : " (#{record.original_title})" %>
-            <% end %>
-          </td>
-          <td><%= record.display_range_of_years %></td>
-          <td><%= record.formatted_total_length %></td>
-          <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
-          <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
-          <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
-          <td><%= record.media.map(&:short_name).join(", ") %></td>
-          <%= render "state_columns", record: record, header: false %>
-          <td>
-            <%= link_to edit_record_path(record) do %>
-              <i class="fas fa-edit"></i>
-            <% end %>
-          <%= link_to record_path(record),
-						data: {
-              turbo_method: :delete,
-              turbo_confirm: "Êtes-vous sûr ?"
-              } do %>
-            	<i class="fas fa-trash-alt"></i>
-          <% end %>
-          </td>
-        </tr>
-      <% end %>
+    <tbody data-record-states-target="rows">
+      <%= render "child_rows", record: @record %>
     </tbody>
   </table>
 <% end %>
 
+
+</div>

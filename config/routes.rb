@@ -20,6 +20,7 @@ Rails.application.routes.draw do
              controller: "tv_recording_confirmations"
   end
   resources :records do
+    resource :states, only: :update, controller: "record_states"
     resource :hierarchy_placement,
              controller: "record_hierarchy_placements",
              only: %i[edit update]

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_003900) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -73,6 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_003900) do
     t.string "original_title"
     t.integer "rank"
     t.string "record_kind", default: "undetermined", null: false
+    t.datetime "seen_state_confirmed_at"
     t.datetime "updated_at", null: false
     t.integer "year"
     t.index ["ancestry"], name: "index_records_on_ancestry"

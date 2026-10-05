@@ -58,6 +58,8 @@ module RecordStates
   end
 
   def unverified_negative?(field, value)
+    return false if field == :is_seen && seen_state_confirmed_at.present?
+
     value == false && field != :is_checked && is_checked != true
   end
 

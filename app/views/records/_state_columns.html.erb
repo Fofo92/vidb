@@ -4,26 +4,54 @@
   is_seen: ["Vu", "fa-eye"],
   is_checked: ["Fiche vérifiée", "fa-list-check"]
 } %>
-<% counts = record.state_counts unless header %>
+<% counts = record.state_counts %>
 <% fields.each do |field, (label, icon)| %>
+  <% editable = [:is_seen, :is_checked].include?(field) %>
+  <% count = counts.fetch(field) %>
   <% if header %>
-    <th scope="col" class="text-center text-nowrap" data-state-column="<%= field %>">
-      <span title="<%= label %>">
-        <i class="fa-solid <%= icon %>" aria-hidden="true"></i>
-        <span class="visually-hidden"><%= label %></span>
-      </span>
+    <th scope="col" class="text-center text-nowrap position-relative" data-state-column="<%= field %>">
+      <% if editable %>
+        <details data-state-menu>
+          <summary title="<%= label %> : modifier toute la colonne" aria-label="<%= label %> : modifier toute la colonne">
+            <i class="fa-solid <%= icon %>" aria-hidden="true"></i>
+          </summary>
+          <div class="position-absolute bg-body border rounded shadow p-2 end-0" style="z-index: 10">
+            <p class="small mb-1"><%= label %> — <%= count[:total] %> vidéo(s)</p>
+            <%= render "records/state_choices", field: field, bulk: true %>
+          </div>
+        </details>
+      <% else %>
+        <span title="<%= label %>">
+          <i class="fa-solid <%= icon %>" aria-hidden="true"></i>
+          <span class="visually-hidden"><%= label %></span>
+        </span>
+      <% end %>
     </th>
   <% else %>
-    <% count = counts.fetch(field) %>
     <% detail = "#{label} : #{count[:yes]} oui, #{count[:no]} non, #{count[:unknown]} inconnu(s), sur #{count[:total]}" %>
-    <td class="text-center text-nowrap" data-state-column="<%= field %>">
-      <span title="<%= detail %>" aria-label="<%= detail %>" tabindex="0">
-        <% if record.state_container? %>
+    <% symbol = count[:yes].positive? ? "✓" : (count[:no].positive? ? "✗" : "?") %>
+    <td class="text-center text-nowrap position-relative" data-state-column="<%= field %>">
+      <% if record.state_container? %>
+        <span title="<%= detail %>" aria-label="<%= detail %>" tabindex="0">
           <%= count[:yes] %>/<%= count[:total] %><%= " ?" if count[:unknown].positive? %>
-        <% else %>
-          <%= count[:yes].positive? ? "✓" : (count[:no].positive? ? "✗" : "?") %>
-        <% end %>
-      </span>
+        </span>
+      <% elsif editable && count[:unknown].positive? %>
+        <details data-state-menu>
+          <summary title="<%= label %> : choisir un état" aria-label="<%= label %> : choisir un état">?</summary>
+          <div class="position-absolute bg-body border rounded shadow p-2 end-0" style="z-index: 10">
+            <%= render "records/state_choices", field: field, bulk: false, child_id: record.id %>
+          </div>
+        </details>
+      <% elsif editable %>
+        <button type="button" class="btn btn-link btn-sm p-0 text-body"
+                title="<%= detail %> — cliquer pour modifier"
+                aria-label="<%= detail %> — cliquer pour modifier"
+                data-action="record-states#update"
+                data-field="<%= field %>" data-value="<%= count[:yes].positive? ? "no" : "yes" %>"
+                data-child-id="<%= record.id %>"><%= symbol %></button>
+      <% else %>
+        <span title="<%= detail %>" aria-label="<%= detail %>" tabindex="0"><%= symbol %></span>
+      <% end %>
     </td>
   <% end %>
 <% end %>

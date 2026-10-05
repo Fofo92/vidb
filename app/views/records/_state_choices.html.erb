@@ -1,0 +1,7 @@
+<% { "yes" => "Oui", "no" => "Non", "unknown" => "Inconnu" }.each do |value, label| %>
+  <button type="button" class="btn btn-outline-secondary btn-sm"
+          data-action="record-states#update" data-field="<%= field %>" data-value="<%= value %>"
+          <% unless bulk %>data-child-id="<%= child_id %>"<% end %>>
+    <%= bulk ? "Tout marquer : #{label}" : label %>
+  </button>
+<% end %>
