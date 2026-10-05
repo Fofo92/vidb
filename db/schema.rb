@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_003900) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -257,6 +257,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_160000) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "video_assets", force: :cascade do |t|
+    t.bigint "byte_size"
+    t.string "container"
+    t.datetime "created_at", null: false
+    t.integer "duration_minutes"
+    t.text "last_known_path"
+    t.datetime "observed_at"
+    t.bigint "record_id", null: false
+    t.string "status", default: "present", null: false
+    t.datetime "updated_at", null: false
+    t.index ["last_known_path"], name: "index_unique_present_video_asset_path", unique: true, where: "(((status)::text = 'present'::text) AND (last_known_path IS NOT NULL))"
+    t.index ["record_id"], name: "index_video_assets_on_record_id"
+    t.check_constraint "byte_size IS NULL OR byte_size >= 0", name: "video_assets_byte_size_check"
+    t.check_constraint "duration_minutes IS NULL OR duration_minutes > 0", name: "video_assets_duration_check"
+    t.check_constraint "status::text <> 'present'::text OR NULLIF(btrim(last_known_path), ''::text) IS NOT NULL", name: "video_assets_present_path_check"
+    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
+  end
+
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"
@@ -269,4 +287,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_160000) do
   add_foreign_key "tv_guide_imports", "tv_guide_sources", column: "guide_source_id"
   add_foreign_key "tv_kaffeine_schedule_links", "tv_recording_intents", column: "recording_intent_id"
   add_foreign_key "tv_recording_intents", "tv_broadcast_observations", column: "broadcast_observation_id"
+  add_foreign_key "video_assets", "records"
 end

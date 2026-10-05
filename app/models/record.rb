@@ -1,6 +1,7 @@
 class Record < ApplicationRecord
   paginates_per 26
   belongs_to :language_version
+  has_many :video_assets, inverse_of: :record
   has_and_belongs_to_many :media
   has_and_belongs_to_many :genders
   has_and_belongs_to_many :countries
