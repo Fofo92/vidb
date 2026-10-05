@@ -1,0 +1,29 @@
+<% fields = {
+  is_recorded: ["Enregistré", "fa-circle-dot"],
+  is_available: ["Disponible", "fa-hard-drive"],
+  is_seen: ["Vu", "fa-eye"],
+  is_checked: ["Fiche vérifiée", "fa-list-check"]
+} %>
+<% counts = record.state_counts unless header %>
+<% fields.each do |field, (label, icon)| %>
+  <% if header %>
+    <th scope="col" class="text-center text-nowrap" data-state-column="<%= field %>">
+      <span title="<%= label %>">
+        <i class="fa-solid <%= icon %>" aria-hidden="true"></i>
+        <span class="visually-hidden"><%= label %></span>
+      </span>
+    </th>
+  <% else %>
+    <% count = counts.fetch(field) %>
+    <% detail = "#{label} : #{count[:yes]} oui, #{count[:no]} non, #{count[:unknown]} inconnu(s), sur #{count[:total]}" %>
+    <td class="text-center text-nowrap" data-state-column="<%= field %>">
+      <span title="<%= detail %>" aria-label="<%= detail %>" tabindex="0">
+        <% if record.state_container? %>
+          <%= count[:yes] %>/<%= count[:total] %><%= " ?" if count[:unknown].positive? %>
+        <% else %>
+          <%= count[:yes].positive? ? "✓" : (count[:no].positive? ? "✗" : "?") %>
+        <% end %>
+      </span>
+    </td>
+  <% end %>
+<% end %>

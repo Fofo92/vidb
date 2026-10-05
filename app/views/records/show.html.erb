@@ -76,11 +76,12 @@
         <th>Titre</th>
         <th>Année</th>
         <th>Durée</th>
-        <th>Genre</td>
-        <td>Pays</td>
+        <th>Genre</th>
+        <th>Pays</th>
         <th>Version</th>
         <th>Support</th>
-        <th>État</th>
+        <%= render "state_columns", header: true %>
+        <th><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -100,9 +101,7 @@
           <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
           <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
           <td><%= record.media.map(&:short_name).join(", ") %></td>
-          <td>
-            <%= render "state_summary", record: record %>
-          </td>
+          <%= render "state_columns", record: record, header: false %>
           <td>
             <%= link_to edit_record_path(record) do %>
               <i class="fas fa-edit"></i>
