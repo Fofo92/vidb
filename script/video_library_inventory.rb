@@ -4,7 +4,6 @@
 require "find"
 require "json"
 require "optparse"
-require "pathname"
 require "time"
 
 module VideoLibraryInventory
@@ -16,50 +15,7 @@ module VideoLibraryInventory
   SEASON_DIRECTORY = /\A(?:Saison|Season) (?<number>\d+)(?: \((?<validated>\d+)_(?<total>\d+)\))?\z/i
   EPISODE_NAME = /\bS(?<season>\d+)\s*E(?<episode>\d+)\b/i
 
-  class Scanner
-    def initialize(roots:, include_all_files: false)
-      @roots = roots.map { |root| Pathname.new(root).expand_path }
-      @include_all_files = include_all_files
-    end
-
-    def call
-      entries = roots.flat_map { |root| scan_root(root) }
-
-      {
-        format: FORMAT,
-        version: VERSION,
-        generated_at: Time.now.iso8601,
-        roots: roots.map(&:to_s),
-        entries: entries,
-        pairs: build_pairs(entries),
-        warnings: build_warnings(entries)
-      }
-    end
-
-    private
-
-    attr_reader :roots, :include_all_files
-
-    def scan_root(root)
-      return [missing_root(root)] unless root.exist?
-
-      entries = []
-      Find.find(root.to_s) do |path_string|
-        path = Pathname.new(path_string)
-        stat = path.lstat
-        entry = build_entry(root, path, stat)
-        entries << entry if entry
-      rescue Errno::EACCES => error
-        entries << inaccessible_entry(root, path, error)
-        Find.prune if path&.directory?
-      rescue Errno::ENOENT
-        # A file may disappear during a long scan. The next inventory will
-        # reflect the new state.
-        next
-      end
-      entries
-    end
-
+  module EntrySerialization
     def build_entry(root, path, stat)
       if stat.directory?
         directory_entry(root, path, stat)
@@ -105,26 +61,34 @@ module VideoLibraryInventory
 
     def classify_directory(name)
       if (match = SERIES_DIRECTORY.match(name))
-        {
-          kind: "series_with_progress",
-          title: match[:title],
-          declared_seasons: match[:seasons],
-          declared_validated: match[:validated].to_i,
-          declared_total: match[:total].to_i,
-          zero_padded: padded?(match[:validated]) && padded?(match[:total])
-        }
+        series_classification(match)
       elsif (match = SEASON_DIRECTORY.match(name))
-        {
-          kind: "season",
-          number: match[:number].to_i,
-          number_zero_padded: padded?(match[:number]),
-          declared_validated: integer_or_nil(match[:validated]),
-          declared_total: integer_or_nil(match[:total]),
-          progress_zero_padded: progress_padded?(match)
-        }
+        season_classification(match)
       else
         { kind: "unclassified" }
       end
+    end
+
+    def series_classification(match)
+      {
+        kind: "series_with_progress",
+        title: match[:title],
+        declared_seasons: match[:seasons],
+        declared_validated: match[:validated].to_i,
+        declared_total: match[:total].to_i,
+        zero_padded: padded?(match[:validated]) && padded?(match[:total])
+      }
+    end
+
+    def season_classification(match)
+      {
+        kind: "season",
+        number: match[:number].to_i,
+        number_zero_padded: padded?(match[:number]),
+        declared_validated: integer_or_nil(match[:validated]),
+        declared_total: integer_or_nil(match[:total]),
+        progress_zero_padded: progress_padding(match)
+      }
     end
 
     def parse_episode(name)
@@ -137,48 +101,6 @@ module VideoLibraryInventory
         season_zero_padded: padded?(match[:season]),
         episode_zero_padded: padded?(match[:episode])
       }
-    end
-
-    def build_pairs(entries)
-      relevant = entries.select { |entry| entry[:type] == "file" && %w[.json .mkv].include?(entry[:extension]) }
-      relevant.group_by { |entry| [File.dirname(entry[:path]), entry[:stem]] }.map do |(directory, stem), files|
-        extensions = files.map { |file| file[:extension] }.uniq.sort
-        {
-          directory: directory,
-          stem: stem,
-          extensions: extensions,
-          status: pair_status(extensions),
-          paths: files.map { |file| file[:path] }.sort
-        }
-      end.sort_by { |pair| [pair[:directory], pair[:stem]] }
-    end
-
-    def build_warnings(entries)
-      entries.filter_map do |entry|
-        classification = entry[:classification]
-        episode = entry[:episode]
-
-        if classification && classification[:kind] == "series_with_progress" && !classification[:zero_padded]
-          warning(entry, "series_progress_not_zero_padded")
-        elsif classification && classification[:kind] == "season" && !classification[:number_zero_padded]
-          warning(entry, "season_number_not_zero_padded")
-        elsif classification && classification[:kind] == "season" && classification[:progress_zero_padded] == false
-          warning(entry, "season_progress_not_zero_padded")
-        elsif episode && (!episode[:season_zero_padded] || !episode[:episode_zero_padded])
-          warning(entry, "episode_number_not_zero_padded")
-        end
-      end
-    end
-
-    def warning(entry, code)
-      { code: code, path: entry[:path] }
-    end
-
-    def pair_status(extensions)
-      return "json_and_mkv" if extensions == %w[.json .mkv]
-      return "json_only" if extensions == [".json"]
-
-      "mkv_only"
     end
 
     def relevant_file?(path)
@@ -197,10 +119,118 @@ module VideoLibraryInventory
       value&.to_i
     end
 
-    def progress_padded?(match)
+    def progress_padding(match)
       return nil unless match[:validated] && match[:total]
 
       padded?(match[:validated]) && padded?(match[:total])
+    end
+  end
+
+  module InventoryAnalysis
+    def build_pairs(entries)
+      grouped = relevant_pairs(entries).group_by do |entry|
+        [File.dirname(entry[:path]), entry[:stem]]
+      end
+      pairs = grouped.map { |identity, files| build_pair(identity, files) }
+      pairs.sort_by { |pair| [pair[:directory], pair[:stem]] }
+    end
+
+    def relevant_pairs(entries)
+      entries.select do |entry|
+        entry[:type] == "file" && %w[.json .mkv].include?(entry[:extension])
+      end
+    end
+
+    def build_pair(identity, files)
+      directory, stem = identity
+      extensions = files.map { |file| file[:extension] }.uniq.sort
+      {
+        directory: directory, stem: stem, extensions: extensions,
+        status: pair_status(extensions),
+        paths: files.map { |file| file[:path] }.sort
+      }
+    end
+
+    def build_warnings(entries)
+      entries.filter_map do |entry|
+        code = warning_code(entry)
+        { code: code, path: entry[:path] } if code
+      end
+    end
+
+    def warning_code(entry)
+      classification = entry[:classification]
+      series_warning(classification) || season_warning(classification) ||
+        episode_warning(entry[:episode])
+    end
+
+    def series_warning(classification)
+      return unless classification&.fetch(:kind) == "series_with_progress"
+      return if classification[:zero_padded]
+
+      "series_progress_not_zero_padded"
+    end
+
+    def season_warning(classification)
+      return unless classification&.fetch(:kind) == "season"
+      return "season_number_not_zero_padded" unless classification[:number_zero_padded]
+      return "season_progress_not_zero_padded" if classification[:progress_zero_padded] == false
+    end
+
+    def episode_warning(episode)
+      return unless episode
+      return if episode[:season_zero_padded] && episode[:episode_zero_padded]
+
+      "episode_number_not_zero_padded"
+    end
+
+    def pair_status(extensions)
+      return "json_and_mkv" if extensions == %w[.json .mkv]
+      return "json_only" if extensions == [".json"]
+
+      "mkv_only"
+    end
+  end
+
+  class Scanner
+    include EntrySerialization
+    include InventoryAnalysis
+
+    def initialize(roots:, include_all_files: false)
+      @roots = roots.map { |root| Pathname.new(root).expand_path }
+      @include_all_files = include_all_files
+    end
+
+    def call
+      entries = roots.flat_map { |root| scan_root(root) }
+      {
+        format: FORMAT, version: VERSION, generated_at: Time.now.iso8601,
+        roots: roots.map(&:to_s), entries: entries,
+        pairs: build_pairs(entries), warnings: build_warnings(entries)
+      }
+    end
+
+    private
+
+    attr_reader :roots, :include_all_files
+
+    def scan_root(root)
+      return [missing_root(root)] unless root.exist?
+
+      entries = []
+      Find.find(root.to_s) { |path| scan_path(root, path, entries) }
+      entries
+    end
+
+    def scan_path(root, path_string, entries)
+      path = Pathname.new(path_string)
+      entry = build_entry(root, path, path.lstat)
+      entries << entry if entry
+    rescue Errno::EACCES => e
+      entries << inaccessible_entry(root, path, e)
+      Find.prune if path&.directory?
+    rescue Errno::ENOENT
+      nil
     end
 
     def missing_root(root)
