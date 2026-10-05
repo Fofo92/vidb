@@ -5,14 +5,16 @@ module VideoAssets
   class ReconciliationReport
     ELIGIBLE_EXTENSIONS = %w[.avi .m4v .mkv].freeze
     FORMAT = 'vidb.video_asset_reconciliation'
-    VERSION = 2
+    VERSION = 4
     SOURCE_FORMAT = 'vidb.video_library_inventory'
     SOURCE_VERSION = 1
     EPISODE_PREFIX = /\A\s*(?:S\d+\s*E\d+\b|E\d+\b|[ÉE]pisode\s+\d+\b)/i
 
     def initialize(inventory:, records: Record.all)
       @inventory = inventory.deep_symbolize_keys
+      records = records.to_a
       @matcher = TitleMatcher.new(records)
+      @episode_matcher = EpisodeMatcher.new(records)
     end
 
     def call
@@ -51,7 +53,7 @@ module VideoAssets
     end
 
     def reconcile(entry)
-      match = episode_entry?(entry) ? deferred_episode : matcher.match(entry[:stem])
+      match = episode_entry?(entry) ? @episode_matcher.match(entry) : matcher.match(entry[:stem])
       observation(entry).merge(match)
     end
 
@@ -61,7 +63,7 @@ module VideoAssets
 
     def multiple_file_candidates(observations)
       unique_matches = observations.select do |item|
-        %w[exact convention].include?(item[:status]) && item[:candidates].one?
+        %w[exact convention episode_candidate].include?(item[:status]) && item[:candidates].one?
       end
       unique_matches.group_by { |item| item[:candidates].first[:record_id] }
                     .filter_map do |record_id, items|
@@ -70,10 +72,6 @@ module VideoAssets
 
         { record_id: record_id, paths: paths }
       end
-    end
-
-    def deferred_episode
-      { status: 'deferred_episode', candidates: [] }
     end
 
     def observation(entry)

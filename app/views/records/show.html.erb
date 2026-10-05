@@ -34,7 +34,7 @@
     </span>
   </span>
   <strong>, genre : </strong><%= @record.genders.order(:name).map(&:name).join(", ") || "néant" %>
-  <strong>, durée : </strong><%= @record.formatted_total_length %>
+  <strong>, durée catalogue : </strong><%= @record.formatted_total_length %>
 </p>
 <p>
   <strong>Année : </strong><%= @record.display_range_of_years %>,
@@ -42,14 +42,8 @@
   <strong>, disponible sur : </strong><%= @record.media.map(&:long_name).join(", ") || "Néant" %>
   <strong>, version linguistique : </strong><%= @record.language_version.nil? ? "n/a" : @record.language_version.long_name %>
 </p>
-<% if @record.has_parent? && @record.has_children? %>
-  <strong>Nombre d'enregistrements :</strong>
-  <ul>
-    <li>enregistrés : <%= @record.number_of_recorded_children || 'n/a' %>/<%= @record.descendants.count %></li>
-    <li>visionnés : <%= @record.number_of_seen_children || 'n/a' %>/<%= @record.descendants.count %></li>
-    <li>disponibles : <%= @record.number_of_available_children || 'n/a' %>/<%= @record.descendants.count %></li>
-  </ul>
-<% end %>
+<%= render "state_summary", record: @record %>
+<%= render "video_assets", record: @record %>
 <p><strong>Abrégé : </strong><%= @record.abstract %></p>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>
@@ -100,33 +94,14 @@
               <%= record.original_title.blank? ? "" : " (#{record.original_title})" %>
             <% end %>
           </td>
-          <td><%= record.year || record.display_range_of_years %></td>
-          <td><%= record.length_in_mn.nil? ? record.formatted_total_length : record.formatted_length(record.length_in_mn) %></td>
+          <td><%= record.display_range_of_years %></td>
+          <td><%= record.formatted_total_length %></td>
           <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
           <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
           <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
           <td><%= record.media.map(&:short_name).join(", ") %></td>
           <td>
-            <% if record.is_recorded? %>
-            <i class="fas fa-record-vinyl" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-record-vinyl" style="color:red;"></i>
-          <% end %>
-          <% if record.is_seen? %>
-            <i class="fas fa-eye" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-eye-slash" style="color:red;"></i>
-          <% end %>
-          <% if record.is_available? %>
-            <i class="fas fa-folder-plus" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-folder-minus" style="color:red;"></i>
-          <% end %>
-          <% if record.is_checked? %>
-            <i class="fas fa-check" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-xmark" style="color:red;"></i>
-          <% end %>
+            <%= render "state_summary", record: record %>
           </td>
           <td>
             <%= link_to edit_record_path(record) do %>

@@ -26,6 +26,8 @@
       <th>Support(s)</th>
       <th>Rang</th>
       <th>Parents</th>
+      <th>État</th>
+      <th>Actions</th>
     </tr>
   </thead>
 
@@ -36,7 +38,7 @@
         <td>
           <%= link_to record.complete_title, record_path(record) %>
         </td>
-        <td><%= record.year || record.display_range_of_years %></td>
+        <td><%= record.display_range_of_years %></td>
         <td><%= record.formatted_total_length %></td>
         <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
         <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
@@ -45,26 +47,7 @@
         <td><%= record.rank || "n/a" %></td>
         <td><%= record.ancestry %></td>
         <td>
-          <% if record.is_recorded? %>
-            <i class="fas fa-record-vinyl" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-record-vinyl" style="color:red;"></i>
-          <% end %>
-          <% if record.is_seen? %>
-            <i class="fas fa-eye" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-eye-slash" style="color:red;"></i>
-          <% end %>
-          <% if record.is_available? %>
-            <i class="fas fa-folder-plus" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-folder-minus" style="color:red;"></i>
-          <% end %>
-          <% if record.is_checked? %>
-            <i class="fas fa-check" style="color:green;"></i>
-          <% else %>
-            <i class="fas fa-xmark" style="color:red;"></i>
-          <% end %>
+          <%= render "state_summary", record: record %>
         </td>
         <td>
           <%= link_to edit_record_path(record) do %>

@@ -1,0 +1,41 @@
+{
+  "format": "vidb.external_episode_evidence",
+  "version": 1,
+  "target_record_id": 3060,
+  "series_title": "Europe, un continent bouleversé",
+  "source": {
+    "publisher": "ARTE",
+    "url": "https://boutique.arte.tv/detail/europe-un-continent-bouleverse",
+    "consulted_on": "2026-10-05",
+    "extraction": "manual_from_publisher_page",
+    "language": "fr",
+    "scope": "episode_titles_and_order",
+    "season_number": null
+  },
+  "episodes": [
+    {
+      "number": 1,
+      "title": "Le compte à rebours"
+    },
+    {
+      "number": 2,
+      "title": "Les nouveaux Européens"
+    },
+    {
+      "number": 3,
+      "title": "L'Europe en mouvement"
+    },
+    {
+      "number": 4,
+      "title": "Le continent invisible"
+    },
+    {
+      "number": 5,
+      "title": "Préserver le vivant"
+    },
+    {
+      "number": 6,
+      "title": "La révolution verte"
+    }
+  ]
+}

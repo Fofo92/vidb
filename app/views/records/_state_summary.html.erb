@@ -1,0 +1,12 @@
+<% counts = record.state_counts %>
+<div data-record-state-summary="<%= record.id %>">
+  <% { is_recorded: "Enregistrés", is_available: "Disponibles", is_seen: "Vus", is_checked: "Fiches vérifiées" }.each do |field, label| %>
+    <% count = counts.fetch(field) %>
+    <div data-state="<%= field %>">
+      <%= label %> : <%= count[:yes] %>/<%= count[:total] %>
+      <% if count[:unknown].positive? %>
+        — <%= count[:unknown] %> inconnu(s)
+      <% end %>
+    </div>
+  <% end %>
+</div>

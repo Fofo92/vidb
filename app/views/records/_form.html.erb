@@ -2,7 +2,11 @@
   <div class="d-flex flex-row justify-content-between align-items-center">
     <%= f.input :french_title, input_html: { :size => 40 }, label: "Titre français" %>
     <%= f.input :original_title, input_html: { size: 40 }, label: "Titre original"  %>
+    <% if @record.state_container? %>
+      <p>Années de production des épisodes : <%= @record.display_range_of_years || "inconnues" %></p>
+    <% else %>
     <%= f.input :year, input_html: { maxlength: 4, size: 4}, label:"Année de production" %>
+    <% end %>
     <%= f.input :record_kind,
             collection: record_kind_options(@record),
             include_blank: false,
@@ -59,10 +63,15 @@
     <div class="d-flex flex-row justify-content-between align-items-center">
       <div class="col align-self-start">
         <hd>État</hd>
+        <% if @record.state_container? %>
+          <p>États calculés à partir des épisodes et vidéos feuilles.</p>
+          <%= render "state_summary", record: @record %>
+        <% else %>
         <%= f.input :is_recorded, class: "padding=1px", label: "Enregistré" %>
         <%= f.input :is_seen, label: "Visionné" %>
         <%= f.input :is_available, label: "Disponible" %>
         <%= f.input :is_checked, label: "Vérifié" %>
+        <% end %>
       </div>
     </div>
 

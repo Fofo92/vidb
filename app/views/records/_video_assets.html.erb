@@ -1,0 +1,12 @@
+<% if record.video_assets.any? %>
+  <p><strong>Copies confirmées :</strong></p>
+  <ul data-confirmed-video-assets>
+    <% record.video_assets.order(:id).each do |asset| %>
+      <li>
+        <%= asset.status_present? ? "Présente" : "Supprimée" %> —
+        <%= asset.duration_minutes ? "#{asset.duration_minutes} min mesurées (arrondies)" : "durée du fichier inconnue" %>
+        — <%= asset.last_known_path %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

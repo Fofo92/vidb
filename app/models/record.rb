@@ -8,6 +8,7 @@ class Record < ApplicationRecord
   has_ancestry
 
   include RecordHierarchyPlacement
+  include RecordStates
 
   enum :record_kind,
        {
@@ -45,8 +46,10 @@ class Record < ApplicationRecord
   end
 
   def display_range_of_years
-    years = descendants.map(&:year).compact
-    return year if years.empty?
+    return year unless persisted? && has_children?
+
+    years = state_leaves.map(&:year).compact
+    return nil if years.empty?
 
     minimum_year, maximum_year = years.minmax
     minimum_year == maximum_year ? minimum_year.to_s : "#{minimum_year}-#{maximum_year}"
@@ -81,15 +84,12 @@ class Record < ApplicationRecord
   end
 
   def formatted_total_length
-    if has_children?
-      formatted_total_length_in_mn = 0
-      descendants.each do |child|
-        formatted_total_length_in_mn += child.length_in_mn.to_i
-      end
-      formatted_length(formatted_total_length_in_mn)
-    else
-      formatted_length(length_in_mn)
-    end
+    records = persisted? && has_children? ? state_leaves : [self]
+    lengths = records.map(&:length_in_mn).compact.select(&:positive?)
+    return 'Inconnue' if lengths.empty?
+
+    prefix = lengths.length < records.length ? '≥ ' : ''
+    "#{prefix}#{formatted_length(lengths.sum)}"
   end
 
   def self.number_of_checked_records
@@ -124,15 +124,15 @@ class Record < ApplicationRecord
   end
 
   def number_of_recorded_children
-    return descendants.count(&:is_recorded)
+    state_counts.fetch(:is_recorded).fetch(:yes)
   end
 
   def number_of_seen_children
-    return descendants.count(&:is_seen)
+    state_counts.fetch(:is_seen).fetch(:yes)
   end
 
   def number_of_available_children
-    return descendants.count(&:is_available)
+    state_counts.fetch(:is_available).fetch(:yes)
   end
 
   private

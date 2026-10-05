@@ -1,0 +1,50 @@
+{
+  "format": "vidb.confirmed_episode_hierarchy",
+  "version": 1,
+  "record_id": 3060,
+  "series_title": "Europe, un continent bouleversé",
+  "local_season_number": 1,
+  "season_basis": "local_catalog_and_directory_convention",
+  "confirmed_by_viewing": true,
+  "confirmed_by": "Pascal",
+  "confirmed_on": "2026-10-05",
+  "publisher_evidence": {
+    "publisher": "ARTE",
+    "url": "https://boutique.arte.tv/detail/europe-un-continent-bouleverse",
+    "consulted_on": "2026-10-05",
+    "extraction": "manual_from_publisher_page",
+    "language": "fr",
+    "scope": "episode_titles_and_order",
+    "season_number": null
+  },
+  "episode_titles": [
+    "Le compte à rebours",
+    "Les nouveaux Européens",
+    "L'Europe en mouvement",
+    "Le continent invisible",
+    "Préserver le vivant",
+    "La révolution verte"
+  ],
+  "confirmed_paths": [
+    "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E01 - Le compte à rebours.m4v",
+    "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E02 - Les nouveaux Européens.m4v",
+    "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E03 - L'Europe en mouvement.m4v",
+    "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E04 - Le continent invisible.m4v",
+    "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E05 - Préserver le vivant.m4v",
+    "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E06 - La révolution verte.m4v"
+  ],
+  "accepted_metadata": {
+    "countries": [
+      "Allemagne",
+      "France",
+      "Belgique"
+    ],
+    "countries_basis": "Pascal consultation ARTE, confirmed 2026-10-05; inherited by seasons and episodes",
+    "genre_dictionary_names": [
+      "Documentaire",
+      "Documentaires"
+    ],
+    "episode_production_year": 2022,
+    "year_basis": "production year accepted for all six episodes in this pilot; ranges derived from episode years"
+  }
+}
