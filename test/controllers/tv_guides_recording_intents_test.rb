@@ -102,29 +102,31 @@ class TvGuidesRecordingIntentsTest <
   end
 
   test "marks an episode already programmed for another day" do
-    @programme.update!(episode_numbers: [{ "system" => "xmltv_ns", "value" => "3.3." }])
-    other = @programme.guide_channel.broadcast_observations.create!(
-      fingerprint: "d" * 64,
-      starts_at: Time.utc(2026, 10, 1, 16),
-      ends_at: Time.utc(2026, 10, 1, 17),
-      titles: @programme.titles,
-      episode_numbers: @programme.episode_numbers
-    )
-    intent = Tv::RecordingIntentSelector.new(broadcast_observation: other).call
-    schedule = Tv::KaffeineSchedule.new(
-      key: 999, name: "Film du soir - S04 E04", channel: "France 2",
-      starts_at: intent.capture_starts_at,
-      duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
-      repeat: 0, non_inactive: false
-    )
-    Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
+    travel_to Time.utc(2026, 9, 27, 12) do
+      @programme.update!(episode_numbers: [{ "system" => "xmltv_ns", "value" => "3.3." }])
+      other = @programme.guide_channel.broadcast_observations.create!(
+        fingerprint: "d" * 64,
+        starts_at: Time.utc(2026, 10, 1, 16),
+        ends_at: Time.utc(2026, 10, 1, 17),
+        titles: @programme.titles,
+        episode_numbers: @programme.episode_numbers
+      )
+      intent = Tv::RecordingIntentSelector.new(broadcast_observation: other).call
+      schedule = Tv::KaffeineSchedule.new(
+        key: 999, name: "Film du soir - S04 E04", channel: "France 2",
+        starts_at: intent.capture_starts_at,
+        duration_seconds: (intent.capture_ends_at - intent.capture_starts_at).to_i,
+        repeat: 0, non_inactive: false
+      )
+      Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
 
-    get tv_guide_url, params: guide_params
+      get tv_guide_url, params: guide_params
 
-    assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate]",
-                  text: /Épisode déjà programmé/
-    assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate-detail]",
-                  text: /Kaffeine n° 999/
+      assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate]",
+                    text: /Épisode déjà programmé/
+      assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate-detail]",
+                    text: /Kaffeine n° 999/
+    end
   end
 
   test "offers one click scheduling for an unselected linked channel" do
