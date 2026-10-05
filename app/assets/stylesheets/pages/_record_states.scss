@@ -1,0 +1,9 @@
+.table [data-state-menu] > summary {
+  display: block;
+  list-style: none;
+  cursor: pointer;
+}
+
+.table [data-state-menu] > summary::-webkit-details-marker {
+  display: none;
+}
