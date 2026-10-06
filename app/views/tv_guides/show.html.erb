@@ -157,6 +157,8 @@
             --tv-minute-height: <%= @minute_height %>px;
             --tv-day-height: <%= projected_height %>px;
           ">
+          <%= render "multiplex_load", segments: @multiplex_load %>
+
           <aside
             class="tv-guide-time-axis"
             data-tv-guide-time-axis>

@@ -1,0 +1,28 @@
+<aside class="tv-guide-multiplex-axis" data-tv-guide-multiplex-axis
+       data-controller="tv-guide-multiplex">
+  <div class="tv-guide-column-heading" title="Multiplex des sélections, marges comprises">Mux</div>
+  <div class="tv-guide-multiplex-body">
+    <% segments.each do |segment| %>
+      <% next if segment.captures.empty? %>
+      <% top = tv_multiplex_position(segment.start_minute) %>
+      <% height = tv_multiplex_position(segment.end_minute) - top %>
+      <% description = tv_multiplex_description(segment) %>
+      <button type="button"
+              class="tv-guide-multiplex-segment tv-guide-multiplex-level-<%= [segment.multiplexes.size, 5].min %> <%= "tv-guide-multiplex-unknown" if segment.unknown_channels.any? %>"
+              style="top: <%= top %>px; height: <%= height %>px;"
+              data-tv-guide-multiplex-segment
+              data-tv-guide-multiplex-count="<%= segment.multiplexes.size %>"
+              data-tv-guide-multiplex-unknown="<%= segment.unknown_channels.any? %>"
+              data-tv-guide-multiplex-start-minute="<%= segment.start_minute %>"
+              data-tv-guide-multiplex-end-minute="<%= segment.end_minute %>"
+              data-tv-guide-top-pixels="<%= top %>"
+              data-tv-guide-height-pixels="<%= height %>"
+              data-action="click->tv-guide-multiplex#toggle"
+              aria-expanded="false"
+              aria-label="<%= description.join('. ') %>"
+              title="<%= description.join("\n") %>">
+        <span><%= tv_multiplex_label(segment) %></span>
+      </button>
+    <% end %>
+  </div>
+</aside>

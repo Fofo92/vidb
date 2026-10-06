@@ -13,6 +13,7 @@ class TvGuidesController < ApplicationController
     @timelines_by_channel = timelines_by_channel
     @minimum_programme_height = MINIMUM_PROGRAMME_HEIGHT
     @timeline_projection = timeline_projection
+    @multiplex_load = Tv::GuideMultiplexLoad.new(date: @date, guide_source: @guide_source).call
   end
 
   private
