@@ -2,6 +2,8 @@ class VideoAsset < ApplicationRecord
   include VideoAssetStates
 
   belongs_to :record, inverse_of: :video_assets
+  belongs_to :medium, optional: true
+  belongs_to :language_version, optional: true
 
   enum :status,
        {

@@ -1,0 +1,49 @@
+{
+  "format": "vidb.confirmed_copy_details",
+  "version": 1,
+  "confirmed_by": "Pascal",
+  "confirmed_on": "2026-10-07",
+  "medium": "HD",
+  "medium_basis": "Copies locales sur le volume monté dans /videos, relevé du 2026-10-06.",
+  "language_version": "VF",
+  "language_basis": "Français confirmé par Pascal ; anciens encodages avec piste audio unique, langue technique und.",
+  "storage_uuid": "3430606f-92bb-4da4-aaf2-36a3460bc298",
+  "copies": [
+    {
+      "video_asset_id": 1,
+      "record_id": 7386,
+      "path": "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E01 - Le compte à rebours.m4v",
+      "byte_size": 562970603
+    },
+    {
+      "video_asset_id": 2,
+      "record_id": 7387,
+      "path": "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E02 - Les nouveaux Européens.m4v",
+      "byte_size": 594701893
+    },
+    {
+      "video_asset_id": 3,
+      "record_id": 7388,
+      "path": "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E03 - L'Europe en mouvement.m4v",
+      "byte_size": 604014889
+    },
+    {
+      "video_asset_id": 4,
+      "record_id": 7389,
+      "path": "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E04 - Le continent invisible.m4v",
+      "byte_size": 538829279
+    },
+    {
+      "video_asset_id": 5,
+      "record_id": 7390,
+      "path": "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E05 - Préserver le vivant.m4v",
+      "byte_size": 769044443
+    },
+    {
+      "video_asset_id": 6,
+      "record_id": 7391,
+      "path": "/videos/Documentaires/Europe, un continent bouleversé (c - 6)/Saison 01/S01 E06 - La révolution verte.m4v",
+      "byte_size": 658299908
+    }
+  ]
+}

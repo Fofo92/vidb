@@ -1,11 +1,36 @@
 <% if record.video_assets.any? %>
   <p><strong>Copies confirmées :</strong></p>
   <ul data-confirmed-video-assets>
-    <% record.video_assets.order(:id).each do |asset| %>
+    <% record.video_assets.includes(:medium, :language_version).order(:id).each do |asset| %>
       <li>
         <%= asset.status_present? ? "Présente" : "Supprimée" %> —
         <%= asset.duration_minutes ? "#{asset.duration_minutes} min mesurées (arrondies)" : "durée du fichier inconnue" %>
+        — <%= asset.medium&.short_name || "support non renseigné" %>
+        — <%= asset.language_version&.short_name || "version linguistique non confirmée pour cette copie" %>
         — <%= asset.last_known_path %>
+        <% if asset.technical_details.present? %>
+          <details>
+            <summary>Détails techniques et provenance</summary>
+            <% storage = asset.technical_details.fetch("storage", {}) %>
+            <p>Stockage : <%= storage["target"] %> (<%= storage["fstype"] %>)
+              — volume <%= storage["uuid"] %></p>
+            <ul>
+              <% asset.technical_details.fetch("streams", []).each do |stream| %>
+                <li>
+                  <%= stream["codec_type"] %> — <%= stream["codec_name"] %>
+                  <% if %w[audio subtitle].include?(stream["codec_type"]) %>
+                    <% language = stream.fetch("tags", {})["language"] %>
+                    — langue déclarée : <%= language.present? && language != "und" ? language : "non renseignée" %>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+            <% confirmation = asset.technical_details.fetch("confirmation", {}) %>
+            <p>Qualification confirmée par <%= confirmation["confirmed_by"] %>
+              le <%= confirmation["confirmed_on"] %>.
+              <%= confirmation["language_basis"] %></p>
+          </details>
+        <% end %>
       </li>
     <% end %>
   </ul>
