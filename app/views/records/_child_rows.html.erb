@@ -1,4 +1,5 @@
       <% record.children.order(:rank).each do |record| %>
+        <% copies = record_copy_summary(record) %>
         <tr>
           <td><%= record.id %></td>
           <td><%= record.rank %></td>
@@ -9,11 +10,11 @@
             <% end %>
           </td>
           <td><%= record.display_range_of_years %></td>
-          <td><%= record.formatted_total_length %></td>
+          <td data-copy-duration="<%= record.id %>"><%= copies.duration %></td>
           <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
           <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
-          <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
-          <td><%= record.media.map(&:short_name).join(", ") %></td>
+          <td data-copy-languages="<%= record.id %>"><%= copies.languages %></td>
+          <td data-copy-supports="<%= record.id %>"><%= copies.supports %></td>
           <%= render "records/state_columns", record: record, header: false %>
           <td>
             <%= link_to edit_record_path(record) do %>
