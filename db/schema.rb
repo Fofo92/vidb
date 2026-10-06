@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,7 +79,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
     t.index ["ancestry"], name: "index_records_on_ancestry"
     t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
-    t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying, 'standalone_video'::character varying, 'series'::character varying, 'season'::character varying, 'episode'::character varying]::text[])", name: "records_record_kind_check"
+    t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying::text, 'standalone_video'::character varying::text, 'series'::character varying::text, 'season'::character varying::text, 'episode'::character varying::text])", name: "records_record_kind_check"
   end
 
   create_table "tv_broadcast_observations", force: :cascade do |t|
@@ -193,7 +193,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
     t.check_constraint "duplicate_programme_count >= 0", name: "tv_guide_imports_duplicate_programme_count_check"
     t.check_constraint "programme_count >= 0", name: "tv_guide_imports_programme_count_check"
     t.check_constraint "source_programme_count >= 0", name: "tv_guide_imports_source_programme_count_check"
-    t.check_constraint "status::text = ANY (ARRAY['running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "tv_guide_imports_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['running'::character varying::text, 'succeeded'::character varying::text, 'failed'::character varying::text])", name: "tv_guide_imports_status_check"
   end
 
   create_table "tv_guide_sources", force: :cascade do |t|
@@ -215,13 +215,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
     t.string "origin", null: false
     t.bigint "recording_intent_id", null: false
     t.integer "repeat_mask", null: false
+    t.datetime "retired_at"
     t.timestamptz "starts_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["kaffeine_key"], name: "index_tv_kaffeine_schedule_links_on_kaffeine_key", unique: true
+    t.index ["kaffeine_key"], name: "index_unique_active_kaffeine_schedule_key", unique: true, where: "(retired_at IS NULL)"
     t.index ["recording_intent_id"], name: "index_tv_kaffeine_schedule_links_on_recording_intent_id", unique: true
     t.check_constraint "duration_seconds >= 1 AND duration_seconds <= 86399", name: "tv_kaffeine_schedule_links_duration_check"
     t.check_constraint "kaffeine_key >= 1 AND kaffeine_key <= '4294967295'::bigint", name: "tv_kaffeine_schedule_links_key_check"
-    t.check_constraint "origin::text = ANY (ARRAY['created_by_vidb'::character varying, 'preexisting'::character varying]::text[])", name: "tv_kaffeine_schedule_links_origin_check"
+    t.check_constraint "origin::text = ANY (ARRAY['created_by_vidb'::character varying::text, 'preexisting'::character varying::text])", name: "tv_kaffeine_schedule_links_origin_check"
     t.check_constraint "repeat_mask >= 0 AND repeat_mask <= 127", name: "tv_kaffeine_schedule_links_repeat_check"
   end
 
@@ -243,7 +244,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
     t.check_constraint "programme_ends_at > programme_starts_at", name: "tv_recording_intents_programme_interval_check"
     t.check_constraint "requested_padding_after_seconds >= 0", name: "tv_recording_intents_requested_padding_after_seconds_check"
     t.check_constraint "requested_padding_before_seconds >= 0", name: "tv_recording_intents_requested_padding_before_seconds_check"
-    t.check_constraint "status::text = ANY (ARRAY['selected'::character varying, 'cancelled'::character varying]::text[])", name: "tv_recording_intents_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['selected'::character varying::text, 'cancelled'::character varying::text])", name: "tv_recording_intents_status_check"
   end
 
   create_table "users", force: :cascade do |t|
@@ -273,7 +274,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_224500) do
     t.check_constraint "byte_size IS NULL OR byte_size >= 0", name: "video_assets_byte_size_check"
     t.check_constraint "duration_minutes IS NULL OR duration_minutes > 0", name: "video_assets_duration_check"
     t.check_constraint "status::text <> 'present'::text OR NULLIF(btrim(last_known_path), ''::text) IS NOT NULL", name: "video_assets_present_path_check"
-    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['present'::character varying::text, 'deleted'::character varying::text])", name: "video_assets_status_check"
   end
 
   add_foreign_key "records", "countries"

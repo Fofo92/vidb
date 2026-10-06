@@ -192,6 +192,29 @@ module Tv
       assert_equal 1, client.created.length
     end
 
+    test "adopts an existing schedule whose key belonged to a finished recording" do
+      observation = @intent.broadcast_observation.guide_channel.broadcast_observations.create!(
+        fingerprint: "c" * 64, starts_at: Time.utc(2020, 1, 1, 12),
+        ends_at: Time.utc(2020, 1, 1, 13)
+      )
+      old_intent = RecordingIntent.create!(broadcast_observation: observation)
+      old_schedule = KaffeineSchedule.new(
+        key: 618, name: "NCIS", channel: "CSTAR", starts_at: old_intent.capture_starts_at,
+        duration_seconds: 4800, repeat: 0, non_inactive: false
+      )
+      old_link = KaffeineScheduleLink.attach!(
+        recording_intent: old_intent, schedule: old_schedule, origin: :created_by_vidb
+      )
+      existing = KaffeineSchedule.new(key: 618, **expected_attributes, non_inactive: false)
+      client = FakeClient.new(entries: [existing])
+
+      assert_equal existing, scheduler(client).call
+      assert_empty client.created
+      assert old_link.reload.retired?
+      assert @intent.reload.kaffeine_schedule_link.origin_preexisting?
+      assert_equal 618, @intent.kaffeine_schedule_link.kaffeine_key
+    end
+
     private
 
     def scheduler(client)

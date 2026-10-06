@@ -54,7 +54,9 @@ module Tv
 
     def replace_and_link(link, schedule, attributes)
       replacement = @manager.replace(schedule, **attributes)
-      link.update!(kaffeine_key: replacement.key, name: replacement.name)
+      KaffeineScheduleLinkAttachment.new(
+        recording_intent: @recording_intent, schedule: replacement, origin: link.origin, link:
+      ).call
       replacement
     end
   end

@@ -22,6 +22,8 @@ module Tv
     def call
       @lock.synchronize do
         link = KaffeineScheduleLink.find_by(recording_intent_id: @recording_intent.id)
+        raise LinkedScheduleMismatch, "linked schedule is historical" if link&.retired?
+
         remove_managed_schedule(link) if link&.origin_created_by_vidb?
         link&.destroy!
         @recording_intent.update!(status: "cancelled") if @recording_intent.status_selected?

@@ -87,6 +87,18 @@ module Tv
       assert_empty client.removed
     end
 
+    test "preserves a historical link and never removes its reused key" do
+      attach_schedule(:preexisting)
+      link = @intent.reload.kaffeine_schedule_link
+      link.update!(retired_at: Time.utc(2030, 10, 1))
+      client = FakeClient.new([@schedule.with(name: "Hollywoo")])
+
+      assert_raises(RecordingIntentScheduleCanceller::LinkedScheduleMismatch) { cancel(client) }
+      assert_empty client.removed
+      assert @intent.reload.status_selected?
+      assert_equal link, @intent.kaffeine_schedule_link
+    end
+
     private
 
     def attach_schedule(origin)

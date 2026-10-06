@@ -78,13 +78,20 @@
                       <%= button_tag(
                         "Annuler",
                         type: "submit",
-                        class: "btn btn-sm btn-outline-danger"
+                        class: "btn btn-sm btn-outline-danger",
+                        disabled: recording_intent.kaffeine_schedule_link&.retired?
                       ) %>
                     <% end %>
                   </div>
                   <div class="mt-2" data-kaffeine-schedule>
                     <% if (link = recording_intent.kaffeine_schedule_link) %>
-                      <span class="text-success">Programmée (n° <%= link.kaffeine_key %>)</span>
+                      <% if link.retired? %>
+                        <span class="text-body-secondary" data-kaffeine-historical>
+                          Programmation passée (ancien n° <%= link.kaffeine_key %>)
+                        </span>
+                      <% else %>
+                        <span class="text-success">Programmée (n° <%= link.kaffeine_key %>)</span>
+                      <% end %>
                       <% if link.name != recording_intent_title(recording_intent) %>
                         <small class="d-block text-body-secondary" data-kaffeine-name>
                           Nom Kaffeine à la liaison : <%= link.name %>
