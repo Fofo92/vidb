@@ -22,12 +22,12 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
     copy(@episodes.last, 54)
     get record_url(@season)
     assert_response :success
-    assert_select "[data-copy-duration='#{@episodes.first.id}']", text: /52 min.*mesurées/
+    assert_select "[data-copy-duration='#{@episodes.first.id}']", text: '52 mn'
     assert_select "[data-copy-supports='#{@episodes.first.id}']", text: 'DISK'
     assert_select "[data-copy-languages='#{@episodes.first.id}']", text: 'COPY'
     get record_url(@root)
-    assert_select "[data-copy-duration='#{@root.id}']", text: /106 min/
-    assert_select "[data-copy-duration='#{@season.id}']", text: /106 min/
+    assert_select "[data-copy-duration='#{@root.id}']", text: '01:46'
+    assert_select "[data-copy-duration='#{@season.id}']", text: '01:46'
   end
 
   test 'multiple copies are not counted twice and deleted copies are excluded' do
@@ -36,7 +36,7 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
     copy(@episodes.last, 54)
     copy(@episodes.last, 120).update!(status: 'deleted')
     get record_url(@season)
-    assert_select "[data-copy-duration='#{@season.id}']", text: /106–107 min selon les copies/
+    assert_select "[data-copy-duration='#{@season.id}']", text: /01:46–01:47 selon les copies/
   end
 
   test 'incomplete measured coverage stays explicit' do
@@ -52,6 +52,15 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
     assert_select "[data-copy-duration='#{@episodes.first.id}']", text: /00h45.*catalogue/
     assert_select "[data-copy-languages='#{@episodes.first.id}']", text: /COPY.*catalogue/
     assert_select "[data-copy-supports='#{@episodes.first.id}']", text: 'Non renseigné'
+  end
+
+  test 'durations switch to hours at sixty minutes' do
+    copy(@episodes.first, 59)
+    copy(@episodes.last, 65)
+    get record_url(@season)
+    assert_select "[data-copy-duration='#{@episodes.first.id}']", text: '59 mn'
+    assert_select "[data-copy-duration='#{@episodes.last.id}']", text: '01:05'
+    assert_select "[data-copy-duration='#{@season.id}']", text: '02:04'
   end
 
   private

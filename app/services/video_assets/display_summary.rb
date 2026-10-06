@@ -10,6 +10,12 @@ module VideoAssets
       @assets = assets.select { |asset| leaf_ids.include?(asset.record_id) }
     end
 
+    def self.format_minutes(minutes)
+      return "#{minutes} mn" if minutes < 60
+
+      format('%<hours>02d:%<minutes>02d', hours: minutes / 60, minutes: minutes % 60)
+    end
+
     def duration
       return catalogue_duration if @assets.empty?
 
@@ -19,7 +25,7 @@ module VideoAssets
       label = measured_duration_label(ranges)
       label += " — partiel : #{ranges.size}/#{@leaves.size}" if ranges.size < @leaves.size
       label += ' — certaines copies non mesurées' if @assets.any? { |asset| asset.duration_minutes.nil? }
-      "#{label} (mesurées, arrondies)"
+      label
     end
 
     def supports
@@ -35,7 +41,9 @@ module VideoAssets
     def measured_duration_label(ranges)
       minimum = ranges.sum(&:min)
       maximum = ranges.sum(&:max)
-      minimum == maximum ? "#{minimum} min" : "#{minimum}–#{maximum} min selon les copies"
+      lower = self.class.format_minutes(minimum)
+      upper = self.class.format_minutes(maximum)
+      minimum == maximum ? lower : "#{lower}–#{upper} selon les copies"
     end
 
     def duration_ranges

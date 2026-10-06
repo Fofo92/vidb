@@ -37,7 +37,7 @@
     </span>
   </span>
   <strong>, genre : </strong><%= @record.genders.order(:name).map(&:name).join(", ") || "néant" %>
-  <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>"><%= copies.duration %></span>
+  <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>" title="Durée des copies présentes, mesurée et arrondie ; valeur catalogue sinon"><%= copies.duration %></span>
 </p>
 <p>
   <strong>Année : </strong><%= @record.display_range_of_years %>,

@@ -4,7 +4,9 @@
     <% record.video_assets.includes(:medium, :language_version).order(:id).each do |asset| %>
       <li>
         <%= asset.status_present? ? "Présente" : "Supprimée" %> —
-        <%= asset.duration_minutes ? "#{asset.duration_minutes} min mesurées (arrondies)" : "durée du fichier inconnue" %>
+        <span title="Durée mesurée du fichier, arrondie à la minute">
+          <%= asset.duration_minutes ? VideoAssets::DisplaySummary.format_minutes(asset.duration_minutes) : "durée inconnue" %>
+        </span>
         — <%= asset.medium&.short_name || "support non renseigné" %>
         — <%= asset.language_version&.short_name || "version linguistique non confirmée pour cette copie" %>
         — <%= asset.last_known_path %>
