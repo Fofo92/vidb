@@ -123,7 +123,7 @@ class TvGuidesRecordingIntentsTest <
       get tv_guide_url, params: guide_params
 
       assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate]",
-                    text: /Épisode déjà programmé/
+                    text: /Déjà programmé/
       assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate-detail]",
                     text: /Kaffeine n° 999/
     end

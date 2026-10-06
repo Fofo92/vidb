@@ -687,3 +687,10 @@
 .tv-guide-capacity-detail ul { margin: 0 0 0.5rem; padding-left: 1.2rem; }
 .tv-guide-capacity-detail li + li { margin-top: 0.45rem; }
 .tv-guide-capacity-detail li div { color: $gray-700; }
+
+.tv-guide-capacity-detail[data-level="clear"] {
+  padding: 0;
+  border-left: 0;
+  color: #18783d;
+  font-size: 0.75rem;
+}

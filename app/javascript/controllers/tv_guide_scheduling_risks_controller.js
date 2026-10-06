@@ -69,7 +69,7 @@ export default class extends Controller {
       card.button.setAttribute("aria-label", `${card.button.getAttribute("aria-label")} ; alerte de capacité multiplex`)
     }
     const message = result.available
-      ? risk?.message || "Capacité suffisante, qui sera contrôlée à la programmation."
+      ? risk?.message || "Capacité suffisante, contrôlée à la programmation"
       : result.message || "Capacité non vérifiée : consultation de Kaffeine impossible."
     card.detail.classList.add("tv-guide-capacity-detail")
     card.detail.dataset.level = level || "clear"
