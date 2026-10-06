@@ -24,6 +24,10 @@ chaînes et programmes. Échap, le bouton de fermeture ou un clic extérieur
 ferment le panneau. Aucun programme n’est modifié par cette vue.
 
 La correspondance utilise le relevé Kaffeine de Zeus (septembre 2026) déjà
-présent dans `Tv::MultiplexCapacityGuard::MULTIPLEXES`. BFM TV, LCI, franceinfo
-et L’Équipe ne figurent pas dans ce relevé ; leurs multiplex ne sont pas déduits
-sans preuve locale.
+présent dans `Tv::MultiplexCapacityGuard::MULTIPLEXES`.
+L’Équipe est rattachée à R10, à partir du relevé local confirmé par Pascal
+le 6 octobre 2026 : 642,166 MHz, TS10. Elle partage ce multiplex avec TF1
+Séries Films, RMC Story, RMC Découverte et RMC Life. Les graphies « L'Equipe »,
+« L’Équipe » et « L'Équipe » sont reconnues sans modifier les noms Kaffeine.
+Cette table est utilisée par la colonne Mux, la prévision et le contrôle final.
+BFM TV, LCI et franceinfo restent sans correspondance confirmée dans ce relevé.

@@ -8,7 +8,10 @@ module Tv
       2 => ["CNEWS", "Gulli", "T18", "CSTAR", "NOVO19"],
       4 => ["France 5", "M6", "Arte", "W9", "6Ter", "PARIS PREMIERE"],
       6 => ["TF1", "TMC", "TFX", "LCP"],
-      10 => ["TF1 Séries Films", "RMC STORY", "RMC Découverte", "RMC Life"]
+      10 => [
+        "TF1 Séries Films", "RMC STORY", "RMC Découverte", "RMC Life",
+        "L'Equipe", "L’Équipe", "L'Équipe"
+      ]
     }.freeze
 
     class Warning < StandardError; end
