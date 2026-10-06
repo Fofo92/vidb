@@ -69,12 +69,44 @@ export default class extends Controller {
       card.button.setAttribute("aria-label", `${card.button.getAttribute("aria-label")} ; alerte de capacité multiplex`)
     }
     const message = result.available
-      ? risk?.message || "Capacité suffisante d’après Kaffeine au chargement du guide, marges comprises."
+      ? risk?.message || "Capacité suffisante, qui sera contrôlée à la programmation."
       : result.message || "Capacité non vérifiée : consultation de Kaffeine impossible."
     card.detail.classList.add("tv-guide-capacity-detail")
     card.detail.dataset.level = level || "clear"
-    const lines = [message, ...(risk?.details || [])]
-    lines.push("Le contrôle sera effectué à nouveau au moment de programmer.")
-    card.detail.textContent = lines.join("\n")
+    this.renderDetail(card.detail, message, risk?.details || [], Boolean(level))
+  }
+
+  renderDetail(container, message, schedules, warning) {
+    const summary = document.createElement("p")
+    summary.textContent = message
+    container.replaceChildren(summary)
+    if (schedules.length) {
+      const heading = document.createElement("p")
+      heading.textContent = "Enregistrements chevauchant cette capture :"
+      container.append(heading)
+      const list = document.createElement("ul")
+      schedules.forEach(schedule => list.append(this.scheduleItem(schedule)))
+      container.append(list)
+    }
+    if (warning) {
+      const reminder = document.createElement("p")
+      reminder.className = "text-body-secondary"
+      reminder.textContent = "Capacité contrôlée à nouveau à la programmation."
+      container.append(reminder)
+    }
+  }
+
+  scheduleItem(schedule) {
+    const item = document.createElement("li")
+    if (typeof schedule === "string") {
+      item.textContent = schedule
+      return item
+    }
+    const title = document.createElement("strong")
+    title.textContent = schedule.title
+    const information = document.createElement("div")
+    information.textContent = `${schedule.channel} · ${schedule.starts_at} – ${schedule.ends_at}`
+    item.append(title, information)
+    return item
   }
 }

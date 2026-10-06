@@ -46,11 +46,16 @@ module Tv
     end
 
     def warning(level, message, attributes)
-      details = overlapping(attributes).map do |entry|
-        "#{entry.channel} : #{entry.name} (#{time_label(entry.starts_at)} – " \
-          "#{time_label(entry.starts_at + entry.duration_seconds.seconds)})"
-      end
+      details = overlapping(attributes).map { |entry| schedule_details(entry) }
       { level:, message:, details: }
+    end
+
+    def schedule_details(entry)
+      {
+        title: entry.name, channel: entry.channel,
+        starts_at: time_label(entry.starts_at),
+        ends_at: time_label(entry.starts_at + entry.duration_seconds.seconds)
+      }
     end
 
     def overlapping(attributes)

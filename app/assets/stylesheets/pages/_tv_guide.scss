@@ -680,3 +680,10 @@
 
 .tv-guide-capacity-detail[data-level="conflict"] { border-color: #bb202b; background: #fff0f0; }
 .tv-guide-capacity-detail[data-level="unknown"] { border-color: #9a6200; background: #fff8e8; }
+
+.tv-guide-capacity-detail { white-space: normal; }
+.tv-guide-capacity-detail p { margin: 0 0 0.4rem; }
+.tv-guide-capacity-detail p:last-child { margin-bottom: 0; }
+.tv-guide-capacity-detail ul { margin: 0 0 0.5rem; padding-left: 1.2rem; }
+.tv-guide-capacity-detail li + li { margin-top: 0.45rem; }
+.tv-guide-capacity-detail li div { color: $gray-700; }

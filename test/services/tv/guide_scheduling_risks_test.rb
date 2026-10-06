@@ -36,6 +36,8 @@ module Tv
         assert_equal "conflict", risk.fetch(:level)
         assert_match(/5 multiplex pour 4 tuners/, risk.fetch(:message))
         assert_equal 4, risk.fetch(:details).size
+        assert_equal({ title: "Enregistrement 1", channel: "France 2",
+                       starts_at: "01/01 19:00", ends_at: "01/01 20:00" }, risk.fetch(:details).first)
       end
       assert_equal 1, client.calls
     end
