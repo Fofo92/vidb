@@ -364,7 +364,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
-  cursor: help;
+  cursor: pointer;
 }
 
 .tv-guide-refresh-alert {
@@ -413,23 +413,6 @@
 
 .tv-guide-rename-form {
   margin-top: 0.35rem;
-}
-
-.tv-guide-programme:has(.tv-guide-refresh-alert:hover),
-.tv-guide-programme:has(.tv-guide-refresh-alert:focus-within),
-.tv-guide-programme:has(.tv-guide-refresh-alert--pinned) {
-  overflow: visible;
-  z-index: 6;
-}
-
-.tv-guide-refresh-alert:hover .tv-guide-refresh-alert-detail,
-.tv-guide-refresh-alert:focus-within .tv-guide-refresh-alert-detail,
-.tv-guide-refresh-alert--pinned .tv-guide-refresh-alert-detail {
-  display: block;
-}
-
-.tv-guide-programme--information-open .tv-guide-refresh-alert {
-  visibility: hidden;
 }
 
 .tv-guide-schedule-form,
@@ -496,91 +479,82 @@
   outline-offset: 1px;
 }
 
-.tv-guide-programme:has(
-  .tv-guide-information:hover
-) [data-tv-guide-secondary],
-.tv-guide-programme:has(
-  .tv-guide-information:focus-visible
-) [data-tv-guide-secondary],
-.tv-guide-programme--information-open [data-tv-guide-secondary] {
-  display: block;
-}
-
-.tv-guide-programme:has(.tv-guide-information:hover),
-.tv-guide-programme:has(.tv-guide-information:focus-visible),
-.tv-guide-programme--information-open {
-  right: auto;
-  z-index: 5;
-  width: 18rem;
-  max-width: calc(100vw - 2rem);
-  height: auto;
-  min-height: 6rem;
-  overflow: visible;
-  background: $white;
-  box-shadow: 0 0.25rem 0.75rem rgba($black, 0.2);
-}
-
-.tv-guide-programme--information-open {
-  padding-right: 1.75rem;
-}
-
-.tv-guide-programme--information-open .tv-guide-schedule-status--confirmed {
-  visibility: hidden;
-}
-
-.tv-guide-programme--information-open .tv-guide-information {
-  top: 0.35rem;
-  right: 0.35rem;
-  left: auto;
-}
-
-.tv-guide-programme--single-line:has(
-  .tv-guide-information:hover
-),
-.tv-guide-programme--single-line:has(
-  .tv-guide-information:focus-visible
-),
-.tv-guide-programme--single-line.tv-guide-programme--information-open {
-  display: block;
-  padding: 0.5rem;
-  white-space: normal;
-}
-
-.tv-guide-programme--single-line:hover [data-tv-guide-title],
-.tv-guide-programme--single-line:focus [data-tv-guide-title],
-.tv-guide-programme--single-line:focus-within [data-tv-guide-title] {
-  display: block;
-  overflow: visible;
-  white-space: normal;
-  text-overflow: clip;
-}
-
-.tv-guide-programme--single-line.tv-guide-programme--information-open [data-tv-guide-title] {
-  display: block;
-  overflow: visible;
-  white-space: normal;
-  text-overflow: clip;
-}
-
-.tv-guide-programme--single-line:hover [data-tv-guide-episode],
-.tv-guide-programme--single-line:focus [data-tv-guide-episode],
-.tv-guide-programme--single-line:focus-within [data-tv-guide-episode],
-.tv-guide-programme--single-line:hover [data-tv-guide-subtitle],
-.tv-guide-programme--single-line:focus [data-tv-guide-subtitle],
-.tv-guide-programme--single-line:focus-within [data-tv-guide-subtitle],
-.tv-guide-programme--single-line:hover [data-tv-guide-secondary],
-.tv-guide-programme--single-line:focus [data-tv-guide-secondary],
-.tv-guide-programme--single-line:focus-within [data-tv-guide-secondary] {
-  display: block;
-}
-
-.tv-guide-programme--single-line.tv-guide-programme--information-open [data-tv-guide-episode],
-.tv-guide-programme--single-line.tv-guide-programme--information-open [data-tv-guide-subtitle],
-.tv-guide-programme--single-line.tv-guide-programme--information-open [data-tv-guide-secondary] {
-  display: block;
-}
-
 .tv-guide-programme:focus {
   outline: 2px solid $primary;
   outline-offset: 1px;
+}
+
+.tv-guide-information-panel {
+  position: fixed;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  border: 1px solid $primary;
+  border-radius: 0.35rem;
+  background: $white;
+  color: $black;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0.25rem 0.75rem rgba($black, 0.25);
+}
+
+.tv-guide-information-panel > header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid $gray-300;
+}
+
+.tv-guide-information-panel > header button {
+  flex: 0 0 auto;
+  padding: 0 0.25rem;
+  border: 0;
+  background: transparent;
+  color: $gray-700;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.tv-guide-information-panel-content {
+  min-height: 0;
+  padding: 0.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.tv-guide-information-panel [data-tv-guide-secondary] {
+  display: block;
+}
+
+.tv-guide-information-panel .tv-guide-refresh-alert-detail {
+  display: block;
+  position: static;
+  width: auto;
+  max-width: none;
+  margin-bottom: 0.5rem;
+  box-shadow: none;
+}
+
+.tv-guide-information-panel [data-tv-guide-scheduled-duplicate-detail],
+.tv-guide-information-panel [data-tv-guide-previous-recording-detail] {
+  padding: 0.4rem;
+  margin-bottom: 0.4rem;
+  border-left: 0.2rem solid $warning;
+  background: mix($warning, $white, 25%);
+}
+
+.tv-guide-information-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.tv-guide-information-panel:focus-visible,
+.tv-guide-information-panel button:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
 }
