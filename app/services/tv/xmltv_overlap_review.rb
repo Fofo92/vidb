@@ -10,9 +10,10 @@ module Tv
     MINIMUM_CHANNEL_RATIO = 0.7
     HORIZON_TOLERANCE = 6.hours
 
-    def initialize(guide_source:, document:)
+    def initialize(guide_source:, document:, channel_ids: nil)
       @guide_source = guide_source
       @document = document
+      @channel_ids = channel_ids&.to_set
     end
 
     def call
@@ -22,7 +23,7 @@ module Tv
       previous = @guide_source.latest_successful_import
       return unless previous
 
-      existing = previous.broadcast_observations.includes(:guide_channel).to_a
+      existing = previous_entries(previous)
       starts_at, ends_at = common_period(existing, incoming)
       old_entries = existing.select { |entry| overlaps?(entry, starts_at, ends_at) }
       new_entries = incoming.select { |entry| overlaps?(entry, starts_at, ends_at) }
@@ -31,6 +32,13 @@ module Tv
     end
 
     private
+
+    def previous_entries(previous)
+      entries = previous.broadcast_observations.includes(:guide_channel).to_a
+      return entries unless @channel_ids
+
+      entries.select { |entry| @channel_ids.include?(entry.guide_channel.external_id) }
+    end
 
     def validate_incoming!(incoming)
       raise InsufficientCoverage, "nouveau guide vide" if incoming.empty?

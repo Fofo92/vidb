@@ -2,5 +2,10 @@
 
 require_relative "../config/environment"
 
-source = Tv::GuideSource.find_by!(name: "xml_tv_fr")
-Tv::XmltvRefresh.new(guide_source: source).call
+lock_path = Rails.root.join("tmp", "tv-guide-refresh.lock")
+File.open(lock_path, File::RDWR | File::CREAT, 0o600) do |lock|
+  abort "Une actualisation du guide est déjà en cours." unless lock.flock(File::LOCK_EX | File::LOCK_NB)
+
+  source = Tv::GuideSource.find_by!(name: "xml_tv_fr")
+  Tv::XmltvRefresh.new(guide_source: source).call
+end

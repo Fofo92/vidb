@@ -12,16 +12,33 @@ module Tv
     def call
       Tempfile.create(["vidb-xmltv-", ".xml.gz"], Rails.root.join("tmp")) do |file|
         @downloader.call(file.path)
-        document = XmltvReader.new(file.path).call
-        review = XmltvOverlapReview.new(guide_source: @guide_source, document:).call
-        report(review)
-        imported = XmltvImporter.new(guide_source: @guide_source, path: file.path).call
-        puts "Import réussi : #{imported.programme_count} programmes (n° #{imported.id})."
-        imported
+        channels = XmltvChannelSelection.new(@guide_source).call
+        filtered = XmltvDownloadFilter.new(channel_ids: channels).call(file.path)
+        import_filtered(file.path, channels, filtered)
       end
     end
 
     private
+
+    def import_filtered(path, channels, filtered)
+      document = XmltvReader.new(path).call
+      review = XmltvOverlapReview.new(guide_source: @guide_source, document:, channel_ids: channels).call
+      report(review)
+      imported = XmltvImporter.new(guide_source: @guide_source, path:).call
+      record_filter_results(imported, filtered)
+      puts "Import réussi : #{imported.programme_count} programmes (n° #{imported.id})."
+      imported
+    end
+
+    def record_filter_results(imported, filtered)
+      details = {
+        "excluded_programme_count" => filtered.excluded_programme_count,
+        "rejected_programmes" => filtered.rejected_programmes
+      }
+      imported.update!(source_metadata: imported.source_metadata.merge("download_filter" => details))
+      puts "Hors bouquet : #{filtered.excluded_programme_count} ; " \
+           "durées invalides : #{filtered.rejected_programmes.size}."
+    end
 
     def download(path)
       success = system(
