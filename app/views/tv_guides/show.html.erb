@@ -135,7 +135,10 @@
       <div
         class="tv-guide-scroll"
         data-tv-guide-scroll
-        data-controller="tv-guide-scroll tv-guide-information"
+        data-controller="tv-guide-scroll tv-guide-information tv-guide-scheduling-risks"
+        data-tv-guide-scheduling-risks-url-value="<%= tv_guide_scheduling_risks_path %>"
+        data-tv-guide-scheduling-risks-source-value="<%= @guide_source.id %>"
+        data-tv-guide-scheduling-risks-date-value="<%= @date.iso8601 %>"
         data-action="
           submit->tv-guide-scroll#remember
           mouseover->tv-guide-information#open
@@ -407,6 +410,11 @@
                     ) %>
 
                     <div data-tv-guide-secondary>
+                      <% unless recording_selected %>
+                        <div data-tv-guide-capacity-detail="<%= programme.id %>" aria-live="polite">
+                          Vérification de la capacité Kaffeine en cours…
+                        </div>
+                      <% end %>
                       <% if scheduled_duplicate %>
                         <div data-tv-guide-scheduled-duplicate-detail>
                           Même épisode programmé le
