@@ -6,7 +6,7 @@ abort 'Usage: bin/rails runner script/video_asset_language_proposals.rb [OUTPUT.
 assets = VideoAsset.where(status: 'present').includes(:record, :language_version).order(:id)
 proposals = assets.map { |asset| VideoAssets::LanguageProposal.new(asset).call }
 report = {
-  format: 'vidb.video_asset_language_proposals', version: 1,
+  format: 'vidb.video_asset_language_proposals', version: 2,
   generated_at: Time.current.iso8601, applied: false,
   counts: proposals.group_by { |proposal| proposal.fetch(:status) }.transform_values(&:size),
   copies: proposals

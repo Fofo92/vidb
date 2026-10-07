@@ -9,12 +9,30 @@ module VideoAssets
     def call
       return result('already_qualified', nil, 'Version déjà renseignée pour cette copie.') if @asset.language_version_id
 
-      audio = streams.select { |stream| stream['codec_type'] == 'audio' }
-      languages = audio.map { |stream| language(stream) }
-      proposal(languages)
+      decision = evidence_decision
+      return result(*decision) if decision
+
+      proposal(streams.select { |stream| stream['codec_type'] == 'audio' }.map { |stream| language(stream) })
     end
 
     private
+
+    def evidence_decision
+      reader = collect_evidence
+      if @encoder_evidence[:status] == 'copy_not_stable'
+        return ['needs_review', nil, 'Copie absente, récente ou modifiée depuis son observation.']
+      end
+
+      version = EncoderLanguageProposal.new(streams, @encoder_evidence).call
+      LanguageEvidenceDecision.new(reader, @filename_evidence, version).call
+    end
+
+    def collect_evidence
+      reader = FilenameLanguageEvidence.new(@asset.last_known_path, streams)
+      @filename_evidence = reader.call
+      @encoder_evidence = EncoderLanguageEvidence.new(@asset).call
+      reader
+    end
 
     def streams
       @asset.technical_details.fetch('streams', [])
@@ -54,7 +72,8 @@ module VideoAssets
         status: status, current_version: @asset.language_version&.short_name,
         suggested_version: suggested_version, reason: reason,
         observed_at: @asset.technical_details['observed_at'],
-        declared_audio_languages: declared_audio_languages
+        declared_audio_languages: declared_audio_languages,
+        filename_evidence: @filename_evidence, encoder_evidence: @encoder_evidence
       }
     end
 
