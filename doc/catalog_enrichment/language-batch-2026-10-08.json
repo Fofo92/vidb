@@ -1,0 +1,1521 @@
+{
+  "format": "vidb.video_asset_language_batch",
+  "version": 1,
+  "decided_by": "Pascal",
+  "decided_on": "2026-10-08",
+  "storage_uuid": "3430606f-92bb-4da4-aaf2-36a3460bc298",
+  "source_report": {
+    "format": "vidb.video_asset_language_proposals",
+    "version": 2,
+    "generated_at": "2026-10-07T23:03:59Z",
+    "sha256": "500467e4ad78d41a121d9979eb387f225b0490d39b35b3824e9b5f03357b847a"
+  },
+  "copies": [
+    {
+      "video_asset_id": 7,
+      "record_id": 7357,
+      "title": "39-45 : Les Cheminots dans la résistance",
+      "path": "/videos/Documentaires/39-45 : les cheminots dans la résistance.mkv",
+      "observed_at": "2026-10-06T23:08:20Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Documentaires/39-45 : les cheminots dans la résistance.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": false,
+        "french_role_complete": true
+      },
+      "byte_size": 576517146,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 8,
+      "record_id": 7366,
+      "title": "De Gaulle : histoire d’un géant",
+      "path": "/videos/Documentaires/De Gaulle : histoire d’un géant.mkv",
+      "observed_at": "2026-10-06T23:08:20Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Documentaires/De Gaulle : histoire d’un géant.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": false,
+        "french_role_complete": true
+      },
+      "byte_size": 1430721400,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 9,
+      "record_id": 7351,
+      "title": "Élever au grain",
+      "path": "/videos/Documentaires/Élever au grain.mkv",
+      "observed_at": "2026-10-06T23:08:20Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Documentaires/Élever au grain.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 651854665,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 10,
+      "record_id": 7363,
+      "title": "Bis Repetita",
+      "path": "/videos/Films/Comédie/Bis repetita.mkv",
+      "observed_at": "2026-10-06T23:08:20Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Bis repetita.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 615126544,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 11,
+      "record_id": 7360,
+      "title": "Chasse gardée",
+      "path": "/videos/Films/Comédie/Chasse gardée.mkv",
+      "observed_at": "2026-10-06T23:08:20Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Chasse gardée.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 706024030,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 12,
+      "record_id": 7368,
+      "title": "Comme un prince",
+      "path": "/videos/Films/Comédie/Comme un prince.mkv",
+      "observed_at": "2026-10-06T23:08:21Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Comme un prince.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 504170187,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 13,
+      "record_id": 7231,
+      "title": "Débarquement Immédiat !",
+      "path": "/videos/Films/Comédie/Débarquement Immédiat !.mkv",
+      "observed_at": "2026-10-06T23:08:21Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Débarquement Immédiat !.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 676384353,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 14,
+      "record_id": 7338,
+      "title": "Inestimable",
+      "path": "/videos/Films/Comédie/Inestimable.mkv",
+      "observed_at": "2026-10-06T23:08:21Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Inestimable.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 578843807,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 15,
+      "record_id": 4299,
+      "title": "Les Crevettes pailletées",
+      "path": "/videos/Films/Comédie/Les Crevettes pailletées.mkv",
+      "observed_at": "2026-10-06T23:08:21Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Les Crevettes pailletées.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 1074555060,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 16,
+      "record_id": 7383,
+      "title": "Liberté-Oléron",
+      "path": "/videos/Films/Comédie/Liberté-Oléron.mkv",
+      "observed_at": "2026-10-06T23:08:21Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Liberté-Oléron.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 1078211227,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 17,
+      "record_id": 7354,
+      "title": "Second Tour",
+      "path": "/videos/Films/Comédie/Second Tour.mkv",
+      "observed_at": "2026-10-06T23:08:21Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie/Second Tour.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 639648509,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 18,
+      "record_id": 7203,
+      "title": "Coyote Girls (Coyote Ugly)",
+      "path": "/videos/Films/Comédie, Drame/Coyote Girls (Coyote Ugly).mkv",
+      "observed_at": "2026-10-06T23:08:22Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie, Drame/Coyote Girls (Coyote Ugly).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 722417809,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 19,
+      "record_id": 7359,
+      "title": "Caprice",
+      "path": "/videos/Films/Comédie, Romance/Caprice.mkv",
+      "observed_at": "2026-10-06T23:08:22Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Comédie, Romance/Caprice.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 584542169,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 20,
+      "record_id": 7384,
+      "title": "Bâtiment 5",
+      "path": "/videos/Films/Drame/Bâtiment 5.mkv",
+      "observed_at": "2026-10-06T23:08:22Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame/Bâtiment 5.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 613475127,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 21,
+      "record_id": 459,
+      "title": "Chez nous",
+      "path": "/videos/Films/Drame/Chez nous.mkv",
+      "observed_at": "2026-10-06T23:08:22Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame/Chez nous.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 515755875,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 22,
+      "record_id": 7336,
+      "title": "Deux visages pour une mère (Geborgtes Weiß)",
+      "path": "/videos/Films/Drame/Deux visages pour une mère (Geborgtes Weiß).mkv",
+      "observed_at": "2026-10-06T23:08:22Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame/Deux visages pour une mère (Geborgtes Weiß).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 603384377,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 23,
+      "record_id": 7352,
+      "title": "Julia (Julia)",
+      "path": "/videos/Films/Drame/Julia (Julia).mkv",
+      "observed_at": "2026-10-06T23:08:22Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame/Julia (Julia).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 723020372,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 24,
+      "record_id": 7380,
+      "title": "Première affaire",
+      "path": "/videos/Films/Drame/Première affaire.mkv",
+      "observed_at": "2026-10-06T23:08:23Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame/Première affaire.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 432470681,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 25,
+      "record_id": 7339,
+      "title": "Vera Drake (Vera Drake)",
+      "path": "/videos/Films/Drame/Vera Drake (Vera Drake).mkv",
+      "observed_at": "2026-10-06T23:08:23Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame/Vera Drake (Vera Drake).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 915973737,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 26,
+      "record_id": 327,
+      "title": "Au revoir là-haut",
+      "path": "/videos/Films/Drame, Guerre/Au revoir là-haut.mkv",
+      "observed_at": "2026-10-06T23:08:23Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame, Guerre/Au revoir là-haut.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 646323409,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 27,
+      "record_id": 7382,
+      "title": "Cette femme-là",
+      "path": "/videos/Films/Drame, Policier/Cette femme-là.mkv",
+      "observed_at": "2026-10-06T23:08:23Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Drame, Policier/Cette femme-là.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 451399192,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 28,
+      "record_id": 7355,
+      "title": "Black Rain (Black Rain)",
+      "path": "/videos/Films/Thriller/Black Rain (Black Rain).mkv",
+      "observed_at": "2026-10-06T23:08:23Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Thriller/Black Rain (Black Rain).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 895210836,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 29,
+      "record_id": 2843,
+      "title": "L'impasse (Carlito's Way)",
+      "path": "/videos/Films/Thriller/L'impasse (Carlito's Way).mkv",
+      "observed_at": "2026-10-06T23:08:23Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Thriller/L'impasse (Carlito's Way).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 1216371633,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 30,
+      "record_id": 7353,
+      "title": "Usurpation (Inconceivable)",
+      "path": "/videos/Films/Thriller/Usurpation (Inconceivable).mkv",
+      "observed_at": "2026-10-06T23:08:24Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Thriller/Usurpation (Inconceivable).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 501716265,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 31,
+      "record_id": 7337,
+      "title": "Duel au soleil (Duel in the Sun)",
+      "path": "/videos/Films/Western/Duel au soleil (Duel in the Sun).mkv",
+      "observed_at": "2026-10-06T23:08:24Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Western/Duel au soleil (Duel in the Sun).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 791194366,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 32,
+      "record_id": 7367,
+      "title": "Hondo, l'homme du désert (Hondo)",
+      "path": "/videos/Films/Western/Hondo, l'homme du désert (Hondo).mkv",
+      "observed_at": "2026-10-06T23:08:24Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Films/Western/Hondo, l'homme du désert (Hondo).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 1024970551,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 33,
+      "record_id": 2076,
+      "title": "Les Poupées (Le bambole)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E01 - Les Poupées (Le bambole).m4v",
+      "observed_at": "2026-10-06T23:08:24Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E01 - Les Poupées (Le bambole).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 498532360,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 34,
+      "record_id": 4794,
+      "title": "L'Argent (I soldi)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E02 - L'Argent (I soldi).m4v",
+      "observed_at": "2026-10-06T23:08:25Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E02 - L'Argent (I soldi).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 612492540,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 35,
+      "record_id": 4795,
+      "title": "Les Métamorphoses (Le metamorfosi)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E03 - Les Métamorphoses (Le metamorfosi).m4v",
+      "observed_at": "2026-10-06T23:08:25Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E03 - Les Métamorphoses (Le metamorfosi).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 541496046,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 36,
+      "record_id": 4796,
+      "title": "La Délimitation (La smarginatura)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E04 - La Délimitation (La smarginatura).m4v",
+      "observed_at": "2026-10-06T23:08:25Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E04 - La Délimitation (La smarginatura).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 544517815,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 37,
+      "record_id": 4797,
+      "title": "Les Chaussures (Le scarpe)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E05 - Les Chaussures (Le scarpe).m4v",
+      "observed_at": "2026-10-06T23:08:25Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E05 - Les Chaussures (Le scarpe).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 524993215,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 38,
+      "record_id": 4798,
+      "title": "L'Île (L'Isola)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E06 - L'Île (L'Isola).m4v",
+      "observed_at": "2026-10-06T23:08:26Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E06 - L'Île (L'Isola).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 658389093,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 39,
+      "record_id": 4799,
+      "title": "Les Fiancés (I fidanzati)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E07 - Les Fiancés (I fidanzati).m4v",
+      "observed_at": "2026-10-06T23:08:26Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E07 - Les Fiancés (I fidanzati).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 590743815,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 40,
+      "record_id": 4800,
+      "title": "La Promesse (La promessa)",
+      "path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E08 - La Promesse (La promessa).m4v",
+      "observed_at": "2026-10-06T23:08:26Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_complet/L'amie prodigieuse (III - c - 24)/Saison 01 (c - 8)/S01 E08 - La Promesse (La promessa).json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 585831371,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 41,
+      "record_id": 1712,
+      "title": "La Traque",
+      "path": "/videos/Séries TV/_incomplet/Alex Hugo (VIII - c - 33_35)/Saison 01 (c - 3)/S01 E02 - La traque.mkv",
+      "observed_at": "2026-10-06T23:08:26Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Alex Hugo (VIII - c - 33_35)/Saison 01 (c - 3)/S01 E02 - La traque.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 1390886275,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 42,
+      "record_id": 7349,
+      "title": "Esprit, es-tu là ? (All Hallows Eve)",
+      "path": "/videos/Séries TV/_incomplet/Brokenwood (The Brokenwood Mysteries) (VIII - 34_36)/Saison 11 (01_06)/S11 E03 - Esprit, es-tu là ? (All Hallows Eve).mkv",
+      "observed_at": "2026-10-06T23:08:26Z",
+      "declared_audio_languages": [
+        "fra",
+        "qaa"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Séries TV/_incomplet/Brokenwood (The Brokenwood Mysteries) (VIII - 34_36)/Saison 11 (01_06)/S11 E03 - Esprit, es-tu là ? (All Hallows Eve).json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 646044974,
+      "language_version": "VMST",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 43,
+      "record_id": 5446,
+      "title": "Beauté éternelle",
+      "path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E01 - Beauté éternelle.m4v",
+      "observed_at": "2026-10-06T23:08:27Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E01 - Beauté éternelle.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 879338464,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 44,
+      "record_id": 5447,
+      "title": "Zone blanche",
+      "path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E02 - Zone blanche.m4v",
+      "observed_at": "2026-10-06T23:08:27Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E02 - Zone blanche.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 748402250,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 45,
+      "record_id": 5448,
+      "title": "Onde de choc",
+      "path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E03 - Onde de choc.m4v",
+      "observed_at": "2026-10-06T23:08:27Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E03 - Onde de choc.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 932207790,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 46,
+      "record_id": 5449,
+      "title": "Une cuisine de caractère",
+      "path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E04 - Une cuisine de caractère.mkv",
+      "observed_at": "2026-10-06T23:08:27Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Cassandre (VIII - 30_33)/Saison 07 (c - 4)/S07 E04 - Une cuisine de caractère.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 1183047754,
+      "language_version": "VF",
+      "basis": "pascal_confirmation",
+      "reason": "VF confirmée par Pascal le 2026-10-08 pour cette copie."
+    },
+    {
+      "video_asset_id": 47,
+      "record_id": 6242,
+      "title": "Premières armes (The First Cut is the Deepest)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E02 - Premières Armes (The First Cut Is the Deepest)_vf.m4v",
+      "observed_at": "2026-10-06T23:08:28Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E02 - Premières Armes (The First Cut Is the Deepest)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 448326076,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 48,
+      "record_id": 6243,
+      "title": "À bout de course (Winning a Battle, Losing the War)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E03 - À bout de course (Winning a Battle, Losing the War)_vf.m4v",
+      "observed_at": "2026-10-06T23:08:28Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E03 - À bout de course (Winning a Battle, Losing the War)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 451834921,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 49,
+      "record_id": 6245,
+      "title": "Cas de conscience (Shake Your Groove Thing)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E05 - Cas de conscience (Shake your Groove Thing)_vf.m4v",
+      "observed_at": "2026-10-06T23:08:28Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E05 - Cas de conscience (Shake your Groove Thing)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 434022965,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 50,
+      "record_id": 6248,
+      "title": "Troublantes révélations (Save Me)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E08 - Troublantes Révélations (Save Me)_vf.m4v",
+      "observed_at": "2026-10-06T23:08:28Z",
+      "declared_audio_languages": [
+        "und"
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 01 (c - 9)/S01 E08 - Troublantes Révélations (Save Me)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 438201648,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 51,
+      "record_id": 6225,
+      "title": "Pour un souffle de vie (Between Two Lungs)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E03 - Pour un souffle de vie (Between Two Lungs)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:29Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E03 - Pour un souffle de vie (Between Two Lungs)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 457146795,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 52,
+      "record_id": 6226,
+      "title": "Tous en selle (Goodbye Horses)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E04 - Tous en selle (Goodbye Horses)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:29Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E04 - Tous en selle (Goodbye Horses)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 425193664,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 53,
+      "record_id": 6227,
+      "title": "Intimes convictions (Sometimes I Feel Like a Motherless Child)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E05 - Intimes convictions (Sometimes I Feel Like a Motherless Child)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:29Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E05 - Intimes convictions (Sometimes I Feel Like a Motherless Child)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 383596131,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 54,
+      "record_id": 6228,
+      "title": "Moment de solitude (When I Crash)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E06 - Moment de solitude (When I Crash)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:29Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E06 - Moment de solitude (When I Crash)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 469665999,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 55,
+      "record_id": 6229,
+      "title": "Un geste d'amour (Skyfall)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E07 - Un geste d'amour (Skyfall)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:29Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E07 - Un geste d'amour (Skyfall)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 467015165,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 56,
+      "record_id": 6230,
+      "title": "Un deuxième avis (Heavy on Me)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E08 - Un deuxième avis (Heavy on Me)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:30Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E08 - Un deuxième avis (Heavy on Me)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 457731354,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 57,
+      "record_id": 6231,
+      "title": "Plus de temps ensemble (Fortunate Son)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E09 - Plus de temps ensemble (Fortunate Son) _vf.mkv",
+      "observed_at": "2026-10-06T23:08:30Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E09 - Plus de temps ensemble (Fortunate Son) _vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 445028479,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 58,
+      "record_id": 6232,
+      "title": "Une journée sportive (Strip That Down)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E10 - Une journée sportive (Strip That Down)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:30Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E10 - Une journée sportive (Strip That Down)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 458796211,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 59,
+      "record_id": 6233,
+      "title": "Une vieille connaissance ((If You Want It) Do It Yourself)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E11 - Une vieille connaissance ((If You Want It) Do It Yourself)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:30Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E11 - Une vieille connaissance ((If You Want It) Do It Yourself)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 455240429,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 60,
+      "record_id": 6234,
+      "title": "La Bonne planque (Get Lucky)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E12 - La Bonne planque (Get Lucky) _vf.mkv",
+      "observed_at": "2026-10-06T23:08:30Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E12 - La Bonne planque (Get Lucky) _vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 443218021,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 61,
+      "record_id": 6235,
+      "title": "L'Heure des comptes (Love the Way You Lie)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E13 - L'Heure des comptes (Love the Way You Lie) _vf.mkv",
+      "observed_at": "2026-10-06T23:08:31Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E13 - L'Heure des comptes (Love the Way You Lie) _vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 442909430,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 62,
+      "record_id": 6236,
+      "title": "Malgré les interdits (Wrecking Ball)",
+      "path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E14 - Malgré les interdits (Wrecking Ball)_vf.mkv",
+      "observed_at": "2026-10-06T23:08:31Z",
+      "declared_audio_languages": [
+        null
+      ],
+      "filename_evidence": {
+        "versions": [
+          "VF"
+        ],
+        "version": "VF"
+      },
+      "encoder_evidence": {
+        "status": "absent",
+        "project_path": "/videos/Séries TV/_incomplet/Grey's anatomy (XXI)/Saison 22 (10_18)/S22 E14 - Malgré les interdits (Wrecking Ball)_vf.json",
+        "policy": "video_encoder.track_selection"
+      },
+      "byte_size": 478032181,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Version indiquée dans le nom et compatible avec les pistes observées."
+    },
+    {
+      "video_asset_id": 63,
+      "record_id": 7343,
+      "title": "À l'instinct",
+      "path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E01 - À l'instinct.mkv",
+      "observed_at": "2026-10-06T23:08:31Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E01 - À l'instinct.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 513149749,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 64,
+      "record_id": 7344,
+      "title": "En eaux profondes",
+      "path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E02 - En eaux profondes.mkv",
+      "observed_at": "2026-10-06T23:08:31Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E02 - En eaux profondes.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 516058969,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 65,
+      "record_id": 7346,
+      "title": "Le Feu sacré",
+      "path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E04 - Le Feu sacré.mkv",
+      "observed_at": "2026-10-06T23:08:31Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E04 - Le Feu sacré.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 564135239,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 66,
+      "record_id": 7347,
+      "title": " Dans les limbes",
+      "path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E05 - Dans les limbes .mkv",
+      "observed_at": "2026-10-06T23:08:31Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Séries TV/_incomplet/À l'instinct (c - I - 04_05)/Saison 01 (04_05)/S01 E05 - Dans les limbes .json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 575210155,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    },
+    {
+      "video_asset_id": 67,
+      "record_id": 7364,
+      "title": "Coupures",
+      "path": "/videos/Théatre/Coupures.mkv",
+      "observed_at": "2026-10-06T23:08:32Z",
+      "declared_audio_languages": [
+        "fra"
+      ],
+      "filename_evidence": {
+        "versions": [],
+        "version": null
+      },
+      "encoder_evidence": {
+        "status": "matched",
+        "project_path": "/videos/Théatre/Coupures.json",
+        "policy": "video_encoder.track_selection",
+        "original_role_complete": true,
+        "french_role_complete": true
+      },
+      "byte_size": 444388316,
+      "language_version": "VF",
+      "basis": "language_proposal_v2",
+      "reason": "Rôles des pistes finales interprétés selon la politique video_encoder."
+    }
+  ]
+}
