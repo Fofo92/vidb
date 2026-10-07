@@ -15,7 +15,7 @@
 
   <div class="d-flex flex-row justify-content-between align-items-center">
     <%= f.input :rank, input_html: { maxlength: 4, size: 4}, label: "Rang" %>
-    <%= f.input :length_in_mn, input_html: { maxlength: 4, size: 4}, label: "Durée (mn)" %>
+    <%= render "records/duration_fields", record: @record, form: f %>
     <%= f.association :genders,
                       collection: Gender.all.order(:name).collect { |g| [g.name, g.id] },
                       input_html: { multiple: true, size: 5, class: 'w-100' },

@@ -1,0 +1,21 @@
+<div class="mb-3" data-duration-fields>
+  <% if record.persisted? %>
+    <% summary = record_copy_summary(record) %>
+    <label class="form-label" for="record_reference_duration">Durée de référence</label>
+    <input id="record_reference_duration" type="text" class="form-control" readonly
+           value="<%= summary.duration %>" data-copy-duration="<%= record.id %>"
+           title="Les mesures des copies présentes sont prioritaires ; le catalogue sert de repli.">
+  <% end %>
+
+  <% if record.state_container? %>
+    <small class="text-muted">Total calculé à partir des épisodes et vidéos feuilles.</small>
+  <% else %>
+    <details class="mt-2" <%= "open" if record.new_record? %>>
+      <summary>Durée catalogue — contrôle</summary>
+      <%= form.input :length_in_mn,
+                     input_html: { maxlength: 4, size: 4 },
+                     label: "Durée catalogue (mn)",
+                     hint: "Repère de comparaison ; ne modifie pas la durée mesurée des copies." %>
+    </details>
+  <% end %>
+</div>
