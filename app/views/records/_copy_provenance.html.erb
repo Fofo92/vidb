@@ -1,0 +1,21 @@
+<% confirmation = asset.technical_details.fetch("confirmation", {}) %>
+<% if confirmation["confirmed_by"].present? && confirmation["confirmed_on"].present? %>
+  <p data-copy-confirmation>
+    Qualification confirmée par <%= confirmation["confirmed_by"] %>
+    le <%= confirmation["confirmed_on"] %>.
+  </p>
+<% end %>
+<% if confirmation["language_basis"].present? %>
+  <p data-copy-language-basis><%= confirmation["language_basis"] %></p>
+<% end %>
+
+<% reconciliation = asset.technical_details.fetch("reconciliation", {}) %>
+<% if reconciliation.present? %>
+  <p data-copy-reconciliation>
+    Copie rapprochée du catalogue à partir de l’inventaire des fichiers.
+    <% inventory = reconciliation.fetch("source_inventory", {}) %>
+    <% if inventory["generated_at"].present? %>
+      Inventaire du <%= inventory["generated_at"] %>.
+    <% end %>
+  </p>
+<% end %>

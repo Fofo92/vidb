@@ -27,10 +27,7 @@
                 </li>
               <% end %>
             </ul>
-            <% confirmation = asset.technical_details.fetch("confirmation", {}) %>
-            <p>Qualification confirmée par <%= confirmation["confirmed_by"] %>
-              le <%= confirmation["confirmed_on"] %>.
-              <%= confirmation["language_basis"] %></p>
+            <%= render "records/copy_provenance", asset: asset %>
           </details>
         <% end %>
       </li>
