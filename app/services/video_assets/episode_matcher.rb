@@ -3,7 +3,6 @@
 module VideoAssets
   # Proposes episodes using an observed directory hierarchy, without database writes.
   class EpisodeMatcher
-    NUMBER = /\A\s*(?:S(?<season>\d+)\s*)?(?:E|[ÉE]pisode\s+)(?<episode>\d+)\b/i
     SEASON = /\ASaison\s+(\d+)\b/i
 
     def initialize(records)
@@ -13,8 +12,10 @@ module VideoAssets
     end
 
     def match(entry)
-      number = NUMBER.match(entry[:stem].to_s)
-      return deferred('episode_number_unrecognized') unless number
+      parsed = EpisodeNumber.call(entry[:stem].to_s)
+      return deferred(parsed[:reason]) if parsed[:reason]
+
+      number = parsed.fetch(:number)
 
       context = directory_context(entry, number)
       return deferred(context[:reason]) if context[:reason]
