@@ -10,9 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_001500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "catalogue_episode_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "evidence", default: {}, null: false
+    t.bigint "external_episode_id", null: false
+    t.integer "external_episode_number", null: false
+    t.integer "external_season_number", null: false
+    t.bigint "external_series_id", null: false
+    t.integer "local_episode_number", null: false
+    t.integer "local_season_number", null: false
+    t.string "provider", null: false
+    t.bigint "record_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "external_episode_id"], name: "index_unique_catalogue_external_episode", unique: true
+    t.index ["provider", "record_id"], name: "index_unique_catalogue_record_provider", unique: true
+    t.index ["record_id"], name: "index_catalogue_episode_links_on_record_id"
+  end
 
   create_table "countries", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -282,6 +299,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_001500) do
     t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
   end
 
+  add_foreign_key "catalogue_episode_links", "records"
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"
