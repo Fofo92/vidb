@@ -1,0 +1,43 @@
+<div class="row g-3 mt-1">
+  <% RecordChildQualificationsHelper::CHILD_QUALIFICATION_LABELS.each do |field, label| %>
+    <% value = values.key?(field) ? values[field] : child_qualification_value(child, field) %>
+    <% active = Array(values["fields"]).include?(field) %>
+    <% field_id = "#{key}_#{field}" %>
+    <div class="col-md-6 col-xl-4" data-child-qualification-field>
+      <div class="d-flex justify-content-between align-items-center">
+        <%= label_tag field_id, label, class: "form-label mb-1" %>
+        <span class="small">
+          <%= check_box_tag "#{prefix}[fields][]", field, active, id: "#{field_id}_apply",
+                            data: { action: "child-qualification#toggleField" } %>
+          <%= label_tag "#{field_id}_apply", "Appliquer" %>
+        </span>
+      </div>
+      <% if field == "year" %>
+        <%= number_field_tag "#{prefix}[year]", value, id: field_id, min: 1900, max: Date.current.year,
+                             class: "form-control form-control-sm", disabled: !active, autocomplete: "off",
+                             data: { child_qualification_input: true } %>
+        <% basis = values.fetch("year_basis") { child&.year_basis || "unknown" } %>
+        <%= label_tag "#{field_id}_basis", "Origine", class: "small" %>
+        <%= select_tag "#{prefix}[year_basis]",
+                       options_for_select([["Non précisée", "unknown"], ["Diffusion / sortie", "first_release"],
+                                           ["Production", "production"]], basis),
+                       id: "#{field_id}_basis", class: "form-select form-select-sm", disabled: !active,
+                       data: { child_qualification_input: true } %>
+      <% else %>
+        <% multiple = %w[gender_ids country_ids medium_ids].include?(field) %>
+        <% options = child_qualification_options(field) %>
+        <% if field == "record_kind" && child && options.none? { |_, kind| kind == child.record_kind } %>
+          <% options = [[record_kind_label(child.record_kind), child.record_kind], *options] %>
+        <% end %>
+        <% if multiple %>
+          <%= hidden_field_tag "#{prefix}[#{field}][]", "", disabled: !active,
+                               data: { child_qualification_input: true } %>
+        <% end %>
+        <%= select_tag "#{prefix}[#{field}]#{'[]' if multiple}", options_for_select(options, value),
+                       id: field_id, multiple: multiple, include_blank: !multiple && value.blank?,
+                       class: "form-select form-select-sm", disabled: !active,
+                       data: { child_qualification_input: true } %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

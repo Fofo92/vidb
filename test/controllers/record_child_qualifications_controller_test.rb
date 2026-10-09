@@ -1,244 +1,97 @@
 require "test_helper"
 
-class RecordChildQualificationsControllerTest <
-    ActionDispatch::IntegrationTest
+class RecordChildQualificationsControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
-    user = User.create!(
-      email: "test@example.com",
-      password: "password"
-    )
-    sign_in user
-
-    language_version = LanguageVersion.create!(
-      short_name: "VF",
-      long_name: "Version française"
-    )
-
-    series = Record.create!(
-      french_title: "L’Amie prodigieuse",
-      record_kind: "series",
-      language_version: language_version
-    )
-
-    @season = series.children.create!(
-      french_title: "Saison 1",
-      record_kind: "season",
-      rank: 1,
-      language_version: language_version
-    )
-
-    @undetermined_child = @season.children.create!(
-      french_title: "Épisode à qualifier",
-      record_kind: "undetermined",
-      rank: 1,
-      language_version: language_version
-    )
-
-    @qualified_child = @season.children.create!(
-      french_title: "Épisode déjà qualifié",
-      record_kind: "episode",
-      rank: 2,
-      language_version: language_version
-    )
+    sign_in User.create!(email: "qualification@example.com", password: "password")
+    @language = LanguageVersion.create!(short_name: "VF", long_name: "Français")
+    series = Record.create!(french_title: "Série", record_kind: "series", language_version: @language)
+    @season = series.children.create!(french_title: "Saison 01", rank: 1, record_kind: "season",
+                                     language_version: @language)
+    @child = @season.children.create!(french_title: "À qualifier", rank: 1, language_version: @language)
+    @qualified = @season.children.create!(french_title: "Déjà qualifié", rank: 2, record_kind: "episode",
+                                         language_version: @language)
   end
 
-  test "displays children involved in bulk qualification" do
+  test "shows all children and explicit common and individual fields" do
     get edit_record_child_qualification_url(@season)
-
     assert_response :success
-
-    assert_select(
-      "[data-child-qualification-parent]",
-      text: /Saison 1/
-    )
-
-    assert_select(
-      "[data-child-qualification-target='episode']",
-      text: /Épisode/
-    )
-
-    assert_select(
-      "[data-qualifiable-child='#{@undetermined_child.id}']",
-      text: /Épisode à qualifier/
-    )
-
-    assert_select(
-      "[data-preserved-child='#{@qualified_child.id}']",
-      text: /Épisode déjà qualifié/
-    )
+    assert_select "[data-qualifiable-child='#{@child.id}']"
+    assert_select "[data-qualifiable-child='#{@qualified.id}']"
+    assert_select "input[name='record_child_qualification[child_ids][]'][value='#{@child.id}'][checked]"
+    assert_select "input[name='record_child_qualification[child_ids][]'][value='#{@qualified.id}']:not([checked])"
+    assert_select "input[name='record_child_qualification[common][fields][]'][value='year']"
+    assert_select "select[name='record_child_qualification[common][copy_language_version_id]'][disabled]"
+    assert_select "input[name='record_child_qualification[rows][#{@child.id}][fields][]'][value='country_ids']"
+    assert_select "input[name='record_child_qualification[parent_snapshot]']"
   end
 
-  test "qualifies selected undetermined children" do
-    patch record_child_qualification_url(@season), params: {
-      record_child_qualification: {
-        child_ids: [@undetermined_child.id],
-        record_kind: "episode"
-      }
-    }
-
+  test "updates already qualified children through the multi field form" do
+    patch record_child_qualification_url(@season), params: metadata(
+      @qualified, fields: %w[year is_seen], year: "2019", year_basis: "production", is_seen: "no"
+    )
     assert_redirected_to record_url(@season)
-    assert_equal "episode", @undetermined_child.reload.record_kind
-    assert_equal "episode", @qualified_child.reload.record_kind
+    assert_equal 2019, @qualified.reload.year
+    assert_equal false, @qualified.effective_state(:is_seen)
+    assert_nil @child.reload.year
   end
 
-  test "redisplays the page when the target kind is incompatible" do
+  test "preserves submitted fields and selection after a validation error" do
+    patch record_child_qualification_url(@season), params: metadata(
+      @qualified, fields: ["year"], year: "1800", year_basis: "production"
+    )
+    assert_response :unprocessable_content
+    assert_select "[data-child-qualification-errors]"
+    assert_select "input[name='record_child_qualification[common][year]'][value='1800']"
+    assert_select "input[name='record_child_qualification[child_ids][]'][value='#{@qualified.id}'][checked]"
+    assert_select "input[name='record_child_qualification[child_ids][]'][value='#{@child.id}']:not([checked])"
+  end
+
+  test "legacy placement submissions still work" do
     patch record_child_qualification_url(@season), params: {
-      record_child_qualification: {
-        child_ids: [@undetermined_child.id],
-        record_kind: "season"
-      }
+      record_child_qualification: { child_ids: [@child.id], record_kind: "episode" }
     }
-
-    assert_response :unprocessable_content
-    assert_equal "undetermined", @undetermined_child.reload.record_kind
-
-    assert_select(
-      "[data-child-qualification-errors]",
-      text: /n’est pas autorisée/
-    )
-
-    assert_select(
-      "[data-qualifiable-child='#{@undetermined_child.id}']",
-      text: /Épisode à qualifier/
-    )
+    assert_redirected_to record_url(@season)
+    assert_equal "episode", @child.reload.record_kind
   end
 
-  test "offers an explicit child selection with confirmation" do
-    get edit_record_child_qualification_url(@season)
-
-    assert_response :success
-
-    assert_select(
-      "form[action='#{record_child_qualification_path(@season)}']"
-    ) do
-      assert_select "input[name='_method'][value='patch']"
-
-      assert_select(
-        "select[name='record_child_qualification[record_kind]'] " \
-        "option[value='episode']",
-        text: "Épisode"
-      )
-
-      assert_select(
-        "input[type='checkbox']" \
-        "[name='record_child_qualification[child_ids][]']" \
-        "[value='#{@undetermined_child.id}'][checked]"
-      )
-
-      assert_select(
-        "input[type='checkbox']" \
-        "[value='#{@qualified_child.id}']",
-        count: 0
-      )
-
-      assert_select(
-        "input[type='submit'][data-turbo-confirm]",
-        value: "Qualifier la sélection"
-      )
-    end
-  end
-
-  test "preserves the submitted selection after a rejected qualification" do
-    other_child = @season.children.create!(
-      french_title: "Autre épisode à qualifier",
-      record_kind: "undetermined",
-      rank: 3,
-      language_version: @season.language_version
-    )
-
-    @undetermined_child.children.create!(
-      french_title: "Descendant incompatible",
-      record_kind: "undetermined",
-      language_version: @season.language_version
-    )
-
-    patch record_child_qualification_url(@season), params: {
-      record_child_qualification: {
-        child_ids: [@undetermined_child.id],
-        record_kind: "episode"
-      }
-    }
-
-    assert_response :unprocessable_content
-
-    assert_select(
-      "input[type='checkbox']" \
-      "[value='#{@undetermined_child.id}'][checked]"
-    )
-
-    assert_select(
-      "input[type='checkbox'][value='#{other_child.id}']",
-      count: 1
-    )
-
-    assert_select(
-      "input[type='checkbox'][value='#{other_child.id}'][checked]",
-      count: 0
-    )
-  end
-
-  test "preserves the submitted target kind after a rejected qualification" do
-    series = @season.parent
-
-    branch = series.children.create!(
-      french_title: "Branche à qualifier",
-      record_kind: "undetermined",
-      rank: 2,
-      language_version: series.language_version
-    )
-
-    branch.children.create!(
-      french_title: "Descendant incompatible",
-      record_kind: "undetermined",
-      language_version: series.language_version
-    )
-
-    patch record_child_qualification_url(series), params: {
-      record_child_qualification: {
-        child_ids: [branch.id],
-        record_kind: "episode"
-      }
-    }
-
-    assert_response :unprocessable_content
-
-    assert_select(
-      "select[name='record_child_qualification[record_kind]'] " \
-      "option[value='episode'][selected]"
-    )
-  end
-
-  test "redisplays the page when no child is selected" do
-    patch record_child_qualification_url(@season), params: {
-      record_child_qualification: {
-        record_kind: "episode"
-      }
-    }
-
-    assert_response :unprocessable_content
-    assert_equal "undetermined", @undetermined_child.reload.record_kind
-
-    assert_select(
-      "[data-child-qualification-errors]",
-      text: /enfants directs encore à déterminer/
-    )
-  end
-
-  test "does not offer a form when no target kind is compatible" do
+  test "metadata form remains available when parent offers no compatible nature" do
     @season.update!(record_kind: "standalone_video")
-
     get edit_record_child_qualification_url(@season)
-
     assert_response :success
-    assert_select(
-      "form[action='#{record_child_qualification_path(@season)}']",
-      count: 0
-    )
-    assert_select(
-      "[data-child-qualification-unavailable]",
-      text: /aucune nature compatible/i
-    )
+    assert_select "form[action='#{record_child_qualification_path(@season)}']"
+    assert_select "input[name='record_child_qualification[common][fields][]'][value='gender_ids']"
+  end
+
+  test "rejects a forged snapshot without writing" do
+    submitted = metadata(@child, fields: ["year"], year: "2019")
+    submitted[:record_child_qualification][:parent_snapshot] = "forged"
+    patch record_child_qualification_url(@season), params: submitted
+    assert_response :unprocessable_content
+    assert_nil @child.reload.year
+  end
+
+  test "handles row only changes with an empty common selection" do
+    submitted = metadata(@qualified, fields: [])
+    submitted[:record_child_qualification][:rows] = {
+      @qualified.id.to_s => { fields: ["year"], year: "2020", year_basis: "first_release" }
+    }
+    patch record_child_qualification_url(@season), params: submitted
+    assert_redirected_to record_url(@season)
+    assert_equal 2020, @qualified.reload.year
+  end
+
+  private
+
+  def metadata(child, **common)
+    {
+      record_child_qualification: {
+        child_ids: [child.id], common: common,
+        snapshots: { child.id.to_s => RecordChildQualificationSnapshot.token(child) },
+        parent_snapshot: RecordChildQualificationSnapshot.token(@season)
+      }
+    }
   end
 end
+

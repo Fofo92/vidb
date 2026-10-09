@@ -474,7 +474,7 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test "does not offer bulk child qualification without a compatible kind" do
+  test "offers metadata qualification even without a compatible kind" do
     @record.children.create!(
       french_title: "Enfant historique",
       record_kind: "undetermined",
@@ -488,7 +488,7 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select(
       "a[href='#{edit_record_child_qualification_path(@record)}']",
-      count: 0
+      count: 1
     )
   end
 end

@@ -1,15 +1,10 @@
 <h1>Qualifier les enfants</h1>
-
 <p data-child-qualification-parent>
-  <strong>Parent :</strong>
-  <%= link_to @record.complete_title, record_path(@record) %>
+  <strong>Parent :</strong> <%= link_to @record.complete_title, record_path(@record) %>
 </p>
 
 <% if @qualification&.errors&.any? %>
-  <div
-    class="alert alert-danger"
-    data-child-qualification-errors
-  >
+  <div class="alert alert-danger" data-child-qualification-errors>
     <ul class="mb-0">
       <% @qualification.errors.full_messages.each do |message| %>
         <li><%= message %></li>
@@ -18,83 +13,62 @@
   </div>
 <% end %>
 
-<% if @qualifiable_children.any? && @qualification_targets.any? %>
-  <%= form_with(
-    url: record_child_qualification_path(@record),
-    method: :patch,
-    scope: :record_child_qualification
-  ) do %>
-    <section>
-      <h2>Nature à appliquer</h2>
-
-      <label for="record_child_qualification_record_kind">
-        Nature du contenu
-      </label>
-
-      <select
-        id="record_child_qualification_record_kind"
-        name="record_child_qualification[record_kind]"
-      >
-        <% @qualification_targets.each do |record_kind| %>
-        <%= tag.option(
-          record_kind_label(record_kind),
-          value: record_kind,
-          selected: @selected_record_kind == record_kind,
-          data: {
-            child_qualification_target: record_kind
-          }
-        ) %>
-        <% end %>
-      </select>
+<% if @children.any? %>
+  <%= form_with(url: record_child_qualification_path(@record), method: :patch,
+                scope: :record_child_qualification, data: { controller: "child-qualification" }) do %>
+    <%= hidden_field_tag "record_child_qualification[common][fields][]", "" %>
+    <%= hidden_field_tag "record_child_qualification[parent_snapshot]",
+                         RecordChildQualificationSnapshot.token(@record) %>
+    <section class="card card-body mb-3">
+      <h2 class="h5">Valeurs communes à la sélection</h2>
+      <p class="small">Coche « Appliquer » pour chaque champ à modifier. Les autres valeurs sont conservées.</p>
+      <%= render "fields", prefix: "record_child_qualification[common]", key: "common",
+                           child: nil, values: @common_values %>
     </section>
 
-    <section>
-      <h2>Enfants à qualifier</h2>
+    <p class="small">
+      Les corrections par enfant sont prioritaires sur les valeurs communes.
+      Les états et les valeurs des copies s’appliquent aussi aux épisodes sous les enfants sélectionnés.
+      Enregistré et disponible sont calculés à partir des copies.
+    </p>
+    <div class="d-flex gap-2 mb-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm"
+              data-action="child-qualification#selectAll">Tout sélectionner</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm"
+              data-action="child-qualification#selectNone">Tout désélectionner</button>
+    </div>
 
-      <ul>
-        <% @qualifiable_children.each do |child| %>
-          <% checkbox_id = "record_child_qualification_child_#{child.id}" %>
-          <li data-qualifiable-child="<%= child.id %>">
-            <%= check_box_tag(
-              "record_child_qualification[child_ids][]",
-              child.id,
-              @selected_child_ids.include?(child.id.to_s),
-              id: checkbox_id
-            ) %>
-            <%= label_tag checkbox_id, child.complete_title %>
-          </li>
-        <% end %>
-      </ul>
-    </section>
+    <% @children.each do |child| %>
+      <% selected = @selected_child_ids.include?(child.id.to_s) %>
+      <section class="card card-body mb-2" data-qualifiable-child="<%= child.id %>">
+        <div class="d-flex gap-2 align-items-start">
+          <%= check_box_tag "record_child_qualification[child_ids][]", child.id, selected,
+                            id: "child_#{child.id}", data: { child_qualification_target: "selection" } %>
+          <%= label_tag "child_#{child.id}", "#{child.rank || '—'} · #{child.complete_title}", class: "fw-bold" %>
+          <%= link_to "Fiche", record_path(child), class: "ms-auto" %>
+        </div>
+        <p class="small mb-2">
+          <%= record_kind_label(child.record_kind) %> · <%= child.display_range_of_years || "Année inconnue" %> ·
+          <%= child.genders.map(&:name).join(", ").presence || "Genre inconnu" %> ·
+          <%= child.countries.map(&:long_name).join(", ").presence || "Pays inconnu" %> ·
+          <%= child.language_version.short_name %> · <%= child.media.map(&:short_name).join(", ") %>
+        </p>
+        <%= hidden_field_tag "record_child_qualification[snapshots][#{child.id}]",
+                             RecordChildQualificationSnapshot.token(child) %>
+        <details <%= "open" if @row_values.dig(child.id.to_s, "fields").present? %>>
+          <summary>Corriger cet enfant</summary>
+          <%= render "fields", prefix: "record_child_qualification[rows][#{child.id}]",
+                               key: "child_#{child.id}", child: child,
+                               values: @row_values.fetch(child.id.to_s, {}) %>
+        </details>
+      </section>
+    <% end %>
 
-    <%= submit_tag(
-      "Qualifier la sélection",
-      class: "btn btn-primary",
-      data: {
-        turbo_confirm:
-          "Qualifier les enfants sélectionnés avec la nature choisie ?"
-      }
-    ) %>
+    <%= submit_tag "Qualifier la sélection", class: "btn btn-primary",
+                   data: { turbo_submits_with: "Enregistrement…" } %>
   <% end %>
-<% elsif @qualifiable_children.empty? %>
-  <p>Aucun enfant à qualifier.</p>
 <% else %>
-  <p data-child-qualification-unavailable>
-    Aucune nature compatible ne peut être appliquée aux enfants de cette fiche.
-  </p>
+  <p>Aucun enfant à qualifier.</p>
 <% end %>
 
-<section>
-  <h2>Enfants déjà qualifiés, conservés sans modification</h2>
-
-  <ul>
-    <% @preserved_children.each do |child| %>
-      <li data-preserved-child="<%= child.id %>">
-        <%= link_to child.complete_title, record_path(child) %>
-        — <%= record_kind_label(child.record_kind) %>
-      </li>
-    <% end %>
-  </ul>
-</section>
-
-<%= link_to "Retour à la fiche", record_path(@record) %>
+<%= link_to "Retour à la fiche", record_path(@record), class: "d-inline-block mt-3" %>
