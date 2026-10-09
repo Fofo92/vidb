@@ -7,5 +7,27 @@
   "tmdb_series_id": 75219,
   "directory": "/videos/Séries TV/_incomplet/9-1-1 (VI - 66_84)",
   "selection_basis": "Pascal selected 9-1-1 as the encoding integration pilot on 2026-10-09",
-  "source_url": "https://www.themoviedb.org/tv/75219-9-1-1"
+  "source_url": "https://www.themoviedb.org/tv/75219-9-1-1",
+  "local_title_overrides": {
+    "5411682": {
+      "title_fr": "Piqûre mortelle",
+      "title_original": "Buzzkill"
+    },
+    "5469749": {
+      "title_fr": "Attention crash imminent !",
+      "title_original": "When the Boeing Gets Tough..."
+    },
+    "5521405": {
+      "title_fr": "Atterrissage forcé",
+      "title_original": "Final Approach"
+    },
+    "6058269": {
+      "title_fr": "Virus",
+      "title_original": "Sick Day"
+    },
+    "6058274": {
+      "title_fr": "Les rats de laboratoire",
+      "title_original": "Lab Rats"
+    }
+  }
 }

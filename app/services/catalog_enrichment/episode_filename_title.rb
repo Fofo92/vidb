@@ -17,5 +17,10 @@ module CatalogEnrichment
         language_marker: marker&.[](:marker)&.upcase,
         ambiguous_part_suffix: /\s+\(\d+\)\z/.match?(title) }
     end
+
+    def self.title_variants(title)
+      split = /\A(.+?)\s+\((.+)\)\z/.match(title)
+      split ? [title, *split.captures] : [title]
+    end
   end
 end

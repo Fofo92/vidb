@@ -65,7 +65,12 @@ module CatalogEnrichment
         root_record_id: @config.fetch('root_record_id'), series_title: @config.fetch('series_title'),
         original_series_title: @config.fetch('original_series_title'), tmdb_series_id: @config.fetch('tmdb_series_id'),
         source_snapshot_retrieved_at: @snapshot.fetch('retrieved_at'), local_order_is_authoritative: true,
-        episodes: episodes }
+        episodes: local_titles(episodes) }
+    end
+
+    def local_titles(episodes)
+      titles = EncodingPilotTitles.new(overrides: @config.fetch('local_title_overrides', {}))
+      episodes.map { |entry| titles.call(entry).deep_symbolize_keys }
     end
 
     def hierarchy_plan(mapping)

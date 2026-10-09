@@ -38,6 +38,7 @@ module CatalogEnrichment
       return result.merge(status: 'not_an_episode') unless number
 
       matches = title_matches(number.fetch(:title))
+      matches = arc_title_matches(number) if matches.empty?
       result.merge(status: status(matches, number), local_season: number.fetch(:season),
                    local_episode: number.fetch(:episode), local_title: number.fetch(:title),
                    filename_evidence: number.slice(:raw_title, :language_marker, :ambiguous_part_suffix),
@@ -45,12 +46,26 @@ module CatalogEnrichment
     end
 
     def title_matches(title)
-      titles = [title]
-      split = title.match(/\A(.+?)\s+\((.+)\)\z/)
-      titles.concat(split.captures) if split
+      titles = EpisodeFilenameTitle.title_variants(title)
       @snapshot.fetch('episodes').select do |episode|
         titles.any? { |value| episode_titles(episode).include?(normalize(value)) }
       end
+    end
+
+    def arc_title_matches(number)
+      @snapshot.fetch('episodes').select do |episode|
+        episode['season_number'] == number[:season] && episode['episode_number'] == number[:episode] &&
+          arc_title_agrees?(episode, number[:title])
+      end
+    end
+
+    def arc_title_agrees?(episode, title)
+      bases = %w[title_fr title_original].filter_map do |key|
+        value = episode[key].to_s
+        normalize(value.sub(/\s+\([1-9]\d*\)\z/, '')) if /\s+\([1-9]\d*\)\z/.match?(value)
+      end
+      titles = EpisodeFilenameTitle.title_variants(title).map { |value| normalize(value) }
+      bases.intersect?(titles)
     end
 
     def episode_titles(episode)

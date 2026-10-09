@@ -43,7 +43,8 @@ module CatalogEnrichment
 
     def episode_attributes(entry, item)
       neutral_attributes.merge(french_title: entry.fetch('catalogue_title_fr'),
-                               original_title: entry.fetch('title_original'), record_kind: 'episode',
+                               original_title: entry.fetch('catalogue_title_original', entry.fetch('title_original')),
+                               record_kind: 'episode',
                                rank: entry.fetch('local_episode'), abstract: item['overview_fr'])
     end
 
