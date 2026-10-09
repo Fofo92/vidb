@@ -56,6 +56,7 @@ module VideoAssets
     def classification(item)
       asset = @assets[item.fetch(:path)]
       return confirmed_state(asset, item) if asset
+      return 'awaiting_stability' if Time.iso8601(item.fetch(:modified_at)) > (snapshot - 24.hours)
       return 'candidate' if CANDIDATES.include?(item[:status]) && item.fetch(:candidates, []).one?
 
       'needs_review'

@@ -22,6 +22,7 @@ module VideoAssets
     }.freeze
     FOLLOWUP = {
       'confirmed' => 'confirmed',
+      'awaiting_stability' => 'awaiting_stability',
       'confirmed_copy_changed' => 'copy_changed',
       'candidate' => 'candidate'
     }.freeze

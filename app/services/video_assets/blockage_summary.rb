@@ -5,6 +5,7 @@ module VideoAssets
   class BlockageSummary
     ACTIONS = {
       'confirmed' => 'Aucune action de rapprochement',
+      'awaiting_stability' => 'Attendre la fin des écritures et au moins 24 heures avant le lot contrôlé',
       'candidate' => 'Lot contrôlé possible après vérification de stabilité et identité',
       'copy_changed' => 'Nouvelle observation technique avant toute actualisation',
       'series_identification' => 'Identifier la série et consulter une source extérieure',

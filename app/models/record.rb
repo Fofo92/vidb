@@ -1,4 +1,6 @@
 class Record < ApplicationRecord
+  include ReconciliationRefreshNotification
+
   paginates_per 26
   belongs_to :language_version
   has_many :video_assets, inverse_of: :record

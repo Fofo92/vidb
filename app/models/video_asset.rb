@@ -1,4 +1,6 @@
 class VideoAsset < ApplicationRecord
+  include ReconciliationRefreshNotification
+
   include VideoAssetStates
   include VideoAssetParts
 

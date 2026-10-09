@@ -1,0 +1,9 @@
+[Unit]
+Description=Actualisation apres modification des fiches ou copies vidb
+
+[Path]
+PathExists=/srv/vidb/shared/reconciliation-followup/refresh.request
+Unit=vidb-reconciliation-refresh.service
+
+[Install]
+WantedBy=multi-user.target

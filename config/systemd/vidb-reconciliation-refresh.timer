@@ -1,0 +1,10 @@
+[Unit]
+Description=Scan periodique de la videotheque vidb
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+Unit=vidb-reconciliation-refresh.service
+
+[Install]
+WantedBy=timers.target

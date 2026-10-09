@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+sudo test -f /srv/vidb/current/script/refresh_reconciliation_followup.rb
+sudo install -d -o vidb -g vidb -m 0700 /srv/vidb/shared/reconciliation-followup
+for unit in service timer path; do
+  sudo install -o root -g root -m 0644 \
+    "config/systemd/vidb-reconciliation-refresh.$unit" \
+    "/etc/systemd/system/vidb-reconciliation-refresh.$unit"
+done
+sudo systemctl daemon-reload
+sudo systemctl enable --now vidb-reconciliation-refresh.timer vidb-reconciliation-refresh.path
+sudo systemctl start vidb-reconciliation-refresh.service
+sudo journalctl -u vidb-reconciliation-refresh.service -n 30 --no-pager

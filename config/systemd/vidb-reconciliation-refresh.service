@@ -1,0 +1,21 @@
+[Unit]
+Description=Actualisation du suivi de la videotheque vidb
+After=postgresql.service
+RequiresMountsFor=/videos /srv/vidb/shared
+
+[Service]
+Type=oneshot
+User=vidb
+Group=vidb
+WorkingDirectory=/srv/vidb/current
+EnvironmentFile=/etc/vidb/vidb.env
+Environment=RAILS_ENV=production
+Environment=BUNDLE_PATH=/srv/vidb/shared/bundle
+Environment=BUNDLE_DEPLOYMENT=1
+Environment=BUNDLE_WITHOUT=development:test
+Environment=PATH=/opt/rubies/4.0.6/bin:/usr/bin:/bin
+ExecStart=/opt/rubies/4.0.6/bin/bundle _2.7.1_ exec ruby bin/rails runner script/refresh_reconciliation_followup.rb /srv/vidb/shared/reconciliation-followup
+UMask=0077
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=10min
