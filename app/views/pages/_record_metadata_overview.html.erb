@@ -1,0 +1,19 @@
+<section class="card my-4" data-record-metadata-overview>
+  <div class="card-body">
+    <h2 class="h4">Complétude des fiches</h2>
+    <p><strong><%= audit[:incomplete] %> fiches incomplètes</strong> ;
+      <strong><%= audit[:review] %> à consolider</strong> ;
+      <strong><%= audit[:to_work] %> à traiter au total</strong>, sur <%= audit[:total] %>.</p>
+    <table class="table table-sm">
+      <thead><tr><th>Information manquante</th><th class="text-end">Fiches</th></tr></thead>
+      <tbody>
+        <% RecordMetadataAudit::LABELS.each do |field, label| %>
+          <tr><th scope="row"><%= label %></th><td class="text-end"><%= audit[:missing][field] %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p class="small text-muted mb-0">Une fiche peut manquer de plusieurs informations : ces colonnes ne s’additionnent pas.
+      Les années, versions et supports des ensembles sont évalués à partir de leurs vidéos.
+      Les pays, genres et résumés sont évalués sur chaque fiche. Bilan actualisé au plus tard sous une minute.</p>
+  </div>
+</section>

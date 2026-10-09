@@ -36,7 +36,33 @@ module VideoAssets
       qualifications(:language_version, [@record.language_version&.short_name].compact, 'Version catalogue')
     end
 
+    def summary_duration
+      return @record.formatted_total_length.presence == '00h00' ? '—' : @record.formatted_total_length if @assets.empty?
+
+      ranges = duration_ranges
+      return '—' if ranges.empty?
+
+      label = measured_duration_label(ranges).delete_suffix(' selon les copies')
+      ranges.size < @leaves.size ? "≥ #{label}" : label
+    end
+
+    def summary_supports
+      summary_names(:medium, @record.media)
+    end
+
+    def summary_languages
+      summary_names(:language_version, [@record.language_version].compact)
+    end
+
     private
+
+    def summary_names(association, fallback)
+      values = @assets.empty? ? fallback : @assets.filter_map { |asset| asset.public_send(association) }
+      names = values.map(&:short_name).reject do |name|
+        name.blank? || ['?', 'n/a', 'Inconnue', 'Inconnu'].include?(name)
+      end
+      names.uniq.sort.join(', ').presence || '—'
+    end
 
     def measured_duration_label(ranges)
       minimum = ranges.sum(&:min)

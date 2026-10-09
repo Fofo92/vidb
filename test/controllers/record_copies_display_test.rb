@@ -49,9 +49,9 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
   test 'legacy values are labelled and are not presented as copy confirmations' do
     @episodes.first.update!(length_in_mn: 45)
     get record_url(@season)
-    assert_select "[data-copy-duration='#{@episodes.first.id}']", text: /00h45.*catalogue/
-    assert_select "[data-copy-languages='#{@episodes.first.id}']", text: /COPY.*catalogue/
-    assert_select "[data-copy-supports='#{@episodes.first.id}']", text: 'Non renseigné'
+    assert_select "[data-copy-duration='#{@episodes.first.id}']", text: '00h45'
+    assert_select "[data-copy-languages='#{@episodes.first.id}']", text: 'COPY'
+    assert_select "[data-copy-supports='#{@episodes.first.id}']", text: '—'
   end
 
   test 'durations switch to hours at sixty minutes' do

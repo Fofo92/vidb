@@ -169,6 +169,12 @@ class RecordChildrenUpdateTest < ActiveSupport::TestCase
     assert_not operation([@season], { fields: ["record_kind"], record_kind: "episode" }, parent: @series).call
   end
 
+  test "rejects more than two main genres without changing the record" do
+    genres = [@genre, Gender.create!(name: "Audit drame"), Gender.create!(name: "Audit comédie")]
+    assert_not operation([@first], fields: ["gender_ids"], gender_ids: genres.map(&:id)).call
+    assert_empty @first.reload.gender_ids
+  end
+
   private
 
   def operation(children, common = nil, rows: {}, parent: @season, **values)

@@ -29,8 +29,7 @@
   <% placement_status = @record.hierarchy_placement_status %>
   <span
     data-hierarchy-placement-status="<%= placement_status %>"
-    title="Diagnostic du placement de cette fiche par rapport à son parent immédiat ou à la racine ; il ne porte pas sur ses descendants"
-  >
+    title="Diagnostic du placement de cette fiche par rapport à son parent immédiat ou à la racine ; il ne porte pas sur ses descendants">
     <strong>, placement de cette fiche : </strong>
     <span class="badge <%= hierarchy_placement_badge_class(placement_status) %>">
       <%= hierarchy_placement_label(placement_status) %>
@@ -40,7 +39,7 @@
   <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>" title="Durée des copies présentes, mesurée et arrondie ; valeur catalogue sinon"><%= copies.duration %></span>
 </p>
 <p>
-  <strong>Année : </strong><%= render "records/year", record: @record %>,
+  <strong>Année : </strong><%= render "records/year", record: @record, detail: true %>,
   <strong>pays : </strong><%= @record.countries.order(:long_name).map(&:long_name).join(", ") %>
   <strong>, disponible sur : </strong><span data-copy-supports="<%= @record.id %>"><%= copies.supports %></span>
   <strong>, version linguistique : </strong><span data-copy-languages="<%= @record.id %>"><%= copies.languages %></span>
@@ -94,6 +93,4 @@
   </table>
 <% end %>
 
-
 </div>
-

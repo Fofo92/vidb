@@ -10,6 +10,9 @@
                 aria-label="Part des fichiers dont le rapprochement est confirmé"
                 style="width: 100%; height: 1.25rem;"></progress>
       <p><strong>Reste à rapprocher : <%= overview[:remaining] %> fichiers.</strong></p>
+      <p><%= overview[:remaining] - overview[:counts].fetch('candidate', 0) - overview[:counts].fetch('awaiting_stability', 0) %> fichiers bloqués ;
+        <%= overview[:counts].fetch('candidate', 0) %> candidats à un lot ;
+        <%= overview[:counts].fetch('awaiting_stability', 0) %> en attente de stabilité.</p>
       <% labels = {
         'awaiting_stability' => 'Fichiers récents, en attente de stabilité',
         'candidate' => 'Candidats à un lot contrôlé',

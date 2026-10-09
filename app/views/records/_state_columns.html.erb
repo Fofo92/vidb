@@ -33,15 +33,15 @@
     <% state_color = "text-success" if count[:total].positive? && count[:yes] == count[:total] %>
     <% state_color = "text-danger" if count[:total].positive? && count[:no] == count[:total] %>
     <% detail = "#{label} : #{count[:yes]} oui, #{count[:no]} non, #{count[:unknown]} inconnu(s), sur #{count[:total]}" %>
-    <% symbol = count[:yes].positive? ? "✓" : (count[:no].positive? ? "✗" : "?") %>
+    <% symbol = count[:yes].positive? ? "✓" : (count[:no].positive? ? "✗" : "—") %>
     <td class="text-center text-nowrap position-relative" data-state-column="<%= field %>">
       <% if record.state_container? %>
         <span class="<%= state_color %>" title="<%= detail %>" aria-label="<%= detail %>" tabindex="0">
-          <%= count[:yes] %>/<%= count[:total] %><%= " ?" if count[:unknown].positive? %>
+          <%= count[:yes] %>/<%= count[:total] %>
         </span>
       <% elsif editable && count[:unknown].positive? %>
         <details data-state-menu>
-          <summary class="text-secondary" title="<%= label %> : choisir un état" aria-label="<%= label %> : choisir un état">?</summary>
+          <summary class="text-secondary" title="<%= label %> : choisir un état" aria-label="<%= label %> : choisir un état">—</summary>
           <div class="position-absolute bg-body border rounded shadow p-2 end-0" style="z-index: 10">
             <%= render "records/state_choices", field: field, bulk: false, child_id: record.id %>
           </div>

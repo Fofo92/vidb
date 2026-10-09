@@ -78,6 +78,7 @@ class RecordChildChanges
 
   def association_ids(model, values)
     ids = Array(values).reject(&:blank?).map { |value| integer_id(value) }.uniq
+    raise ArgumentError, "Deux genres principaux au maximum." if model == Gender && ids.size > 2
     raise ArgumentError, "Référence inconnue." unless model.where(id: ids).count == ids.length
 
     ids

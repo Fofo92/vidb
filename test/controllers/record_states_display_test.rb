@@ -32,6 +32,6 @@ class RecordStatesDisplayTest < ActionDispatch::IntegrationTest
   test 'index displays aggregate states for a series' do
     get records_url
     assert_response :success
-    assert_select "[data-record-state-row='#{@root.id}'] [data-state-column='is_seen']", text: /0\/1.*\?/m
+    assert_select "[data-record-state-row='#{@root.id}'] [data-state-column='is_seen']", text: '0/1'
   end
 end

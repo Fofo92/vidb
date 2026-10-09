@@ -33,17 +33,18 @@
 
   <tbody>
     <% @records.each do |record| %>
+      <% copies = record_copy_summary(record) %>
       <tr data-record-state-row="<%= record.id %>">
         <td><%= record.id %></td>
         <td>
           <%= link_to record.complete_title, record_path(record) %>
         </td>
         <td><%= render "records/year", record: record %></td>
-        <td><%= record.formatted_total_length %></td>
-        <td><%= record.genders.order(:name).map(&:name).join(", ") %></td>
+        <td><%= copies.summary_duration %></td>
+        <td><%= record.genders.order(:name).limit(2).map(&:name).join(", ") %></td>
         <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
-        <td><%= record.language_version.nil? ? "n/a" : record.language_version.short_name %></td>
-        <td><%= record.media.map(&:short_name).join(", ") %></td>
+        <td><%= copies.summary_languages %></td>
+        <td><%= copies.summary_supports %></td>
         <td><%= record.rank || "n/a" %></td>
         <td><%= record.ancestry %></td>
         <%= render "state_columns", record: record, header: false, interactive: false %>
@@ -52,11 +53,11 @@
             <i class="fas fa-edit"></i>
           <% end %>
           <%= link_to record_path(record),
-						data: {
+            data: {
               turbo_method: :delete,
               turbo_confirm: "Êtes-vous sûr ?"
               } do %>
-            	<i class="fas fa-trash-alt"></i>
+              <i class="fas fa-trash-alt"></i>
           <% end %>
         </td>
       </tr>

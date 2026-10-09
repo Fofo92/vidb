@@ -10,11 +10,11 @@
             <% end %>
           </td>
           <td><%= render "records/year", record: record %></td>
-          <td data-copy-duration="<%= record.id %>" title="Durée des copies présentes, mesurée et arrondie ; valeur catalogue sinon"><%= copies.duration %></td>
-          <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
+          <td data-copy-duration="<%= record.id %>" title="Durée"><%= copies.summary_duration %></td>
+          <td><%= record.genders.order(:name).limit(2).map(&:name).join(", ") || "néant" %></td>
           <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
-          <td data-copy-languages="<%= record.id %>"><%= copies.languages %></td>
-          <td data-copy-supports="<%= record.id %>"><%= copies.supports %></td>
+          <td data-copy-languages="<%= record.id %>"><%= copies.summary_languages %></td>
+          <td data-copy-supports="<%= record.id %>"><%= copies.summary_supports %></td>
           <%= render "records/state_columns", record: record, header: false %>
           <td>
             <%= link_to edit_record_path(record) do %>

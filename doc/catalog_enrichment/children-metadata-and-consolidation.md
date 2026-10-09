@@ -51,3 +51,25 @@ la structure attendue. Une seule consolidation de série peut résoudre de
 nombreux fichiers. Les candidats ne sont pas nécessairement ambigus : ils sont
 des propositions non encore importées. Les langues manquantes des copies déjà
 confirmées ne diminuent pas le nombre de fichiers confirmés.
+
+## Bilan des fiches
+
+L’accueil distingue les fiches incomplètes, celles à consolider et leur union
+(chaque fiche compte une seule fois). Les manques par champ se recoupent.
+Les pays, genres et résumés sont propres à chaque fiche ; années, versions et
+supports des ensembles sont évalués sur leurs vidéos. Les copies présentes
+font autorité pour version et support ; sans copie, les champs de la fiche
+sont utilisés. Les genres absents sont un manque, plus de deux genres une
+consolidation. L’origine inconnue d’une année conservée reste à préciser.
+Le bilan ne prouve pas l’identité d’une œuvre ni l’exactitude des métadonnées.
+
+```bash
+bin/rails runner script/record_metadata_audit.rb /srv/vidb/shared
+```
+
+Cette lecture seule écrit un JSON exhaustif et un Markdown listant les ID,
+titres, champs manquants et motifs de consolidation. Les cas d’identité et
+les exceptions des fichiers restent dans le rapport de réconciliation.
+Le cache de l’accueil dure au maximum une minute. Les tableaux présentent
+uniquement les valeurs, un tiret pour une valeur absente, et deux genres au
+maximum ; les informations supplémentaires restent dans les vues de détail.
