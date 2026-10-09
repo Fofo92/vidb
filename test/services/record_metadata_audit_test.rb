@@ -2,7 +2,8 @@ require "test_helper"
 
 class RecordMetadataAuditTest < ActiveSupport::TestCase
   test "counts a record once while counting each missing field separately" do
-    record = Record.create!(french_title: "Audit incomplet", record_kind: "undetermined")
+    unknown = LanguageVersion.find_or_create_by!(short_name: "?") { |version| version.long_name = "Inconnue" }
+    record = Record.create!(french_title: "Audit incomplet", record_kind: "undetermined", language_version: unknown)
     result = RecordMetadataAudit.new.call
     row = result[:records].find { |item| item[:id] == record.id }
     assert_equal %i[placement country genres year abstract language medium], row[:missing]
