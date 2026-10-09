@@ -33,13 +33,14 @@ module CatalogEnrichment
     end
 
     def compare(entry)
-      number = entry.fetch('stem').match(/\AS(\d+)\s*E(\d+)\s*-\s*(.+)\z/i)
+      number = EpisodeFilenameTitle.parse(entry.fetch('stem'))
       result = { path: entry.fetch('path'), accepted: false }
       return result.merge(status: 'not_an_episode') unless number
 
-      matches = title_matches(number[3])
-      result.merge(status: status(matches, number), local_season: number[1].to_i,
-                   local_episode: number[2].to_i, local_title: number[3],
+      matches = title_matches(number.fetch(:title))
+      result.merge(status: status(matches, number), local_season: number.fetch(:season),
+                   local_episode: number.fetch(:episode), local_title: number.fetch(:title),
+                   filename_evidence: number.slice(:raw_title, :language_marker, :ambiguous_part_suffix),
                    tmdb_candidates: matches, catalogue_candidates: catalogue_matches(matches))
     end
 
@@ -57,11 +58,13 @@ module CatalogEnrichment
     end
 
     def status(matches, number)
+      return 'filename_suffix_requires_review' if number[:ambiguous_part_suffix]
+
       return 'title_unmatched' if matches.empty?
       return 'title_ambiguous' if matches.many?
 
       episode = matches.first
-      agrees = episode['season_number'] == number[1].to_i && episode['episode_number'] == number[2].to_i
+      agrees = episode['season_number'] == number.fetch(:season) && episode['episode_number'] == number.fetch(:episode)
       agrees ? 'title_and_number_agree' : 'title_number_conflict'
     end
 

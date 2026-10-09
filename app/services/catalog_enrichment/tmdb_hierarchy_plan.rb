@@ -66,8 +66,15 @@ module CatalogEnrichment
       titles = [entry['catalogue_title_fr'], entry['title_original'], @mapping.external_episode(entry)['title_fr']]
       normalized = titles.map { |title| normalize(title) }.reject(&:empty?)
       @catalogue.select do |record|
+        next false unless in_series_scope?(record)
+
         %w[french_title original_title].any? { |key| normalized.include?(normalize(record[key])) }
       end
+    end
+
+    def in_series_scope?(record)
+      series = record['ancestry'].to_s.split('/').first
+      series.blank? || series == @root.fetch('id').to_s
     end
 
     def episode_action(entry, candidates)
