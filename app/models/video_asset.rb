@@ -1,5 +1,6 @@
 class VideoAsset < ApplicationRecord
   include VideoAssetStates
+  include VideoAssetParts
 
   belongs_to :record, inverse_of: :video_assets
   belongs_to :medium, optional: true

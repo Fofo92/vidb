@@ -1,0 +1,447 @@
+{
+  "format": "vidb.broadcast_part_import",
+  "version": 1,
+  "root_record_id": 3442,
+  "directory": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)",
+  "storage_uuid": "3430606f-92bb-4da4-aaf2-36a3460bc298",
+  "confirmed_basis": "Pascal: M6 broadcasts each Blanca episode in two parts, confirmed 2026-10-09",
+  "title_corrections_basis": "Pascal confirmed Blu profondo and Chien trois on 2026-10-09",
+  "pairs": [
+    {
+      "record_id": 5675,
+      "season": 1,
+      "episode": 1,
+      "expected_titles": {
+        "french_title": "Sans les yeux",
+        "original_title": "Senza occhi"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E01 - Sans les yeux, partie 1 (Senza occhi)_vf.mkv",
+          "size": 671599952,
+          "modified_at": "2024-02-14T01:11:58+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E02 - Sans les yeux, partie 2 (Senza occhi).mkv",
+          "size": 360217416,
+          "modified_at": "2026-10-05T15:30:32+02:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5676,
+      "season": 1,
+      "episode": 2,
+      "expected_titles": {
+        "french_title": "Fantômes",
+        "original_title": "Fantasmi"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E03 - Fantômes, partie 1 (Fantasmi).mkv",
+          "size": 350373150,
+          "modified_at": "2026-10-05T17:10:01+02:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E04 - Fantômes, partie 2 (Fantasmi).mkv",
+          "size": 328208137,
+          "modified_at": "2026-10-05T18:37:40+02:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5677,
+      "season": 1,
+      "episode": 3,
+      "expected_titles": {
+        "french_title": "Alerte enlèvement",
+        "original_title": "Io ballo da sola"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E05 - Alerte enlèvement, partie 1 (Io ballo da sola)_vf.m4v",
+          "size": 502054025,
+          "modified_at": "2023-01-25T11:04:15+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E06 - Alerte enlèvement, partie 2 (Io ballo da sola)_vf.m4v",
+          "size": 412802396,
+          "modified_at": "2023-01-25T11:08:08+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5678,
+      "season": 1,
+      "episode": 4,
+      "expected_titles": {
+        "french_title": "En eaux profondes",
+        "original_title": "Blu profonde"
+      },
+      "corrections": {
+        "original_title": "Blu profondo"
+      },
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E07 - En eaux profondes, partie 1 (Blu profondo)_vf.m4v",
+          "size": 478647064,
+          "modified_at": "2023-01-29T08:26:15+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E08 - En eaux profondes, partie 2 (Blu profondo)_vf.m4v",
+          "size": 440401682,
+          "modified_at": "2023-01-29T08:36:51+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5679,
+      "season": 1,
+      "episode": 5,
+      "expected_titles": {
+        "french_title": "Traces",
+        "original_title": "Macchie"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E09 - Traces, partie 1 (Macchie)_vf.m4v",
+          "size": 445325459,
+          "modified_at": "2023-02-05T09:56:18+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E10 - Traces, partie 2 (Macchie)_vf.m4v",
+          "size": 379735025,
+          "modified_at": "2023-02-05T10:04:04+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5680,
+      "season": 1,
+      "episode": 6,
+      "expected_titles": {
+        "french_title": "Rentre à la maison",
+        "original_title": "Tornando a casa"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E11 - Rentre à la maison, partie 1 (Tornando a casa)_vf.m4v",
+          "size": 395137874,
+          "modified_at": "2023-02-12T10:08:41+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 01 (c - 12)/S01 E12 - Rentre à la maison, partie 2 (Tornando a casa)_vf.m4v",
+          "size": 544972762,
+          "modified_at": "2023-02-12T08:47:08+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5682,
+      "season": 2,
+      "episode": 1,
+      "expected_titles": {
+        "french_title": "Boom",
+        "original_title": "Sotto attacco"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E01 - Boom, partie 1 (Sotto attacco)_vf.mkv",
+          "size": 539092299,
+          "modified_at": "2024-02-13T23:44:06+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E02 - Boom, partie 2 (Sotto attacco)_vf.mkv",
+          "size": 663684988,
+          "modified_at": "2024-02-14T00:29:11+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5683,
+      "season": 2,
+      "episode": 2,
+      "expected_titles": {
+        "french_title": "Vies de chien",
+        "original_title": "Il ladro di cani"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E03 - Vies de chien, partie 1 (Il ladro di cani)_vf.mkv",
+          "size": 652574966,
+          "modified_at": "2024-02-19T09:54:54+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E04 - Vies de chien, partie 2 (Il ladro di cani)_vf.mkv",
+          "size": 735811843,
+          "modified_at": "2024-02-19T10:41:29+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5684,
+      "season": 2,
+      "episode": 3,
+      "expected_titles": {
+        "french_title": "Angle mort",
+        "original_title": "Angolo cieco"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E05 - Angle Mort, partie 1 (Angolo cieco)_vf.mkv",
+          "size": 533864275,
+          "modified_at": "2024-02-25T06:17:32+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E06 - Angle Mort, partie 2 (Angolo cieco)_vf.mkv",
+          "size": 702230915,
+          "modified_at": "2024-02-25T07:08:30+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5685,
+      "season": 2,
+      "episode": 4,
+      "expected_titles": {
+        "french_title": "Témoin aveugle",
+        "original_title": "Fumo negli occhi"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E07 - Témoin aveugle, partie 1 (Fumo negli occhi)_vf.mkv",
+          "size": 592229441,
+          "modified_at": "2024-02-25T07:48:29+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E08 - Témoin aveugle, partie 2 (Fumo negli occhi)_vf.mkv",
+          "size": 633751389,
+          "modified_at": "2024-02-25T08:31:38+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5686,
+      "season": 2,
+      "episode": 5,
+      "expected_titles": {
+        "french_title": "Les enfants perdus",
+        "original_title": "Il cacciatore di bambini"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E09 - Les enfants perdus, partie 1 (Il cacciatore di bambini)_vf.mkv",
+          "size": 542729909,
+          "modified_at": "2024-03-03T06:15:49+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E10 - Les enfants perdus, partie 2 (Il cacciatore di bambini)_vf.mkv",
+          "size": 655652054,
+          "modified_at": "2024-03-03T07:02:12+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5687,
+      "season": 2,
+      "episode": 6,
+      "expected_titles": {
+        "french_title": "La bombe",
+        "original_title": "La bomba"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E11 - La bombe, partie 1 (La bomba)_vf.mkv",
+          "size": 579140084,
+          "modified_at": "2024-03-03T07:43:42+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 02 (c - 12)/S02 E12 - La bombe, partie 2 (La bomba)_vf.mkv",
+          "size": 594304853,
+          "modified_at": "2024-03-03T08:21:39+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5689,
+      "season": 3,
+      "episode": 1,
+      "expected_titles": {
+        "french_title": "Chien troisCan",
+        "original_title": "Cane 3"
+      },
+      "corrections": {
+        "french_title": "Chien trois"
+      },
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E01 - Chien trois, partie 1 (Cane 3)_vf.mkv",
+          "size": 533113719,
+          "modified_at": "2026-03-10T18:53:26+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E02 - Chien trois, partie 2 (Cane 3)_vf.mkv",
+          "size": 579679162,
+          "modified_at": "2026-03-10T19:07:00+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5690,
+      "season": 3,
+      "episode": 2,
+      "expected_titles": {
+        "french_title": "Le Génois",
+        "original_title": "Il Genovese"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E03 - Le Génois, partie 1 (Il Genovese)_vf.mkv",
+          "size": 552386829,
+          "modified_at": "2026-03-12T05:45:23+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E04 - Le Génois, partie 2 (Il Genovese)_vf.mkv",
+          "size": 446787279,
+          "modified_at": "2026-03-12T05:59:01+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5691,
+      "season": 3,
+      "episode": 3,
+      "expected_titles": {
+        "french_title": "Le dauphin",
+        "original_title": "Il delfino"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E05 - Le dauphin, partie 1 (Il delfino)_vf.mkv",
+          "size": 416604569,
+          "modified_at": "2026-03-12T06:12:03+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E06 - Le dauphin, partie 2 (Il delfino)_vf.mkv",
+          "size": 559328506,
+          "modified_at": "2026-03-12T06:25:56+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5692,
+      "season": 3,
+      "episode": 4,
+      "expected_titles": {
+        "french_title": "Peur du noir",
+        "original_title": "paura del buio"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E07 - Peur du noir, partie 1 (paura del buio)_vf.mkv",
+          "size": 404784854,
+          "modified_at": "2026-03-12T06:38:31+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E08 - Peur du noir, partie 2 (paura del buio)_vf.mkv",
+          "size": 483387029,
+          "modified_at": "2026-03-12T06:52:58+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5693,
+      "season": 3,
+      "episode": 5,
+      "expected_titles": {
+        "french_title": "Acide",
+        "original_title": "Acido"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E09 - Acide, partie 1 (Acido)_vf.mkv",
+          "size": 458538917,
+          "modified_at": "2026-03-12T07:06:17+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E10 - Acide, partie 2 (Acido)_vf.mkv",
+          "size": 543197272,
+          "modified_at": "2026-03-12T07:21:43+01:00"
+        }
+      ]
+    },
+    {
+      "record_id": 5694,
+      "season": 3,
+      "episode": 6,
+      "expected_titles": {
+        "french_title": "L'enfant",
+        "original_title": "Il bambino"
+      },
+      "corrections": {},
+      "parts": [
+        {
+          "part": 1,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E11 - L'enfant, partie 1 (Il bambino)_vf.mkv",
+          "size": 467954790,
+          "modified_at": "2026-03-26T10:00:00+01:00"
+        },
+        {
+          "part": 2,
+          "path": "/videos/Séries TV/_incomplet/Blanca (II - c - 24)/Saison 03 (c - 12)/S03 E12 - L'enfant, partie 2 (Il bambino)_vf.mkv",
+          "size": 505417566,
+          "modified_at": "2026-03-26T10:13:20+01:00"
+        }
+      ]
+    }
+  ]
+}

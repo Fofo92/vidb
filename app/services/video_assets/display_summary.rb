@@ -47,9 +47,9 @@ module VideoAssets
     end
 
     def duration_ranges
-      @assets.group_by(&:record_id).filter_map do |_id, copies|
-        durations = copies.map(&:duration_minutes).compact
-        durations.minmax if durations.any?
+      leaves = @leaves.index_by(&:id)
+      @assets.group_by(&:record_id).filter_map do |id, copies|
+        PartDuration.range(copies, expected_parts: leaves.fetch(id).broadcast_part_count)
       end
     end
 

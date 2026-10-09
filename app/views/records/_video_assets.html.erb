@@ -4,6 +4,9 @@
     <% record.video_assets.includes(:medium, :language_version).order(:id).each do |asset| %>
       <li>
         <%= asset.status_present? ? "Présente" : "Supprimée" %> —
+        <% if asset.broadcast_part_number %>
+          <strong>Partie <%= asset.broadcast_part_number %>/<%= record.broadcast_part_count %></strong> —
+        <% end %>
         <span title="Durée mesurée du fichier, arrondie à la minute">
           <%= asset.duration_minutes ? VideoAssets::DisplaySummary.format_minutes(asset.duration_minutes) : "durée inconnue" %>
         </span>

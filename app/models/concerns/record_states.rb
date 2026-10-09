@@ -44,15 +44,16 @@ module RecordStates
     return if state_container?
 
     with_lock do
-      update!(is_recorded: true, is_available: video_assets.where(status: 'present').exists?)
+      recorded = is_recorded == true || recorded_video_asset_coverage?(video_assets.reload.to_a)
+      update!(is_recorded: recorded, is_available: complete_video_asset_coverage?)
     end
   end
 
   private
 
   def asset_state(field, assets)
-    return assets.any?(&:status_present?) if field == :is_available && assets.any?
-    return true if field == :is_recorded && (assets.any? || is_available == true)
+    return complete_video_asset_coverage?(assets) if field == :is_available && assets.any?
+    return true if field == :is_recorded && recorded_video_asset_coverage?(assets)
 
     nil
   end
@@ -69,7 +70,15 @@ module RecordStates
     self.is_recorded = true if is_recorded_in_database == true || is_available == true
     return unless persisted? && video_assets.exists?
 
-    self.is_recorded = true
-    self.is_available = video_assets.where(status: 'present').exists?
+    self.is_recorded = true if recorded_video_asset_coverage?(video_assets.reload.to_a)
+    self.is_available = complete_video_asset_coverage?
+  end
+
+  def complete_video_asset_coverage?(assets = video_assets.reload.to_a)
+    VideoAssets::PartCoverage.available?(assets, expected_parts: broadcast_part_count)
+  end
+
+  def recorded_video_asset_coverage?(assets)
+    is_available == true || VideoAssets::PartCoverage.recorded?(assets, expected_parts: broadcast_part_count)
   end
 end

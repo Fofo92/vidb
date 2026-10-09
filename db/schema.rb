@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000000) do
   create_table "records", force: :cascade do |t|
     t.text "abstract"
     t.string "ancestry"
+    t.integer "broadcast_part_count", default: 1, null: false
     t.bigint "country_id"
     t.datetime "created_at", null: false
     t.string "french_title"
@@ -96,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000000) do
     t.index ["ancestry"], name: "index_records_on_ancestry"
     t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
+    t.check_constraint "broadcast_part_count > 0", name: "records_broadcast_part_count_check"
     t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying, 'standalone_video'::character varying, 'series'::character varying, 'season'::character varying, 'episode'::character varying]::text[])", name: "records_record_kind_check"
   end
 
@@ -277,6 +279,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000000) do
   end
 
   create_table "video_assets", force: :cascade do |t|
+    t.integer "broadcast_part_number"
     t.bigint "byte_size"
     t.string "container"
     t.datetime "created_at", null: false
@@ -293,6 +296,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000000) do
     t.index ["last_known_path"], name: "index_unique_present_video_asset_path", unique: true, where: "(((status)::text = 'present'::text) AND (last_known_path IS NOT NULL))"
     t.index ["medium_id"], name: "index_video_assets_on_medium_id"
     t.index ["record_id"], name: "index_video_assets_on_record_id"
+    t.check_constraint "broadcast_part_number IS NULL OR broadcast_part_number > 0", name: "video_assets_broadcast_part_number_check"
     t.check_constraint "byte_size IS NULL OR byte_size >= 0", name: "video_assets_byte_size_check"
     t.check_constraint "duration_minutes IS NULL OR duration_minutes > 0", name: "video_assets_duration_check"
     t.check_constraint "status::text <> 'present'::text OR NULLIF(btrim(last_known_path), ''::text) IS NOT NULL", name: "video_assets_present_path_check"

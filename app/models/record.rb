@@ -10,6 +10,8 @@ class Record < ApplicationRecord
   include RecordHierarchyPlacement
   include RecordStates
 
+  validates :broadcast_part_count, numericality: { only_integer: true, greater_than: 0 }
+
   enum :record_kind,
        {
          undetermined: "undetermined",
