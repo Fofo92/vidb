@@ -1,0 +1,26 @@
+<% unless record.state_container? %>
+  <% if record.year_evidence.present? || record.year_history.any? %>
+    <details class="small mb-2">
+      <summary>Année : source et historique</summary>
+      <% if record.year_evidence.present? %>
+        <p>
+          <%= record.year_basis_description %>
+          — <%= record.year_evidence['provider'] || record.year_evidence['source'] %>
+          <% if record.year_evidence['first_air_date'].present? %>
+            — <%= record.year_evidence['first_air_date'] %>
+          <% end %>
+        </p>
+      <% end %>
+      <ul>
+        <% record.year_history.each do |entry| %>
+          <li>
+            <%= entry['year'] || "—" %>
+            <%= RecordYears::LABELS.fetch(entry['basis'], '?') %>
+            <% source = entry.fetch('evidence', {}) %>
+            <%= source['provider'] || source['source'] %>
+          </li>
+        <% end %>
+      </ul>
+    </details>
+  <% end %>
+<% end %>

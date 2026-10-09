@@ -40,7 +40,7 @@
   <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>" title="Durée des copies présentes, mesurée et arrondie ; valeur catalogue sinon"><%= copies.duration %></span>
 </p>
 <p>
-  <strong>Année : </strong><%= @record.display_range_of_years %>,
+  <strong>Année : </strong><%= render "records/year", record: @record %>,
   <strong>pays : </strong><%= @record.countries.order(:long_name).map(&:long_name).join(", ") %>
   <strong>, disponible sur : </strong><span data-copy-supports="<%= @record.id %>"><%= copies.supports %></span>
   <strong>, version linguistique : </strong><span data-copy-languages="<%= @record.id %>"><%= copies.languages %></span>
@@ -49,6 +49,7 @@
   <%= render "state_summary", record: @record %>
 </div>
 <%= render "video_assets", record: @record %>
+<%= render "records/year_provenance", record: @record %>
 <p><strong>Abrégé : </strong><%= @record.abstract %></p>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>

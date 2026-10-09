@@ -1,0 +1,7 @@
+<% value = record.display_range_of_years %>
+<% if value.present? %>
+  <span data-record-year="<%= record.id %>"><%= value %></span>
+  <small class="text-muted" title="<%= record.year_basis_description %>"><%= record.year_basis_label %></small>
+<% else %>
+  <span title="Année inconnue">—</span>
+<% end %>

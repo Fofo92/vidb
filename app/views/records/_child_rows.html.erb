@@ -9,7 +9,7 @@
               <%= record.original_title.blank? ? "" : " (#{record.original_title})" %>
             <% end %>
           </td>
-          <td><%= record.display_range_of_years %></td>
+          <td><%= render "records/year", record: record %></td>
           <td data-copy-duration="<%= record.id %>" title="Durée des copies présentes, mesurée et arrondie ; valeur catalogue sinon"><%= copies.duration %></td>
           <td><%= record.genders.order(:name).map(&:name).join(", ") || "néant" %></td>
           <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
