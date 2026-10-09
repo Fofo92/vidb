@@ -1,5 +1,9 @@
 <h1>Application de gestion de vidéos</h1>
 
+<% if user_signed_in? %>
+  <%= render "pages/reconciliation_overview", overview: @reconciliation_overview %>
+<% end %>
+
 <ul>
   <li>
     Nombre total d'enregistrements : <%= Record.all.count %>

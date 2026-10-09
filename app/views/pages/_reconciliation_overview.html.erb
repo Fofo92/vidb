@@ -1,0 +1,51 @@
+<section class="card my-4" aria-labelledby="reconciliation-heading" data-reconciliation-overview>
+  <div class="card-body">
+    <h2 id="reconciliation-heading" class="h4">Rapprochement de la vidéothèque</h2>
+    <% if overview[:available] %>
+      <p>
+        <strong><%= overview[:confirmed] %> / <%= overview[:total] %> fichiers confirmés</strong>
+        — <%= number_with_precision(overview[:percent], precision: 1) %> %
+      </p>
+      <progress value="<%= overview[:confirmed] %>" max="<%= [overview[:total], 1].max %>"
+                aria-label="Part des fichiers dont le rapprochement est confirmé"
+                style="width: 100%; height: 1.25rem;"></progress>
+      <p><strong>Reste à rapprocher : <%= overview[:remaining] %> fichiers.</strong></p>
+      <% labels = {
+        'candidate' => 'Candidats à un lot contrôlé',
+        'copy_changed' => 'Copies modifiées, à observer de nouveau',
+        'series_identification' => 'Séries à identifier',
+        'work_identification' => 'Œuvres à identifier',
+        'missing_hierarchy' => 'Hiérarchies à compléter',
+        'missing_season' => 'Saisons non retrouvées',
+        'missing_episode' => 'Épisodes non retrouvés',
+        'parent_placement' => 'Identité et placement à vérifier',
+        'container_kind_review' => 'Types de fiches à vérifier',
+        'numbering_conflict' => 'Conflits de numérotation',
+        'title_variant' => 'Variantes de titre',
+        'title_conflict' => 'Conflits de titre',
+        'ambiguous_identification' => 'Identifications ambiguës',
+        'ambiguous_hierarchy' => 'Hiérarchies ambiguës',
+        'other_review' => 'Autres cas à examiner'
+      } %>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead><tr><th scope="col">Motif</th><th scope="col" class="text-end">Fichiers</th></tr></thead>
+          <tbody>
+            <% overview[:counts].sort_by { |_category, count| -count }.each do |category, count| %>
+              <tr><th scope="row"><%= labels.fetch(category, category) %></th><td class="text-end"><%= count %></td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="small text-muted mb-0">
+        Dernier scan : <%= overview[:inventory_at].in_time_zone('Europe/Paris').strftime('%d/%m/%Y à %H:%M') %>.
+        <%= overview[:excluded] %> fichier(s) de travail ou de corbeille exclus du calcul.
+        <%= overview[:absent] %> chemin(s) absent(s) depuis le scan précédent, à vérifier.
+        La progression mesure les fichiers rapprochés, pas la complétude des métadonnées
+        ni le nombre de corrections manuelles.
+      </p>
+    <% else %>
+      <p class="text-muted mb-0">Suivi indisponible : aucun journal lisible pour le moment.</p>
+    <% end %>
+  </div>
+</section>
