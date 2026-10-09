@@ -1,0 +1,593 @@
+{
+  "format": "vidb.linked_episode_completion",
+  "version": 1,
+  "root_record_id": 1840,
+  "tmdb_series_id": 790,
+  "total": 70,
+  "directory": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)",
+  "medium": "HD",
+  "storage_uuid": "3430606f-92bb-4da4-aaf2-36a3460bc298",
+  "source_inventory": {
+    "format": "vidb.video_library_inventory",
+    "version": 1,
+    "generated_at": "2026-10-08T21:42:33+02:00",
+    "roots": [
+      "/videos"
+    ]
+  },
+  "origin_country_codes": [
+    "GB"
+  ],
+  "country_dictionary_names": [
+    "Royaume-Uni",
+    "Grande-Bretagne",
+    "Grande Bretagne"
+  ],
+  "genre_dictionary_names": [
+    "Policier",
+    "Policiers"
+  ],
+  "genre_basis": "TMDB Crime selected as major genre; Drame and Mystère not propagated",
+  "copies": [
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E01 - La cuisine mystérieuse de Clapham.m4v",
+      "size": 379859692,
+      "modified_at": "2020-04-15T12:23:50+02:00",
+      "tmdb_episode_id": 968198,
+      "local_season": 1,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E02 - Meurtre par procuration (Murder in the Mews).m4v",
+      "size": 363180321,
+      "modified_at": "2020-05-14T19:37:38+02:00",
+      "tmdb_episode_id": 968215,
+      "local_season": 1,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E03 - L'Aventure de Johnnie Waverly.m4v",
+      "size": 379099572,
+      "modified_at": "2020-04-15T15:02:36+02:00",
+      "tmdb_episode_id": 997955,
+      "local_season": 1,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E04 - La mort avait les dents blanches.m4v",
+      "size": 377990584,
+      "modified_at": "2020-04-15T16:46:34+02:00",
+      "tmdb_episode_id": 997956,
+      "local_season": 1,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E05 - L'Appartement du troisième.m4v",
+      "size": 283852878,
+      "modified_at": "2020-04-15T16:47:49+02:00",
+      "tmdb_episode_id": 997957,
+      "local_season": 1,
+      "local_episode": 5
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E06 - Énigme à Rhodes.m4v",
+      "size": 481070616,
+      "modified_at": "2020-04-15T16:48:45+02:00",
+      "tmdb_episode_id": 997958,
+      "local_season": 1,
+      "local_episode": 6
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E07 - Mystère en mer.m4v",
+      "size": 416517367,
+      "modified_at": "2020-04-15T16:48:39+02:00",
+      "tmdb_episode_id": 997959,
+      "local_season": 1,
+      "local_episode": 7
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E08 - Vol au château.m4v",
+      "size": 339945021,
+      "modified_at": "2020-04-15T16:48:45+02:00",
+      "tmdb_episode_id": 997960,
+      "local_season": 1,
+      "local_episode": 8
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E09 - Le Roi de trèfle.m4v",
+      "size": 293833281,
+      "modified_at": "2020-04-15T17:33:41+02:00",
+      "tmdb_episode_id": 997961,
+      "local_season": 1,
+      "local_episode": 9
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E10 - Le Songe.m4v",
+      "size": 328998662,
+      "modified_at": "2020-04-15T17:57:47+02:00",
+      "tmdb_episode_id": 997962,
+      "local_season": 1,
+      "local_episode": 10
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E01 - La maison du péril.m4v",
+      "size": 849903904,
+      "modified_at": "2020-04-30T17:40:42+02:00",
+      "tmdb_episode_id": 968541,
+      "local_season": 2,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E02 - La Femme voilée.m4v",
+      "size": 378339250,
+      "modified_at": "2021-06-13T20:14:15+02:00",
+      "tmdb_episode_id": 968542,
+      "local_season": 2,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E03 - La mine perdue.m4v",
+      "size": 362740028,
+      "modified_at": "2021-06-13T19:12:06+02:00",
+      "tmdb_episode_id": 968543,
+      "local_season": 2,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E04 - Le Mystère des Cornouailles.m4v",
+      "size": 353403893,
+      "modified_at": "2020-04-15T18:18:42+02:00",
+      "tmdb_episode_id": 968544,
+      "local_season": 2,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E05 - La Disparition de M. Davenheim.m4v",
+      "size": 411863463,
+      "modified_at": "2020-04-15T18:19:34+02:00",
+      "tmdb_episode_id": 968545,
+      "local_season": 2,
+      "local_episode": 5
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E06 - Double manoeuvre.m4v",
+      "size": 451923577,
+      "modified_at": "2021-06-13T21:33:47+02:00",
+      "tmdb_episode_id": 968546,
+      "local_season": 2,
+      "local_episode": 6
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E07 - L'aventure de l'appartement bon marché.m4v",
+      "size": 407486100,
+      "modified_at": "2020-03-11T21:34:11+01:00",
+      "tmdb_episode_id": 968547,
+      "local_season": 2,
+      "local_episode": 7
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E08 - L'enlèvement du premier ministre.m4v",
+      "size": 395814030,
+      "modified_at": "2020-03-12T06:20:37+01:00",
+      "tmdb_episode_id": 968548,
+      "local_season": 2,
+      "local_episode": 8
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E09 - L'Aventure de l'Étoile de l'Ouest.m4v",
+      "size": 372205260,
+      "modified_at": "2020-03-12T06:21:41+01:00",
+      "tmdb_episode_id": 968549,
+      "local_season": 2,
+      "local_episode": 9
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E01 - La mystérieuse affaire de Styles.m4v",
+      "size": 850445037,
+      "modified_at": "2021-06-13T21:29:44+02:00",
+      "tmdb_episode_id": 5641597,
+      "local_season": 3,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E02 - Comment poussent vos fleurs.m4v",
+      "size": 450586233,
+      "modified_at": "2020-03-12T06:23:00+01:00",
+      "tmdb_episode_id": 1058226,
+      "local_season": 3,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E03 - Un million de dollars de bons volatilisés.m4v",
+      "size": 413808714,
+      "modified_at": "2020-03-19T19:26:29+01:00",
+      "tmdb_episode_id": 1058227,
+      "local_season": 3,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E04 - L'Express de Plymouth (The Million Dollar Bond Robbery).m4v",
+      "size": 374808846,
+      "modified_at": "2020-03-19T19:27:05+01:00",
+      "tmdb_episode_id": 1058228,
+      "local_season": 3,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E05 - Le guêpier.m4v",
+      "size": 440248441,
+      "modified_at": "2020-04-09T21:16:44+02:00",
+      "tmdb_episode_id": 1058229,
+      "local_season": 3,
+      "local_episode": 5
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E06 - Tragédie à Mardson manor.m4v",
+      "size": 449070680,
+      "modified_at": "2020-03-27T10:10:20+01:00",
+      "tmdb_episode_id": 1058230,
+      "local_season": 3,
+      "local_episode": 6
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E07 - Un indice de trop.m4v",
+      "size": 377741161,
+      "modified_at": "2021-06-13T18:46:56+02:00",
+      "tmdb_episode_id": 1058231,
+      "local_season": 3,
+      "local_episode": 7
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E08 - Le Mystère du bahut espagnol.m4v",
+      "size": 404052652,
+      "modified_at": "2020-04-09T21:16:33+02:00",
+      "tmdb_episode_id": 1058232,
+      "local_season": 3,
+      "local_episode": 8
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E09 - Christmas Pudding.m4v",
+      "size": 359653898,
+      "modified_at": "2021-06-13T19:38:50+02:00",
+      "tmdb_episode_id": 1058233,
+      "local_season": 3,
+      "local_episode": 9
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E10 - Le bal de la victoire.m4v",
+      "size": 394211647,
+      "modified_at": "2020-04-15T20:02:46+02:00",
+      "tmdb_episode_id": 1058234,
+      "local_season": 3,
+      "local_episode": 10
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E11 - Le Mystère de Hunter's Lodge.m4v",
+      "size": 363621649,
+      "modified_at": "2020-04-15T20:03:22+02:00",
+      "tmdb_episode_id": 1058235,
+      "local_season": 3,
+      "local_episode": 11
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 04/S04 E01 - A.B.C. contre Poirot.m4v",
+      "size": 815993939,
+      "modified_at": "2020-04-15T20:51:23+02:00",
+      "tmdb_episode_id": 968763,
+      "local_season": 4,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 04/S04 E02 - La Mort dans les nuages.m4v",
+      "size": 753953693,
+      "modified_at": "2020-04-15T20:52:07+02:00",
+      "tmdb_episode_id": 968764,
+      "local_season": 4,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 04/S04 E03 - Un, deux, trois...m4v",
+      "size": 889655450,
+      "modified_at": "2020-04-15T20:57:20+02:00",
+      "tmdb_episode_id": 968765,
+      "local_season": 4,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E01 - La Malédiction du tombeau égyptien.m4v",
+      "size": 412108965,
+      "modified_at": "2020-04-15T11:04:47+02:00",
+      "tmdb_episode_id": 968766,
+      "local_season": 5,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E02 - L'affaire de l'invention volée.m4v",
+      "size": 425118709,
+      "modified_at": "2020-04-17T21:17:59+02:00",
+      "tmdb_episode_id": 968767,
+      "local_season": 5,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E03 - L'Iris jaune.m4v",
+      "size": 403120458,
+      "modified_at": "2020-04-16T20:22:21+02:00",
+      "tmdb_episode_id": 968768,
+      "local_season": 5,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E04 - L'Affaire du testament disparu.m4v",
+      "size": 463880254,
+      "modified_at": "2020-04-16T20:35:10+02:00",
+      "tmdb_episode_id": 968769,
+      "local_season": 5,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E05 - Un dîner peu ordinaire.m4v",
+      "size": 390202927,
+      "modified_at": "2021-06-13T20:23:59+02:00",
+      "tmdb_episode_id": 968770,
+      "local_season": 5,
+      "local_episode": 5
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E06 - La Boîte de chocolats.m4v",
+      "size": 425358019,
+      "modified_at": "2020-04-16T20:49:00+02:00",
+      "tmdb_episode_id": 968771,
+      "local_season": 5,
+      "local_episode": 6
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E07 - Le Miroir du mort.m4v",
+      "size": 428058221,
+      "modified_at": "2020-04-09T21:15:59+02:00",
+      "tmdb_episode_id": 968772,
+      "local_season": 5,
+      "local_episode": 7
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E08 - Vol de bijoux à l'Hôtel Métropole.m4v",
+      "size": 428902863,
+      "modified_at": "2020-04-15T13:55:36+02:00",
+      "tmdb_episode_id": 968773,
+      "local_season": 5,
+      "local_episode": 8
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E01 - Le Noël d'Hercule Poirot.m4v",
+      "size": 1016343473,
+      "modified_at": "2020-04-16T21:37:47+02:00",
+      "tmdb_episode_id": 968774,
+      "local_season": 6,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E02 - Pension Vanilos.m4v",
+      "size": 791741167,
+      "modified_at": "2020-04-15T11:06:02+02:00",
+      "tmdb_episode_id": 968775,
+      "local_season": 6,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E03 - Le Crime du golf (Murder on the Links).m4v",
+      "size": 889549357,
+      "modified_at": "2020-05-11T21:24:55+02:00",
+      "tmdb_episode_id": 968776,
+      "local_season": 6,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E04 - Témoin muet (Dumb Witness).m4v",
+      "size": 855457508,
+      "modified_at": "2020-05-22T07:07:20+02:00",
+      "tmdb_episode_id": 968777,
+      "local_season": 6,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 07/S07 E01 - Le Meurtre de Roger Ackroyd (The Murder of Roger Ackroyd).m4v",
+      "size": 1047750028,
+      "modified_at": "2020-05-12T20:56:42+02:00",
+      "tmdb_episode_id": 968778,
+      "local_season": 7,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 07/S07 E02 - Le couteau sur la nuque.m4v",
+      "size": 976677595,
+      "modified_at": "2020-05-08T12:26:41+02:00",
+      "tmdb_episode_id": 968779,
+      "local_season": 7,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 08/S08 E01 - Les vacances d'Hercule Poirot.m4v",
+      "size": 1107317530,
+      "modified_at": "2020-04-30T17:41:12+02:00",
+      "tmdb_episode_id": 968780,
+      "local_season": 8,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 08/S08 E02 - Meurtre en Mésopotamie (Murder in Mesopotamia).m4v",
+      "size": 1111564026,
+      "modified_at": "2020-05-20T07:28:55+02:00",
+      "tmdb_episode_id": 968781,
+      "local_season": 8,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E01 - Cinq petits cochons.m4v",
+      "size": 960385840,
+      "modified_at": "2020-04-14T23:07:54+02:00",
+      "tmdb_episode_id": 968207,
+      "local_season": 9,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E02 - Je ne suis pas coupable.m4v",
+      "size": 833818231,
+      "modified_at": "2020-04-11T14:04:05+02:00",
+      "tmdb_episode_id": 968208,
+      "local_season": 9,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E03 - Mort sur le Nil (Death on the Nile).m4v",
+      "size": 998225770,
+      "modified_at": "2021-06-13T20:02:36+02:00",
+      "tmdb_episode_id": 968209,
+      "local_season": 9,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E04 - Le Vallon.m4v",
+      "size": 946657171,
+      "modified_at": "2020-04-16T22:03:44+02:00",
+      "tmdb_episode_id": 968210,
+      "local_season": 9,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E01 - Le Train bleu.m4v",
+      "size": 875981075,
+      "modified_at": "2020-04-16T23:07:48+02:00",
+      "tmdb_episode_id": 968203,
+      "local_season": 10,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E02 - Cartes sur table.m4v",
+      "size": 997253842,
+      "modified_at": "2020-04-17T13:23:08+02:00",
+      "tmdb_episode_id": 968204,
+      "local_season": 10,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E03 - Les indiscrétions d'Hercule Poirot.m4v",
+      "size": 986262002,
+      "modified_at": "2020-04-17T14:00:01+02:00",
+      "tmdb_episode_id": 968205,
+      "local_season": 10,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E04 - Le Flux et le Reflux (Taken at the Flood).m4v",
+      "size": 833249577,
+      "modified_at": "2020-05-12T20:44:42+02:00",
+      "tmdb_episode_id": 968206,
+      "local_season": 10,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E01 - Mme MacGinty est morte.m4v",
+      "size": 616017068,
+      "modified_at": "2020-04-17T13:22:38+02:00",
+      "tmdb_episode_id": 968199,
+      "local_season": 11,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E02 - Le chat et les pigeons.m4v",
+      "size": 667395887,
+      "modified_at": "2020-05-08T19:46:56+02:00",
+      "tmdb_episode_id": 968200,
+      "local_season": 11,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E03 - La Troisième Fille.m4v",
+      "size": 705756137,
+      "modified_at": "2020-04-17T14:01:10+02:00",
+      "tmdb_episode_id": 968201,
+      "local_season": 11,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E04 - Rendez-vous avec la mort.m4v",
+      "size": 1027335093,
+      "modified_at": "2020-06-17T10:15:52+02:00",
+      "tmdb_episode_id": 968202,
+      "local_season": 11,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E01 - Les pendules.m4v",
+      "size": 720949513,
+      "modified_at": "2021-06-13T19:10:02+02:00",
+      "tmdb_episode_id": 968194,
+      "local_season": 12,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E02 - Drame en trois actes.m4v",
+      "size": 772003446,
+      "modified_at": "2021-06-13T18:51:22+02:00",
+      "tmdb_episode_id": 968195,
+      "local_season": 12,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E03 - Le Crime d'Halloween.m4v",
+      "size": 646654433,
+      "modified_at": "2020-04-17T16:31:03+02:00",
+      "tmdb_episode_id": 968196,
+      "local_season": 12,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E04 - Le Crime de l'Orient-Express (Murder on the Orient Express).m4v",
+      "size": 737387129,
+      "modified_at": "2020-05-19T12:11:47+02:00",
+      "tmdb_episode_id": 968197,
+      "local_season": 12,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E01 - Une mémoire d'éléphant.m4v",
+      "size": 657418722,
+      "modified_at": "2020-04-17T16:31:51+02:00",
+      "tmdb_episode_id": 968193,
+      "local_season": 13,
+      "local_episode": 1
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E02 - Les Quatre.m4v",
+      "size": 649412304,
+      "modified_at": "2020-04-17T16:31:38+02:00",
+      "tmdb_episode_id": 968192,
+      "local_season": 13,
+      "local_episode": 2
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E03 - Poirot joue le jeu.m4v",
+      "size": 847004667,
+      "modified_at": "2020-04-15T13:56:29+02:00",
+      "tmdb_episode_id": 968191,
+      "local_season": 13,
+      "local_episode": 3
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E04 - Les Travaux d'Hercule.m4v",
+      "size": 563531493,
+      "modified_at": "2021-06-13T21:38:09+02:00",
+      "tmdb_episode_id": 968190,
+      "local_season": 13,
+      "local_episode": 4
+    },
+    {
+      "path": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E05 - Hercule Poirot quitte la scène.m4v",
+      "size": 599254944,
+      "modified_at": "2021-06-13T18:49:59+02:00",
+      "tmdb_episode_id": 968221,
+      "local_season": 13,
+      "local_episode": 5
+    }
+  ]
+}
