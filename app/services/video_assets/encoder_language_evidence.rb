@@ -43,12 +43,16 @@ module VideoAssets
       return false unless File.file?(@asset.last_known_path)
 
       stat = File.stat(@asset.last_known_path)
-      observed_at = @asset.technical_details['observed_at']
+      observed_at = copy_observed_at
       return false if observed_at.blank? || @asset.byte_size.nil?
 
       stat.file? && @path.mtime <= stat.mtime && stat.size == @asset.byte_size &&
         stat.mtime <= Time.iso8601(observed_at) &&
         stat.mtime <= Time.current - 24.hours
+    end
+
+    def copy_observed_at
+      @asset.observed_at&.iso8601 || @asset.technical_details['observed_at']
     end
 
     def supported?(document)
