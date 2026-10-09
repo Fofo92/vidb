@@ -32,12 +32,13 @@ module CatalogEnrichment
       raise ArgumentError, 'TMDB country-of-origin evidence changed' unless valid
 
       ids = @snapshot.fetch('series').fetch('genres').pluck('id')
-      raise ArgumentError, 'Expected TMDB Crime genre missing' unless ids.include?(80)
+      expected = @evidence.fetch('expected_tmdb_genre_id', 80)
+      raise ArgumentError, 'Selected TMDB genre missing' unless ids.include?(expected)
     end
 
     def country_names
       countries = Country.where(long_name: @evidence.fetch('country_dictionary_names')).to_a
-      raise ArgumentError, 'Missing or ambiguous UK country dictionary entry' unless countries.one?
+      raise ArgumentError, 'Missing or ambiguous country dictionary entry' unless countries.one?
 
       countries.map(&:long_name)
     end

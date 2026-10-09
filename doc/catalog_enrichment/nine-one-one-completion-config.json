@@ -1,0 +1,14 @@
+{
+  "format": "vidb.linked_episode_completion_config",
+  "version": 1,
+  "root_record_id": 7335,
+  "tmdb_series_id": 75219,
+  "directory": "/videos/Séries TV/_incomplet/9-1-1 (VI - 66_84)",
+  "medium": "HD",
+  "storage_uuid": "3430606f-92bb-4da4-aaf2-36a3460bc298",
+  "origin_country_codes": ["US"],
+  "country_dictionary_names": ["États-Unis", "Etats-Unis", "États Unis", "Etats Unis", "USA"],
+  "expected_tmdb_genre_id": 18,
+  "genre_dictionary_names": ["Drame", "Drames"],
+  "genre_basis": "TMDB Drama selected as major genre for this emergency-services series; other genres not propagated"
+}
