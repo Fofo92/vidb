@@ -39,8 +39,8 @@
         </td>
         <td><%= render "records/year", record: record %></td>
         <td><%= copies.summary_duration %></td>
-        <td><%= record.genders.order(:name).limit(2).map(&:name).join(", ") %></td>
-        <td><%= record.countries.order(:long_name).map(&:flag).join("") %></td>
+        <td><%= record_metadata_values(record).genders(record).first(2).map(&:name).join(", ").presence || "—" %></td>
+        <td><%= record_metadata_values(record).countries(record).map(&:flag).join("") %></td>
         <td><%= copies.summary_languages %></td>
         <td><%= copies.summary_supports %></td>
         <td><%= record.rank || "n/a" %></td>

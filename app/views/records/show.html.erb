@@ -36,12 +36,12 @@
       <%= hierarchy_placement_label(placement_status) %>
     </span>
   </span>
-  <strong>, genre : </strong><%= @record.genders.order(:name).map(&:name).join(", ") || "néant" %>
-  <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>" title="Durée des copies présentes, mesurée et arrondie ; valeur catalogue sinon"><%= copies.duration %></span>
+  <strong>, genre : </strong><%= record_metadata_values(@record).genders(@record).map(&:name).join(", ").presence || "—" %>
+  <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>" title="Durée des vidéos connues ; les copies alternatives ne sont pas additionnées"><%= copies.duration %></span>
 </p>
 <p>
   <strong>Année : </strong><%= render "records/year", record: @record, detail: true %>,
-  <strong>pays : </strong><%= @record.countries.order(:long_name).map(&:long_name).join(", ") %>
+  <strong>pays : </strong><%= record_metadata_values(@record).countries(@record).map(&:long_name).join(", ") %>
   <strong>, disponible sur : </strong><span data-copy-supports="<%= @record.id %>"><%= copies.supports %></span>
   <strong>, version linguistique : </strong><span data-copy-languages="<%= @record.id %>"><%= copies.languages %></span>
 </p>
@@ -50,7 +50,9 @@
 </div>
 <%= render "video_assets", record: @record %>
 <%= render "records/year_provenance", record: @record %>
-<p><strong>Abrégé : </strong><%= @record.abstract %></p>
+<% unless @record.record_kind_season? && @record.abstract.blank? %>
+  <p><strong>Abrégé : </strong><%= @record.abstract %></p>
+<% end %>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>
   <% if @record.allows_new_hierarchy_children? %>

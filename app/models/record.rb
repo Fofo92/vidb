@@ -12,6 +12,7 @@ class Record < ApplicationRecord
   include RecordHierarchyPlacement
   include RecordStates
   include RecordYears
+  include RecordMetadata
 
   validates :broadcast_part_count, numericality: { only_integer: true, greater_than: 0 }
 
@@ -46,12 +47,12 @@ class Record < ApplicationRecord
   end
 
   def formatted_length(length_in_mn)
-    seconds = length_in_mn.to_i * 60
-    Time.at(seconds.to_i).utc.strftime("%Hh%M")
+    minutes = length_in_mn.to_i
+    format('%<hours>02dh%<minutes>02d', hours: minutes / 60, minutes: minutes % 60)
   end
 
   def display_range_of_years
-    return year unless persisted? && has_children?
+    return year unless state_container?
 
     years = state_leaves.map(&:year).compact
     return nil if years.empty?
@@ -79,17 +80,14 @@ class Record < ApplicationRecord
   end
 
   def child_length_in_mn
-    return unless has_children? && length_in_mn.zero?
+    return unless state_container?
 
-    child_length_in_mn = 0
-    children.each do |child|
-      child_length_in_mn += child.length_in_mn.to_i unless child.length_in_mn.zero?
-    end
-    child_length_in_mn.to_i unless length_in_mn.zero?
+    lengths = state_leaves.filter_map(&:length_in_mn).select(&:positive?)
+    lengths.sum if lengths.any?
   end
 
   def formatted_total_length
-    records = persisted? && has_children? ? state_leaves : [self]
+    records = state_container? ? state_leaves : [self]
     lengths = records.map(&:length_in_mn).compact.select(&:positive?)
     return 'Inconnue' if lengths.empty?
 

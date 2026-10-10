@@ -32,7 +32,7 @@
     <% state_color = "text-secondary" %>
     <% state_color = "text-success" if count[:total].positive? && count[:yes] == count[:total] %>
     <% state_color = "text-danger" if count[:total].positive? && count[:no] == count[:total] %>
-    <% detail = "#{label} : #{count[:yes]} oui, #{count[:no]} non, #{count[:unknown]} inconnu(s), sur #{count[:total]}" %>
+    <% detail = "#{label} : #{count[:yes]} oui, #{count[:no]} non, #{count[:unknown]} inconnu(s), sur #{count[:total]} vidéos connues" %>
     <% symbol = count[:yes].positive? ? "✓" : (count[:no].positive? ? "✗" : "—") %>
     <td class="text-center text-nowrap position-relative" data-state-column="<%= field %>">
       <% if record.state_container? %>

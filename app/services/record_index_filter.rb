@@ -36,8 +36,7 @@ class RecordIndexFilter
     REFERENCES.each do |field, association|
       next if @parameters[field].blank?
 
-      ids = Record.joins(association).where(association => { id: integer(@parameters[field]) }).select(:id)
-      scope = scope.where(id: ids)
+      scope = scope.where(id: matching_reference_ids(association, integer(@parameters[field])))
     end
     scope = scalar_filters(scope)
     scope = copy_filter(scope, "language_version_id") if @parameters["language_version_id"].present?
@@ -49,6 +48,17 @@ class RecordIndexFilter
     scope = scope.where(record_kind: @parameters["record_kind"]) if @parameters["record_kind"].present?
     scope = scope.where(year: integer(@parameters["year"])) if @parameters["year"].present?
     scope
+  end
+
+  def reference_records
+    @reference_records ||= Record.includes(:countries, :genders).to_a
+  end
+
+  def matching_reference_ids(association, id)
+    values = RecordMetadataValues.new(records: reference_records)
+    reference_records.select do |record|
+      values.public_send(association, record).any? { |value| value.id == id }
+    end.map(&:id)
   end
 
   def copy_filter(scope, field)
@@ -75,7 +85,7 @@ class RecordIndexFilter
   end
 
   def audit_rows
-    rows = Rails.cache.fetch("record-metadata-filter-v1", expires_in: 1.minute) do
+    rows = Rails.cache.fetch("record-metadata-filter-v2", expires_in: 1.minute) do
       RecordMetadataAudit.new.call[:records]
     end
     return rows if @parameters["missing"].blank?

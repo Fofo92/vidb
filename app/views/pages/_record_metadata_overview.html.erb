@@ -5,6 +5,15 @@
       <strong><%= audit[:review] %> à consolider</strong> ;
       <strong><%= audit[:to_work] %> à traiter au total</strong>, sur <%= audit[:total] %>.</p>
     <table class="table table-sm">
+      <thead><tr><th>Type de fiche</th><th>Total</th><th>Incomplètes</th><th>À consolider</th><th>À traiter</th></tr></thead>
+      <tbody>
+        <% RecordMetadataAudit::GROUP_LABELS.each do |group, label| %>
+          <% counts = audit[:groups].fetch(group) %>
+          <tr><th scope="row"><%= label %></th><td><%= counts[:total] %></td><td><%= counts[:incomplete] %></td><td><%= counts[:review] %></td><td><%= counts[:to_work] %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+    <table class="table table-sm">
       <thead><tr><th>Information manquante</th><th class="text-end">Fiches</th></tr></thead>
       <tbody>
         <% RecordMetadataAudit::LABELS.each do |field, label| %>
@@ -13,7 +22,8 @@
       </tbody>
     </table>
     <p class="small text-muted mb-0">Une fiche peut manquer de plusieurs informations : ces colonnes ne s’additionnent pas.
-      Les années, versions et supports des ensembles sont évalués à partir de leurs vidéos.
-      Les pays, genres et résumés sont évalués sur chaque fiche. Bilan actualisé au plus tard sous une minute.</p>
+      Les années, versions et supports manquants sont comptés sur les vidéos.
+      Les pays et genres communs sont à renseigner sur la série ; ses épisodes en héritent, sauf exception explicite.
+      Le résumé d’une saison est facultatif. Bilan actualisé au plus tard sous une minute.</p>
   </div>
 </section>

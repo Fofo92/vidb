@@ -5,7 +5,7 @@ module VideoAssets
     def initialize(record:, records:, assets:)
       @record = record
       parents = records.filter_map(&:parent_id)
-      @leaves = records.reject { |node| parents.include?(node.id) }
+      @leaves = records.reject { |node| parents.include?(node.id) || node.metadata_container? }
       leaf_ids = @leaves.map(&:id)
       @assets = assets.select { |asset| leaf_ids.include?(asset.record_id) }
     end
@@ -25,19 +25,23 @@ module VideoAssets
       label = measured_duration_label(ranges)
       label += " — partiel : #{ranges.size}/#{@leaves.size}" if ranges.size < @leaves.size
       label += ' — certaines copies non mesurées' if @assets.any? { |asset| asset.duration_minutes.nil? }
+      label += ' — durées de fiches incluses' if catalogue_ranges?
       label
     end
 
     def supports
-      qualifications(:medium, @record.media.map(&:short_name), 'Support catalogue')
+      qualifications(:medium, fallback_values(:medium).map(&:short_name), 'Support catalogue')
     end
 
     def languages
-      qualifications(:language_version, [@record.language_version&.short_name].compact, 'Version catalogue')
+      qualifications(:language_version, fallback_values(:language_version).map(&:short_name), 'Version catalogue')
     end
 
     def summary_duration
-      return @record.formatted_total_length.presence == '00h00' ? '—' : @record.formatted_total_length if @assets.empty?
+      if @assets.empty?
+        value = @record.formatted_total_length
+        return ['00h00', 'Inconnue'].include?(value) ? '—' : value
+      end
 
       ranges = duration_ranges
       return '—' if ranges.empty?
@@ -47,20 +51,22 @@ module VideoAssets
     end
 
     def summary_supports
-      summary_names(:medium, @record.media)
+      summary_names(:medium)
     end
 
     def summary_languages
-      summary_names(:language_version, [@record.language_version].compact)
+      summary_names(:language_version)
     end
 
     private
 
-    def summary_names(association, fallback)
-      values = @assets.empty? ? fallback : @assets.filter_map { |asset| asset.public_send(association) }
-      names = values.map(&:short_name).reject do |name|
-        name.blank? || ['?', 'n/a', 'Inconnue', 'Inconnu'].include?(name)
+    def summary_names(association)
+      copies = @assets.group_by(&:record_id)
+      values = @leaves.flat_map do |leaf|
+        present = copies.fetch(leaf.id, [])
+        present.empty? ? leaf_values(leaf, association) : present.filter_map { |asset| asset.public_send(association) }
       end
+      names = values.map(&:short_name).select { |name| RecordMetadataValues.known?(name) }
       names.uniq.sort.join(', ').presence || '—'
     end
 
@@ -73,15 +79,32 @@ module VideoAssets
     end
 
     def duration_ranges
-      leaves = @leaves.index_by(&:id)
-      @assets.group_by(&:record_id).filter_map do |id, copies|
-        PartDuration.range(copies, expected_parts: leaves.fetch(id).broadcast_part_count)
+      copies = @assets.group_by(&:record_id)
+      @leaves.filter_map do |leaf|
+        measured = PartDuration.range(copies.fetch(leaf.id, []), expected_parts: leaf.broadcast_part_count)
+        measured || ([leaf.length_in_mn, leaf.length_in_mn] if leaf.length_in_mn&.positive?)
       end
+    end
+
+    def catalogue_ranges?
+      copies = @assets.group_by(&:record_id)
+      @leaves.any? do |leaf|
+        leaf.length_in_mn&.positive? &&
+          PartDuration.range(copies.fetch(leaf.id, []), expected_parts: leaf.broadcast_part_count).nil?
+      end
+    end
+
+    def fallback_values(association)
+      @leaves.flat_map { |leaf| leaf_values(leaf, association) }.uniq(&:id)
+    end
+
+    def leaf_values(leaf, association)
+      association == :medium ? leaf.media.to_a : [leaf.language_version].compact
     end
 
     def catalogue_duration
       duration = @record.formatted_total_length
-      duration == '00h00' ? 'Durée inconnue' : "#{duration} (catalogue)"
+      ['00h00', 'Inconnue'].include?(duration) ? 'Durée inconnue' : "#{duration} (catalogue)"
     end
 
     def qualifications(association, fallback, label)

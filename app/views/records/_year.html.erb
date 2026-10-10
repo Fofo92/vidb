@@ -2,7 +2,11 @@
 <% if value.present? %>
   <span data-record-year="<%= record.id %>"><%= value %></span>
   <% if local_assigns.fetch(:detail, false) %>
-    <small class="text-muted" title="<%= record.year_basis_description %>"><%= record.year_basis_label %></small>
+    <% if record.metadata_container? %>
+      <small class="text-muted">Années des vidéos connues</small>
+    <% else %>
+      <small class="text-muted" title="<%= record.year_basis_description %>"><%= record.year_basis_label %></small>
+    <% end %>
   <% end %>
 <% else %>
   <span title="Année inconnue">—</span>

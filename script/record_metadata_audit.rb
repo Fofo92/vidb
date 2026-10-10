@@ -8,7 +8,13 @@ directory = Pathname.new(ARGV.fetch(0))
 audit = RecordMetadataAudit.new.call
 directory.join("record-metadata-audit.json").write(JSON.pretty_generate(audit) + "\n")
 lines = ["# Fiches à compléter ou consolider", "", "#{audit[:to_work]} fiches sur #{audit[:total]}.", "",
-         "| ID | Titre | Manques | À consolider |", "|---|---|---|---|"]
+         "| Type | Total | Incomplètes | À consolider | À traiter |", "|---|---:|---:|---:|---:|"]
+RecordMetadataAudit::GROUP_LABELS.each do |group, label|
+  counts = audit[:groups].fetch(group)
+  lines << "| #{label} | #{counts[:total]} | #{counts[:incomplete]} | #{counts[:review]} | #{counts[:to_work]} |"
+end
+lines.concat(["", "Les lacunes des vidéos ne sont pas répétées sur leurs conteneurs. Le résumé des saisons est facultatif.",
+              "", "| ID | Titre | Manques | À consolider |", "|---|---|---|---|"])
 audit[:records].each do |row|
   title = row[:title].to_s.gsub("|", "\\|").gsub(/\r?\n/, " ")
   missing = row[:missing].map { |field| RecordMetadataAudit::LABELS.fetch(field) }.join(", ")

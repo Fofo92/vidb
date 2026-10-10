@@ -44,7 +44,7 @@ class RecordIndexFilterTest < ActiveSupport::TestCase
   end
 
   test "filters missing information and rejects an invalid tree" do
-    Rails.cache.delete("record-metadata-filter-v1")
+    Rails.cache.delete("record-metadata-filter-v2")
     assert_includes filter(missing: "country", tree_id: @series.id).call.pluck(:id), @series.id
     assert_not_includes filter(missing: "country", tree_id: @series.id).call.pluck(:id), @episode.id
     assert_raises(ActiveRecord::RecordNotFound) { filter(tree_id: "not-an-id").call }
@@ -52,8 +52,8 @@ class RecordIndexFilterTest < ActiveSupport::TestCase
 
   test "roots display returns matching roots only" do
     operation = filter(country_id: @country.id, display: "roots")
-    assert_equal [@other.id], operation.call.pluck(:id)
-    assert_equal [@other.id], operation.matched_ids
+    assert_equal [@series.id, @other.id].sort, operation.call.pluck(:id).sort
+    assert_equal [@series.id, @other.id].sort, operation.matched_ids.sort
   end
 
   test "tree display preserves local ranks rather than sorting children by title" do
@@ -80,7 +80,7 @@ class RecordIndexFilterTest < ActiveSupport::TestCase
   end
 
   test "consolidation filters use the same reasons as the metadata audit" do
-    Rails.cache.delete("record-metadata-filter-v1")
+    Rails.cache.delete("record-metadata-filter-v2")
     assert_includes filter(review: "1", tree_id: @series.id).call.pluck(:id), @episode.id
   end
 
