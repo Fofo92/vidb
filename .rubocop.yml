@@ -6,6 +6,7 @@ AllCops:
     - 'config/**/*'
     - 'node_modules/**/*'
     - 'script/**/*'
+    - 'patches/**/*'
     - 'support/**/*'
     - 'tmp/**/*'
     - 'test/**/*'

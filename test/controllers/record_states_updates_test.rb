@@ -36,13 +36,13 @@ class RecordStatesUpdatesTest < ActionDispatch::IntegrationTest
   end
 
   test "a column update changes video leaves but not season or series flags" do
-    update_state(@series, field: "is_checked", value: "yes")
+    update_state(@series, field: "is_seen", value: "yes")
     assert_response :success
     assert_equal 2, response.parsed_body.fetch("count")
-    assert @episode.reload.is_checked
-    assert @other_episode.reload.is_checked
-    assert_not @season.reload.is_checked
-    assert_not @series.reload.is_checked
+    assert @episode.reload.is_seen
+    assert @other_episode.reload.is_seen
+    assert_not @season.reload.is_seen
+    assert_not @series.reload.is_seen
     assert_includes response.parsed_body.fetch("summary"), "2/2"
   end
 
@@ -105,7 +105,7 @@ class RecordStatesUpdatesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "th[data-state-column='is_seen'] [data-value='yes']", count: 1
     assert_select "td[data-state-column='is_seen'] button[data-child-id='#{@episode.id}']", count: 3
-    assert_select "td[data-state-column='is_checked'] button[data-child-id='#{@episode.id}']", count: 1
+    assert_select "[data-state-column='is_checked']", count: 0
     assert_select "[data-state-column='is_available'] button", count: 0
   end
 

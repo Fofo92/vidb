@@ -2,7 +2,7 @@ module RecordChildQualificationsHelper
   CHILD_QUALIFICATION_LABELS = {
     "record_kind" => "Nature", "year" => "Année", "gender_ids" => "Genres", "country_ids" => "Pays",
     "language_version_id" => "Version de la fiche", "medium_ids" => "Supports de la fiche",
-    "is_seen" => "Vu", "is_checked" => "Vérifié",
+    "is_seen" => "Vu",
     "copy_language_version_id" => "Version des copies", "copy_medium_id" => "Support des copies"
   }.freeze
 

@@ -284,11 +284,12 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    %w[is_recorded is_seen is_available is_checked].each do |attribute|
+    %w[is_recorded is_seen is_available].each do |attribute|
       assert_select(
         "input[type='checkbox'][name='record[#{attribute}]']:not([checked])"
       )
     end
+    assert_select "input[name='record[is_checked]']", count: 0
   end
 
   test "displays child records ordered by rank" do

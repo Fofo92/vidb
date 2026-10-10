@@ -3,7 +3,7 @@
   <% if record.metadata_container? %>
     <p class="small text-muted">Synthèse des vidéos connues dans vidb ; les épisodes absents du catalogue ne sont pas comptés.</p>
   <% end %>
-  <% { is_recorded: "Enregistrés", is_available: "Disponibles", is_seen: "Vus", is_checked: "Fiches vérifiées" }.each do |field, label| %>
+  <% { is_recorded: "Enregistrés", is_available: "Disponibles", is_seen: "Vus" }.each do |field, label| %>
     <% count = counts.fetch(field) %>
     <div data-state="<%= field %>">
       <%= label %> : <%= count[:yes] %>/<%= count[:total] %>

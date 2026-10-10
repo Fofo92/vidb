@@ -1,13 +1,12 @@
 <% fields = {
   is_recorded: ["Enregistré", "fa-circle-dot"],
   is_available: ["Disponible", "fa-hard-drive"],
-  is_seen: ["Vu", "fa-eye"],
-  is_checked: ["Fiche vérifiée", "fa-list-check"]
+  is_seen: ["Vu", "fa-eye"]
 } %>
 <% interactive = local_assigns.fetch(:interactive, true) %>
 <% counts = record.state_counts unless header && !interactive %>
 <% fields.each do |field, (label, icon)| %>
-  <% editable = interactive && [:is_seen, :is_checked].include?(field) %>
+  <% editable = interactive && field == :is_seen %>
   <% count = counts&.fetch(field) %>
   <% if header %>
     <th scope="col" class="text-center text-nowrap position-relative" data-state-column="<%= field %>">
