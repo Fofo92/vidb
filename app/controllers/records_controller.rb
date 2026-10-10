@@ -2,13 +2,13 @@ class RecordsController < ApplicationController
   before_action :set_record, only: %i[new_child show edit update destroy]
 
   def index
-    # @records = Record.order(:french_title).all.page(params[:page])
     @q = Record.ransack(params[:q])
-    if params[:q].present?
-      @records = @q.result(distinct: true).order(:french_title).page(params[:page])
-    else
-      @records = Record.roots.order(:french_title).all.page(params[:page])
-    end
+    @record_filter = RecordIndexFilter.new(filter_params, scope: @q.result)
+    results = @record_filter.call
+    @result_count = results.count
+    @records = results.order(:french_title, :id).page(params[:page])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to records_path, alert: "Arbre introuvable ou critère invalide."
   end
 
   def show
@@ -60,6 +60,12 @@ class RecordsController < ApplicationController
   end
 
   private
+
+  def filter_params
+    params.fetch(:filters, ActionController::Parameters.new)
+          .permit(:country_id, :gender_id, :language_version_id, :medium_id,
+                  :year, :record_kind, :tree_id, :display, :missing, :review)
+  end
 
   def set_record
     @record = Record.find(params[:id])

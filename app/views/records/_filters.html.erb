@@ -1,0 +1,49 @@
+<%= search_form_for @q, html: { class: "card my-3", "data-record-filters": true } do |form| %>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <%= form.label :french_title_or_original_title_cont, "Titre contenant" %>
+        <%= form.search_field :french_title_or_original_title_cont, class: "form-control" %>
+      </div>
+      <% { country_id: "Pays", gender_id: "Genre", language_version_id: "Version linguistique",
+           medium_id: "Support", record_kind: "Nature", missing: "Information manquante" }.each do |field, label| %>
+        <div class="col-md-4">
+          <%= label_tag "filters_#{field}", label %>
+          <%= select_tag "filters[#{field}]", options_for_select(record_filter_options(field), record_filter_value(field)),
+                         include_blank: "Tous", class: "form-select", id: "filters_#{field}" %>
+        </div>
+      <% end %>
+      <div class="col-md-4">
+        <%= label_tag :filters_year, "Année" %>
+        <%= number_field_tag "filters[year]", record_filter_value(:year), min: 1900, max: Date.current.year,
+                             class: "form-control", id: "filters_year", autocomplete: "off" %>
+      </div>
+      <div class="col-md-4">
+        <%= label_tag :filters_tree_id, "Arbre — parent et descendants" %>
+        <%= select_tag "filters[tree_id]", options_for_select(
+              RecordTreeOptions.new.call(selected_id: record_filter_value(:tree_id)), record_filter_value(:tree_id)),
+              include_blank: "Tous les arbres", class: "form-select", id: "filters_tree_id" %>
+      </div>
+      <div class="col-md-4">
+        <%= label_tag :filters_display, "Afficher" %>
+        <%= select_tag "filters[display]", options_for_select(
+              [["Fiches correspondantes", "matches"], ["Arbres des fiches correspondantes", "trees"], ["Racines seules", "roots"]],
+              record_filter_value(:display) || "matches"), class: "form-select", id: "filters_display" %>
+      </div>
+    </div>
+    <div class="form-check my-3">
+      <%= check_box_tag "filters[review]", "1", record_filter_value(:review) == "1", class: "form-check-input", id: "filters_review" %>
+      <%= label_tag :filters_review, "Uniquement les fiches à consolider", class: "form-check-label" %>
+    </div>
+    <p class="small text-muted">Les critères se cumulent sur une même fiche. Pays, genres et année portent sur ses champs.
+      Version et support portent sur ses copies présentes, ou ses champs si elle n’a aucune copie présente.
+      L’affichage par arbres ajoute les autres membres pour donner le contexte.</p>
+    <% if @record_filter.tree %>
+      <p>Recherche dans <strong><%= @record_filter.tree.complete_title %></strong>, parent inclus.</p>
+      <%= link_to "Qualifier les enfants de cet arbre", edit_record_child_qualification_path(@record_filter.tree),
+                  class: "btn btn-outline-primary" if @record_filter.tree.has_children? %>
+    <% end %>
+    <%= form.submit "Filtrer", class: "btn btn-primary" %>
+    <%= link_to "Réinitialiser", records_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

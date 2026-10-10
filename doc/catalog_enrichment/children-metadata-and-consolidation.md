@@ -73,3 +73,20 @@ les exceptions des fichiers restent dans le rapport de réconciliation.
 Le cache de l’accueil dure au maximum une minute. Les tableaux présentent
 uniquement les valeurs, un tiret pour une valeur absente, et deux genres au
 maximum ; les informations supplémentaires restent dans les vues de détail.
+
+## Index filtrable
+
+La liste des fiches combine titre, pays, genre, année, nature, version et
+support, information manquante et réserve de consolidation. Ces critères
+s’appliquent à une même fiche. Pays, genre et année sont ceux de la fiche ;
+version et support sont ceux de ses copies présentes, avec repli sur ses
+champs seulement lorsqu’elle n’a aucune copie présente. Le filtre de manque
+reprend les règles du bilan, y compris les valeurs agrégées des ensembles.
+
+La sélection d’un arbre inclut le parent choisi et ses descendants. Les
+affichages sont : fiches correspondantes, arbres complets des correspondances
+et racines seules. En mode arbres, les autres fiches sont marquées « Contexte »,
+les enfants suivent leurs rangs locaux, et la branche sélectionnée reste la
+limite de la recherche. Le tri par titre est utilisé hors du mode arbres.
+Les parents sont des liens vers leur arbre ; la vue de détail propose
+« Filtrer cet arbre », et le filtre donne accès à la qualification des enfants.

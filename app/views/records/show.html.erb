@@ -1,3 +1,4 @@
+<p><%= link_to "Filtrer cet arbre", records_path(filters: { tree_id: @record.id }), class: "btn btn-outline-primary" %></p>
 <div data-controller="record-states" data-record-states-url-value="<%= record_states_path(@record) %>">
   <div class="small" role="status" aria-live="polite" data-record-states-target="message"></div>
 

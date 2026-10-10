@@ -203,6 +203,29 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{record_path(@record)}']", count: 0
   end
 
+  test "filters the index by country and keeps the selected criteria" do
+    country = Country.create!(short_name: "AU", long_name: "Australie filtre index")
+    @record.countries << country
+    get records_url, params: { filters: { country_id: country.id, display: "matches" } }
+
+    assert_response :success
+    assert_select "[data-record-filters]"
+    assert_select "#filters_country_id option[selected][value='#{country.id}']"
+    assert_select "[data-record-state-row='#{@record.id}']"
+  end
+
+  test "shows the selected tree and provides its child qualification link" do
+    @record.update!(record_kind: "series")
+    child = @record.children.create!(french_title: "Enfant filtre index", record_kind: "season",
+                                     language_version: @record.language_version)
+    get records_url, params: { filters: { tree_id: @record.id } }
+
+    assert_response :success
+    assert_select "[data-record-state-row='#{@record.id}']"
+    assert_select "[data-record-state-row='#{child.id}']"
+    assert_select "a[href='#{edit_record_child_qualification_path(@record)}']"
+  end
+
   test "prefills a new child with its parent associations" do
     language_version = LanguageVersion.create!(
       short_name: "VO",

@@ -4,12 +4,9 @@
     <i class="fa-regular fa-square-plus"></i>
   <% end %>
 </div>
-<div class="d-flex flex-row justify-content-between align-items-center py-2">
-  <%= search_form_for @q do |f| %>
-    <%= f.search_field(:french_title_or_original_title_cont, label: "Le titre contient") %>
-    <%= f.submit "Recherche", class: "btn btn-primary" %>
-  <% end %>
-</div>
+<%= render "filters" %>
+<p><strong><%= @result_count %> fiches affichables</strong>, dont <%= @record_filter.matched_ids.size %> correspondent aux critères.
+  Les fiches de contexte sont indiquées dans la colonne Correspondance.</p>
 <div style="font-size: 1rem;">
   <%= paginate @records, window: 2 %>
 </div>
@@ -26,6 +23,7 @@
       <th>Support(s)</th>
       <th>Rang</th>
       <th>Parents</th>
+      <th>Correspondance</th>
       <%= render "state_columns", record: nil, header: true, interactive: false %>
       <th>Actions</th>
     </tr>
@@ -46,7 +44,8 @@
         <td><%= copies.summary_languages %></td>
         <td><%= copies.summary_supports %></td>
         <td><%= record.rank || "n/a" %></td>
-        <td><%= record.ancestry %></td>
+        <td><%= record_filter_parent(record) %></td>
+        <td><%= @record_filter.matched_ids.include?(record.id) ? "Critères" : "Contexte" %></td>
         <%= render "state_columns", record: record, header: false, interactive: false %>
         <td>
           <%= link_to edit_record_path(record) do %>
