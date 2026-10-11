@@ -55,10 +55,17 @@
 
   <div class="d-flex flex-row justify-content-between align-items-center">
     <div class="d-flex flex-row justify-content-between align-items-center border px-2 py-1">
-      <%= f.input :medium_ids,
-        collection: Medium.all.collect { |m| [m.long_name, m.id]},
-        include_blank: false, as: :check_boxes, label: "Support(s)"
-      %>
+      <% if record_present_copies?(@record) %>
+        <div data-record-copy-supports>
+          <strong>Support(s) :</strong> <%= record_copy_summary(@record).summary_supports %>
+          <small class="d-block text-muted">Selon les copies présentes.</small>
+        </div>
+      <% else %>
+        <%= f.input :medium_ids,
+          collection: Medium.all.collect { |m| [m.long_name, m.id]},
+          include_blank: false, as: :check_boxes, label: "Support(s)"
+        %>
+      <% end %>
     </div>
 
     <div class="d-flex flex-row justify-content-between align-items-center">

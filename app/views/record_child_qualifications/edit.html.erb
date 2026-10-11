@@ -51,7 +51,7 @@
           <%= record_kind_label(child.record_kind) %> · <%= child.display_range_of_years || "Année inconnue" %> ·
           <%= child.genders.map(&:name).join(", ").presence || "Genre inconnu" %> ·
           <%= child.countries.map(&:long_name).join(", ").presence || "Pays inconnu" %> ·
-          <%= child.language_version.short_name %> · <%= child.media.map(&:short_name).join(", ") %>
+          <%= child.language_version.short_name %> · <%= record_copy_summary(child).summary_supports %>
         </p>
         <%= hidden_field_tag "record_child_qualification[snapshots][#{child.id}]",
                              RecordChildQualificationSnapshot.token(child) %>

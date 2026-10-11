@@ -50,6 +50,8 @@ module VideoAssets
       ranges.size < @leaves.size ? "≥ #{label}" : label
     end
 
+    delegate :present?, to: :@assets, prefix: :copies
+
     def summary_supports
       summary_names(:medium)
     end

@@ -1,5 +1,6 @@
 <div class="row g-3 mt-1">
   <% RecordChildQualificationsHelper::CHILD_QUALIFICATION_LABELS.each do |field, label| %>
+    <% next if field == "medium_ids" && child && record_present_copies?(child) %>
     <% value = values.key?(field) ? values[field] : child_qualification_value(child, field) %>
     <% active = Array(values["fields"]).include?(field) %>
     <% field_id = "#{key}_#{field}" %>

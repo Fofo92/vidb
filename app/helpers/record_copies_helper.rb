@@ -9,6 +9,10 @@ module RecordCopiesHelper
     VideoAssets::DisplaySummary.new(record: record, records: branch, assets: assets)
   end
 
+  def record_present_copies?(record)
+    record.persisted? && record_copy_summary(record).copies_present?
+  end
+
   def record_metadata_values(record)
     @record_copy_trees ||= {}
     root_id = record.root_id || record.id
