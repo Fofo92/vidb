@@ -1,5 +1,7 @@
 # Supports et versions linguistiques des copies
 
+> Le manifeste ponctuel de ce pilote a été retiré après vérification de ses résultats en production le 11 octobre 2026. Les commandes ci-dessous décrivent le mécanisme : `MANIFESTE_COURANT.json` doit être préparé à partir des données actuelles pour un nouveau lot. Ne pas rejouer un ancien plan.
+
 Le support et la version linguistique appartiennent à chaque VideoAsset.
 Ils sont optionnels : les anciennes copies restent sans qualification jusqu'à confirmation.
 Les associations historiques Record.media et Record.language_version restent conservées.
@@ -22,7 +24,7 @@ n'est déplacé et aucune copie n'est déclarée supprimée par cet outil.
 Après migration :
 
 ```sh
-bundle exec ruby bin/rails runner script/complete_confirmed_copy_details.rb data/catalog_enrichment/europe-confirmed-copy-details.json
+bundle exec ruby bin/rails runner script/complete_confirmed_copy_details.rb MANIFESTE_COURANT.json
 ```
 
 Ajouter --apply pour enregistrer le lot. En production utiliser le contexte systemd

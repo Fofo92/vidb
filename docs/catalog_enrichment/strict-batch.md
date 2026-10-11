@@ -1,5 +1,7 @@
 # Premier lot strict hors Europe — 7 octobre 2026
 
+> Le manifeste ponctuel de ce pilote a été retiré après vérification de ses résultats en production le 11 octobre 2026. Les commandes ci-dessous décrivent le mécanisme : `MANIFESTE_COURANT.json` doit être préparé à partir des données actuelles pour un nouveau lot. Ne pas rejouer un ancien plan.
+
 61 candidats : 27 correspondances de titre exact et 34 épisodes avec contexte,
 numérotation et titre concordants. Les fiches sont déjà qualifiées comme vidéos
 autonomes ou épisodes. Les six copies Europe sont exclues de ce lot.
@@ -33,7 +35,7 @@ existants. Les autres données éditoriales, les états vu/vérifié et les hié
 ne sont pas modifiés. La file durable de rapprochement reste un chantier séparé.
 
 ```sh
-bundle exec ruby bin/rails runner script/import_video_asset_batch.rb data/catalog_enrichment/strict-batch-2026-10-07.json
+bundle exec ruby bin/rails runner script/import_video_asset_batch.rb MANIFESTE_COURANT.json
 ```
 
 L'aperçu sans écriture est enregistré dans tmp/video-asset-batch-preview.json.

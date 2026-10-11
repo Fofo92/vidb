@@ -1,11 +1,13 @@
 # External episode evidence: first comparison
 
+> Le manifeste ponctuel de ce pilote a été retiré après vérification de ses résultats en production le 11 octobre 2026. Les commandes ci-dessous décrivent le mécanisme : `MANIFESTE_COURANT.json` doit être préparé à partir des données actuelles pour un nouveau lot. Ne pas rejouer un ancien plan.
+
 This first stage compares existing reconciliation observations against independently
 collected episode metadata. It reads JSON files only: no Rails boot, database
 connection, network request, rename, catalog update or VideoAsset creation.
 
 The pilot evidence is manually extracted from the ARTE publisher page linked in
-`data/catalog_enrichment/europe-un-continent-bouleverse.json`, consulted on 2026-10-05. It contains six
+the ARTE publisher page (https://boutique.arte.tv/detail/europe-un-continent-bouleverse), consulted on 2026-10-05. It contains six
 episode titles and their publisher order. The record ID and series title select
 the local catalog context; they are not publisher identifiers. The source does
 not specify a season number, so none is asserted.
@@ -17,7 +19,7 @@ ruby test/services/catalog_enrichment/episode_comparison_test.rb
 bundle exec rubocop app/services/catalog_enrichment/episode_comparison.rb
 ruby script/external_episode_comparison.rb \
   tmp/video-asset-reconciliation-production-2026-10-04-v4b.json \
-  data/catalog_enrichment/europe-un-continent-bouleverse.json \
+  MANIFESTE_COURANT.json \
   tmp/europe-external-episode-comparison.json
 ```
 

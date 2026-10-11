@@ -1,5 +1,7 @@
 # Application du lot linguistique du 8 octobre 2026
 
+> Le manifeste ponctuel de ce pilote a été retiré après vérification de ses résultats en production le 11 octobre 2026. Les commandes ci-dessous décrivent le mécanisme : `MANIFESTE_COURANT.json` doit être préparé à partir des données actuelles pour un nouveau lot. Ne pas rejouer un ancien plan.
+
 Le manifeste contient exactement 61 copies : 54 VF et 7 VMST. Les 6 copies
 du pilote Europe restent inchangées. Parmi les VF, 13 confirmations directes
 de Pascal couvrent les 8 épisodes de L'Amie prodigieuse, La Traque d'Alex Hugo
@@ -22,8 +24,8 @@ antérieures, supports et durées restent conservés. Seule la version
 linguistique de la copie est qualifiée ; la fiche Record n'est pas réécrite.
 
 ```sh
-bin/rails runner script/apply_video_asset_languages.rb data/catalog_enrichment/language-batch-2026-10-08.json
-bin/rails runner script/apply_video_asset_languages.rb data/catalog_enrichment/language-batch-2026-10-08.json --apply
+bin/rails runner script/apply_video_asset_languages.rb MANIFESTE_COURANT.json
+bin/rails runner script/apply_video_asset_languages.rb MANIFESTE_COURANT.json --apply
 ```
 
 ## Règles à conserver pour les futurs lots

@@ -1,5 +1,7 @@
 # Application du plan Poirot
 
+> Le manifeste ponctuel de ce pilote a été retiré après vérification de ses résultats en production le 11 octobre 2026. Les commandes ci-dessous décrivent le mécanisme : `MANIFESTE_COURANT.json` doit être préparé à partir des données actuelles pour un nouveau lot. Ne pas rejouer un ancien plan.
+
 La migration crée `catalogue_episode_links` : chaque fiche d’épisode garde son identifiant TMDB, les numéros locaux et externes, et les références de provenance. La base impose une identité externe unique et une liaison unique par fiche et fournisseur. Le plan, la correspondance et le snapshot sont des entrées distinctes.
 
 ## Comportement
@@ -20,7 +22,7 @@ Résultat attendu pour Poirot : 12 saisons et 47 épisodes créés, 23 épisodes
 
 ```sh
 bin/rails runner script/apply_tmdb_episode_hierarchy.rb \
-  data/catalog_enrichment/poirot-local-tmdb-mapping.json \
+  MANIFESTE_COURANT.json \
   /srv/vidb/shared/tmdb-series-790-snapshot.json \
   /srv/vidb/shared/poirot-hierarchy-plan.json \
   /srv/vidb/shared/poirot-hierarchy-preview.json

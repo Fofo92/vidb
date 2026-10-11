@@ -31,3 +31,7 @@ Après application, actualiser le journal durable pour voir progresser l'accueil
 bin/rails runner script/import_broadcast_parts.rb EVIDENCE.json OUTPUT.json
 bin/rails runner script/import_broadcast_parts.rb EVIDENCE.json OUTPUT.json --apply
 ```
+
+## Lot terminé
+
+Le contrôle du 11 octobre 2026 retrouve les 36 copies et leurs numéros de partie sur les 18 fiches déclarant deux parties. Le manifeste ponctuel a été retiré. Les confirmations sur le découpage M6 et les corrections de titres restent expliquées ci-dessus. La base porte l’état courant.
