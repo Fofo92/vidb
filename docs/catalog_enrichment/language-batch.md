@@ -22,8 +22,8 @@ antérieures, supports et durées restent conservés. Seule la version
 linguistique de la copie est qualifiée ; la fiche Record n'est pas réécrite.
 
 ```sh
-bin/rails runner script/apply_video_asset_languages.rb doc/catalog_enrichment/language-batch-2026-10-08.json
-bin/rails runner script/apply_video_asset_languages.rb doc/catalog_enrichment/language-batch-2026-10-08.json --apply
+bin/rails runner script/apply_video_asset_languages.rb data/catalog_enrichment/language-batch-2026-10-08.json
+bin/rails runner script/apply_video_asset_languages.rb data/catalog_enrichment/language-batch-2026-10-08.json --apply
 ```
 
 ## Règles à conserver pour les futurs lots

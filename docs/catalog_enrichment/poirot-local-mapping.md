@@ -1,6 +1,6 @@
 # Poirot : numérotation locale et correspondances TMDB
 
-Le fichier `poirot-local-tmdb-mapping.json` conserve les 70 correspondances et les 23 fiches candidates connues, avec leur état hiérarchique attendu. Il doit être conservé dans Git. Il ne représente pas encore une liaison appliquée en base.
+Le fichier `data/catalog_enrichment/poirot-local-tmdb-mapping.json` conserve les 70 correspondances et les 23 fiches candidates connues, avec leur état hiérarchique attendu. Il doit être conservé dans Git. Il ne représente pas encore une liaison appliquée en base.
 
 Décisions confirmées par Pascal le 8 octobre 2026 :
 
@@ -14,7 +14,7 @@ Les autres variantes de titres sont documentées par les titres locaux et origin
 
 ```sh
 bin/rails runner script/plan_tmdb_episode_hierarchy.rb \
-  doc/catalog_enrichment/poirot-local-tmdb-mapping.json \
+  data/catalog_enrichment/poirot-local-tmdb-mapping.json \
   /srv/vidb/shared/tmdb-series-790-snapshot.json \
   /srv/vidb/shared/poirot-hierarchy-plan.json
 ```

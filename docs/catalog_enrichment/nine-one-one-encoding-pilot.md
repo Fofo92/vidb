@@ -31,7 +31,7 @@ elles ne deviennent ni années de production ni durées mesurées.
 
 ```text
 bin/rails runner script/prepare_encoding_series_pilot.rb \
-  doc/catalog_enrichment/nine-one-one-encoding-pilot.json \
+  data/catalog_enrichment/nine-one-one-encoding-pilot.json \
   /srv/vidb/shared/encoding-pilots/9-1-1
 ```
 

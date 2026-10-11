@@ -5,7 +5,7 @@ collected episode metadata. It reads JSON files only: no Rails boot, database
 connection, network request, rename, catalog update or VideoAsset creation.
 
 The pilot evidence is manually extracted from the ARTE publisher page linked in
-`europe-un-continent-bouleverse.json`, consulted on 2026-10-05. It contains six
+`data/catalog_enrichment/europe-un-continent-bouleverse.json`, consulted on 2026-10-05. It contains six
 episode titles and their publisher order. The record ID and series title select
 the local catalog context; they are not publisher identifiers. The source does
 not specify a season number, so none is asserted.
@@ -17,7 +17,7 @@ ruby test/services/catalog_enrichment/episode_comparison_test.rb
 bundle exec rubocop app/services/catalog_enrichment/episode_comparison.rb
 ruby script/external_episode_comparison.rb \
   tmp/video-asset-reconciliation-production-2026-10-04-v4b.json \
-  doc/catalog_enrichment/europe-un-continent-bouleverse.json \
+  data/catalog_enrichment/europe-un-continent-bouleverse.json \
   tmp/europe-external-episode-comparison.json
 ```
 

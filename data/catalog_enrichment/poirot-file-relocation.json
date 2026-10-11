@@ -1,0 +1,365 @@
+{
+  "format": "vidb.video_file_relocation",
+  "version": 1,
+  "root": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)",
+  "source_inventory": {
+    "format": "vidb.video_library_inventory",
+    "version": 1,
+    "generated_at": "2026-10-07T00:52:44+02:00",
+    "roots": [
+      "/videos"
+    ]
+  },
+  "files": [
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/01 - S01 E01 - La cuisine mystérieuse de Clapham.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E01 - La cuisine mystérieuse de Clapham.m4v",
+      "byte_size": 379859692
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/02 - S01 E02 - Meurtre par procuration (Murder in the Mews).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E02 - Meurtre par procuration (Murder in the Mews).m4v",
+      "byte_size": 363180321
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/03 - S01 E03 - L'Aventure de Johnnie Waverly.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E03 - L'Aventure de Johnnie Waverly.m4v",
+      "byte_size": 379099572
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/04 - S01 E04 - La mort avait les dents blanches.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E04 - La mort avait les dents blanches.m4v",
+      "byte_size": 377990584
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/05 - S01 E05 - L'Appartement du troisième.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E05 - L'Appartement du troisième.m4v",
+      "byte_size": 283852878
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/06 - S01 E06 - Énigme à Rhodes.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E06 - Énigme à Rhodes.m4v",
+      "byte_size": 481070616
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/07 - S01 E07 - Mystère en mer.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E07 - Mystère en mer.m4v",
+      "byte_size": 416517367
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/08 - S01 E08 - Vol au château.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E08 - Vol au château.m4v",
+      "byte_size": 339945021
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/09 - S01 E09 - Le Roi de trèfle.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E09 - Le Roi de trèfle.m4v",
+      "byte_size": 293833281
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/10 - S01 E10 - Le Songe.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 01/S01 E10 - Le Songe.m4v",
+      "byte_size": 328998662
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/11 - S02 E01 - La maison du péril.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E01 - La maison du péril.m4v",
+      "byte_size": 849903904
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/12 - S02 E02 - La Femme voilée.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E02 - La Femme voilée.m4v",
+      "byte_size": 378339250
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/13 - S02 E03 - La mine perdue.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E03 - La mine perdue.m4v",
+      "byte_size": 362740028
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/14 - S02 E04 - Le Mystère des Cornouailles.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E04 - Le Mystère des Cornouailles.m4v",
+      "byte_size": 353403893
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/15 - S02 E05 - La Disparition de M. Davenheim.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E05 - La Disparition de M. Davenheim.m4v",
+      "byte_size": 411863463
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/16 - S02 E06 - Double manoeuvre.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E06 - Double manoeuvre.m4v",
+      "byte_size": 451923577
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/17 - S02 E07 - L'aventure de l'appartement bon marché.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E07 - L'aventure de l'appartement bon marché.m4v",
+      "byte_size": 407486100
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/18 - S02 E08 - L'enlèvement du premier ministre.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E08 - L'enlèvement du premier ministre.m4v",
+      "byte_size": 395814030
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/19 - S02 E09 - L'Aventure de l'Étoile de l'Ouest.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 02/S02 E09 - L'Aventure de l'Étoile de l'Ouest.m4v",
+      "byte_size": 372205260
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/20 - S03 E01 - La mystérieuse affaire de Styles.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E01 - La mystérieuse affaire de Styles.m4v",
+      "byte_size": 850445037
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/21 - S03 E02 - Comment poussent vos fleurs.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E02 - Comment poussent vos fleurs.m4v",
+      "byte_size": 450586233
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/22 - S03 E03 - Un million de dollars de bons volatilisés.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E03 - Un million de dollars de bons volatilisés.m4v",
+      "byte_size": 413808714
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/23 - S03 E04 - L'Express de Plymouth (The Million Dollar Bond Robbery).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E04 - L'Express de Plymouth (The Million Dollar Bond Robbery).m4v",
+      "byte_size": 374808846
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/24 - S03 E05 - Le guêpier.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E05 - Le guêpier.m4v",
+      "byte_size": 440248441
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/25 - S03 E06 - Tragédie à Mardson manor.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E06 - Tragédie à Mardson manor.m4v",
+      "byte_size": 449070680
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/26 - S03 E07 - Un indice de trop.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E07 - Un indice de trop.m4v",
+      "byte_size": 377741161
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/27 - S03 E08 - Le Mystère du bahut espagnol.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E08 - Le Mystère du bahut espagnol.m4v",
+      "byte_size": 404052652
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/28 - S03 E09 - Christmas Pudding.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E09 - Christmas Pudding.m4v",
+      "byte_size": 359653898
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/29 - S03 E10 - Le bal de la victoire.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E10 - Le bal de la victoire.m4v",
+      "byte_size": 394211647
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/30 - S03 E11 - Le Mystère de Hunter's Lodge.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 03/S03 E11 - Le Mystère de Hunter's Lodge.m4v",
+      "byte_size": 363621649
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/31 - S04 E01 - A.B.C. contre Poirot.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 04/S04 E01 - A.B.C. contre Poirot.m4v",
+      "byte_size": 815993939
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/32 - S04 E02 - La Mort dans les nuages.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 04/S04 E02 - La Mort dans les nuages.m4v",
+      "byte_size": 753953693
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/33 - S04 E03 - Un, deux, trois...m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 04/S04 E03 - Un, deux, trois...m4v",
+      "byte_size": 889655450
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/34 - S05 E01 - La Malédiction du tombeau égyptien.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E01 - La Malédiction du tombeau égyptien.m4v",
+      "byte_size": 412108965
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/35 - S05 E02 - L'affaire de l'invention volée.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E02 - L'affaire de l'invention volée.m4v",
+      "byte_size": 425118709
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/36 - S05 E03 - L'Iris jaune.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E03 - L'Iris jaune.m4v",
+      "byte_size": 403120458
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/37 - S05 E04 - L'Affaire du testament disparu.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E04 - L'Affaire du testament disparu.m4v",
+      "byte_size": 463880254
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/38 - S05 E05 - Un dîner peu ordinaire.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E05 - Un dîner peu ordinaire.m4v",
+      "byte_size": 390202927
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/39 - S05 E06 - La Boîte de chocolats.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E06 - La Boîte de chocolats.m4v",
+      "byte_size": 425358019
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/40 - S05 E07 - Le Miroir du mort.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E07 - Le Miroir du mort.m4v",
+      "byte_size": 428058221
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/41 - S05 E08 - Vol de bijoux à l'Hôtel Métropole.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 05/S05 E08 - Vol de bijoux à l'Hôtel Métropole.m4v",
+      "byte_size": 428902863
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/42 - S06 E01 - Le Noël d'Hercule Poirot.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E01 - Le Noël d'Hercule Poirot.m4v",
+      "byte_size": 1016343473
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/43 - S06 E02 - Pension Vanilos.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E02 - Pension Vanilos.m4v",
+      "byte_size": 791741167
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/44 - S06 E03 - Le Crime du golf (Murder on the Links).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E03 - Le Crime du golf (Murder on the Links).m4v",
+      "byte_size": 889549357
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/45 - S06 E04 - Témoin muet (Dumb Witness).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 06/S06 E04 - Témoin muet (Dumb Witness).m4v",
+      "byte_size": 855457508
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/46 - S07 E01 - Le Meurtre de Roger Ackroyd (The Murder of Roger Ackroyd).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 07/S07 E01 - Le Meurtre de Roger Ackroyd (The Murder of Roger Ackroyd).m4v",
+      "byte_size": 1047750028
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/47 - S07 E02 - Le couteau sur la nuque.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 07/S07 E02 - Le couteau sur la nuque.m4v",
+      "byte_size": 976677595
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/48 - S08 E01 - Les vacances d'Hercule Poirot.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 08/S08 E01 - Les vacances d'Hercule Poirot.m4v",
+      "byte_size": 1107317530
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/49 - S08 E02 - Meurtre en Mésopotamie (Murder in Mesopotamia).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 08/S08 E02 - Meurtre en Mésopotamie (Murder in Mesopotamia).m4v",
+      "byte_size": 1111564026
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/50 - S09 E01 - Cinq petits cochons.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E01 - Cinq petits cochons.m4v",
+      "byte_size": 960385840
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/51 - S09 E02 - Je ne suis pas coupable.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E02 - Je ne suis pas coupable.m4v",
+      "byte_size": 833818231
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/52 - S09 E03 - Mort sur le Nil (Death on the Nile).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E03 - Mort sur le Nil (Death on the Nile).m4v",
+      "byte_size": 998225770
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/53 - S09 E04 - Le Vallon.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 09/S09 E04 - Le Vallon.m4v",
+      "byte_size": 946657171
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/54 - S10 E01 - Le Train bleu.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E01 - Le Train bleu.m4v",
+      "byte_size": 875981075
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/55 - S10 E02 - Cartes sur table.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E02 - Cartes sur table.m4v",
+      "byte_size": 997253842
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/56 - S10 E03 - Les indiscrétions d'Hercule Poirot.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E03 - Les indiscrétions d'Hercule Poirot.m4v",
+      "byte_size": 986262002
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/57 - S10 E04 - Le Flux et le Reflux (Taken at the Flood).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 10/S10 E04 - Le Flux et le Reflux (Taken at the Flood).m4v",
+      "byte_size": 833249577
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/58 - S11 E01 - Mme MacGinty est morte.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E01 - Mme MacGinty est morte.m4v",
+      "byte_size": 616017068
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/59 - S11 E02 - Le chat et les pigeons.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E02 - Le chat et les pigeons.m4v",
+      "byte_size": 667395887
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/60 - S11 E03 - La Troisième Fille.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E03 - La Troisième Fille.m4v",
+      "byte_size": 705756137
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/61 - S11 E04 - Rendez-vous avec la mort.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 11/S11 E04 - Rendez-vous avec la mort.m4v",
+      "byte_size": 1027335093
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/62 - S12 E01 - Les pendules.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E01 - Les pendules.m4v",
+      "byte_size": 720949513
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/63 - S12 E02 - Drame en trois actes.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E02 - Drame en trois actes.m4v",
+      "byte_size": 772003446
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/64 - S12 E03 - Le Crime d'Halloween.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E03 - Le Crime d'Halloween.m4v",
+      "byte_size": 646654433
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/65 - S12 E04 - Le Crime de l'Orient-Express (Murder on the Orient Express).m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 12/S12 E04 - Le Crime de l'Orient-Express (Murder on the Orient Express).m4v",
+      "byte_size": 737387129
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/66 - S13 E01 - Une mémoire d'éléphant.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E01 - Une mémoire d'éléphant.m4v",
+      "byte_size": 657418722
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/67 - S13 E02 - Les Quatre.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E02 - Les Quatre.m4v",
+      "byte_size": 649412304
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/68 - S13 E03 - Poirot joue le jeu.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E03 - Poirot joue le jeu.m4v",
+      "byte_size": 847004667
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/69 - S13 E04 - Les Travaux d'Hercule.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E04 - Les Travaux d'Hercule.m4v",
+      "byte_size": 563531493
+    },
+    {
+      "source": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/70 - S13 E05 - Hercule Poirot quitte la scène.m4v",
+      "destination": "/videos/Séries TV/_complet/Hercule Poirot (c - 70)/Saison 13/S13 E05 - Hercule Poirot quitte la scène.m4v",
+      "byte_size": 599254944
+    }
+  ]
+}

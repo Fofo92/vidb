@@ -4,7 +4,7 @@ Pascal confirmed by viewing all six files on 2026-10-05 that their numbers follo
 the ARTE episode order. Earlier filenames E02 and E03 had incorrect titles; the
 user renamed them and moved all six files into `Saison 01`. The refreshed inventory
 also confirms the six new paths. The accepted evidence is retained in
-`europe-confirmed-hierarchy.json`, separately from the historical comparison.
+`data/catalog_enrichment/europe-confirmed-hierarchy.json`, separately from the historical comparison.
 
 This pilot accepts an explicit local season 1, rather than claiming ARTE supplied
 a season number. It qualifies record 3060 as a series and creates a season plus
@@ -32,7 +32,7 @@ Preview (database reads only), using the application's configured environment:
 
 ```sh
 bin/rails runner script/apply_confirmed_episode_hierarchy.rb \
-  doc/catalog_enrichment/europe-confirmed-hierarchy.json
+  data/catalog_enrichment/europe-confirmed-hierarchy.json
 ```
 
 Append `--apply` to apply the confirmed proposal. The runner checks the six files

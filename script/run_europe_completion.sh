@@ -24,7 +24,7 @@ for file in \
   app/services/catalog_enrichment/confirmed_completion.rb \
   app/services/catalog_enrichment/file_observation.rb \
   script/complete_confirmed_episode_assets.rb \
-  doc/catalog_enrichment/europe-confirmed-completion.json
+  data/catalog_enrichment/europe-confirmed-completion.json
 do
   sudo install -D -o vidb -g vidb -m 0644 "$file" "$audit_dir/$file"
 done
@@ -40,4 +40,4 @@ sudo systemd-run --wait --pipe --collect \
   --setenv=PATH=/opt/rubies/4.0.6/bin:/usr/bin:/bin \
   /opt/rubies/4.0.6/bin/bundle _2.7.1_ exec ruby bin/rails runner \
   script/complete_confirmed_episode_assets.rb \
-  doc/catalog_enrichment/europe-confirmed-completion.json "$@"
+  data/catalog_enrichment/europe-confirmed-completion.json "$@"

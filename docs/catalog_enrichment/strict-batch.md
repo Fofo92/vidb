@@ -33,7 +33,7 @@ existants. Les autres données éditoriales, les états vu/vérifié et les hié
 ne sont pas modifiés. La file durable de rapprochement reste un chantier séparé.
 
 ```sh
-bundle exec ruby bin/rails runner script/import_video_asset_batch.rb doc/catalog_enrichment/strict-batch-2026-10-07.json
+bundle exec ruby bin/rails runner script/import_video_asset_batch.rb data/catalog_enrichment/strict-batch-2026-10-07.json
 ```
 
 L'aperçu sans écriture est enregistré dans tmp/video-asset-batch-preview.json.

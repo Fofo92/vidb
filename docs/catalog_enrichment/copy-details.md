@@ -22,7 +22,7 @@ n'est déplacé et aucune copie n'est déclarée supprimée par cet outil.
 Après migration :
 
 ```sh
-bundle exec ruby bin/rails runner script/complete_confirmed_copy_details.rb doc/catalog_enrichment/europe-confirmed-copy-details.json
+bundle exec ruby bin/rails runner script/complete_confirmed_copy_details.rb data/catalog_enrichment/europe-confirmed-copy-details.json
 ```
 
 Ajouter --apply pour enregistrer le lot. En production utiliser le contexte systemd

@@ -1,6 +1,6 @@
 # Poirot : copies mesurées, pays et genre principal
 
-Le lot `poirot-confirmed-completion.json` identifie les 70 fichiers issus de l’inventaire après rangement, leurs tailles, dates et correspondances TMDB. Les identifiants externes sont maintenant reliés à des fiches en base : le rattachement se fait par cette correspondance confirmée et non par une comparaison approximative des noms de fichiers.
+Le lot `data/catalog_enrichment/poirot-confirmed-completion.json` identifie les 70 fichiers issus de l’inventaire après rangement, leurs tailles, dates et correspondances TMDB. Les identifiants externes sont maintenant reliés à des fiches en base : le rattachement se fait par cette correspondance confirmée et non par une comparaison approximative des noms de fichiers.
 
 Le pays retenu est le pays d’origine GB (Royaume-Uni), distinct de la liste TMDB des partenaires de production GB/US. Le genre majeur est Policier, choisi à partir de Crime. Drame et Mystère ne sont pas ajoutés. Les dictionnaires doivent contenir une seule entrée correspondante ; aucune entrée n’est créée automatiquement. Une attribution existante contradictoire bloque le lot au lieu d’être écrasée.
 
@@ -16,7 +16,7 @@ Le script fonctionne par défaut en prévisualisation. Ajouter `--apply` après 
 
 ```sh
 bin/rails runner script/complete_linked_episode_assets.rb \
-  doc/catalog_enrichment/poirot-confirmed-completion.json \
+  data/catalog_enrichment/poirot-confirmed-completion.json \
   /srv/vidb/shared/tmdb-series-790-snapshot.json \
   /srv/vidb/shared/poirot-completion-preview.json
 ```

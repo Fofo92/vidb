@@ -20,7 +20,7 @@ Résultat attendu pour Poirot : 12 saisons et 47 épisodes créés, 23 épisodes
 
 ```sh
 bin/rails runner script/apply_tmdb_episode_hierarchy.rb \
-  doc/catalog_enrichment/poirot-local-tmdb-mapping.json \
+  data/catalog_enrichment/poirot-local-tmdb-mapping.json \
   /srv/vidb/shared/tmdb-series-790-snapshot.json \
   /srv/vidb/shared/poirot-hierarchy-plan.json \
   /srv/vidb/shared/poirot-hierarchy-preview.json
