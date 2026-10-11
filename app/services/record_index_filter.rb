@@ -85,7 +85,7 @@ class RecordIndexFilter
   end
 
   def audit_rows
-    rows = Rails.cache.fetch("record-metadata-filter-v2", expires_in: 1.minute) do
+    rows = Rails.cache.fetch("record-metadata-filter-v3", expires_in: 1.minute) do
       RecordMetadataAudit.new.call[:records]
     end
     return rows if @parameters["missing"].blank?

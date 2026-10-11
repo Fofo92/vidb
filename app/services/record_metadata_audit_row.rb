@@ -19,13 +19,13 @@ class RecordMetadataAuditRow
     fields << :placement unless placement_complete?(record)
     fields.concat(missing_references(record))
     fields << :year if !record.metadata_container? && record.year.blank?
-    fields << :abstract if record.record_kind != 'season' && record.abstract.blank?
+    fields << :abstract if !%w[collection season].include?(record.record_kind) && record.abstract.blank?
     fields.concat(missing_copy_fields(record)) unless record.metadata_container?
     fields
   end
 
   def missing_references(record)
-    return [] if record.record_kind_season?
+    return [] if %w[collection season].include?(record.record_kind)
 
     { country: :countries, genres: :genders }.filter_map do |field, association|
       field if missing_reference?(record, association)
@@ -50,7 +50,7 @@ class RecordMetadataAuditRow
     return false if record.record_kind == "undetermined"
 
     parent = @by_id[record.parent_id]
-    return %w[standalone_video series].include?(record.record_kind) unless parent
+    return %w[standalone_video collection series].include?(record.record_kind) unless parent
 
     parent.record_kind != "undetermined" &&
       Record.allowed_parent_kinds_for_hierarchy(record.record_kind).include?(parent.record_kind)
@@ -68,7 +68,7 @@ class RecordMetadataAuditRow
 
   def review(record)
     reasons = []
-    reasons << "Plus de deux genres" if record.genders.size > 2
+    reasons << "Plus de deux genres" if too_many_genres?(record)
     reasons << "Hiérarchie à vérifier" if incompatible_parent?(record)
     if !record.metadata_container? && record.year.present? && record.year_basis == "unknown"
       reasons << "Origine de l’année à préciser"
@@ -80,5 +80,9 @@ class RecordMetadataAuditRow
   def incompatible_parent?(record)
     parent = @by_id[record.parent_id]
     parent && !Record.allowed_parent_kinds_for_hierarchy(record.record_kind).include?(parent.record_kind)
+  end
+
+  def too_many_genres?(record)
+    !record.record_kind_collection? && record.genders.size > 2
   end
 end

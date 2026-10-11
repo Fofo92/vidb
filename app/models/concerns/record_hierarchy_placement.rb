@@ -6,8 +6,9 @@ module RecordHierarchyPlacement
   end
 
   ALLOWED_PARENT_KINDS_BY_RECORD_KIND = {
-    "undetermined" => %w[undetermined series season],
-    "standalone_video" => %w[undetermined],
+    "undetermined" => %w[undetermined collection series season],
+    "standalone_video" => %w[undetermined collection],
+    "collection" => [],
     "series" => [],
     "season" => %w[undetermined series],
     "episode" => %w[undetermined series season]
@@ -81,7 +82,7 @@ module RecordHierarchyPlacement
     case record_kind
     when "undetermined"
       :undetermined
-    when "standalone_video", "series"
+    when "standalone_video", "collection", "series"
       :consistent
     else
       :inconsistent

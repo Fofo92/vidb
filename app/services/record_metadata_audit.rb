@@ -3,7 +3,7 @@
 class RecordMetadataAudit
   LABELS = { placement: "Placement", country: "Pays de production", year: "Année",
              genres: "Genres", language: "Version linguistique", abstract: "Résumé", medium: "Support" }.freeze
-  GROUP_LABELS = { videos: 'Films et épisodes', series: 'Séries', seasons: 'Saisons',
+  GROUP_LABELS = { videos: 'Films et épisodes', collections: 'Collections', series: 'Séries', seasons: 'Saisons',
                    undetermined: 'Fiches à qualifier' }.freeze
 
   def call
@@ -18,6 +18,7 @@ class RecordMetadataAudit
   private
 
   def group(row)
+    return :collections if row[:record_kind] == 'collection'
     return :series if row[:record_kind] == 'series'
     return :seasons if row[:record_kind] == 'season'
     return :undetermined if row[:record_kind] == 'undetermined'

@@ -6,7 +6,8 @@ class RecordContainerSummaryTest < ActionView::TestCase
     output = render partial: "pages/record_metadata_overview", locals: { audit: audit }
     assert_select "table", count: 2
     assert_select "th", text: "Saisons"
-    assert_match "Le résumé d’une saison est facultatif", output
+    assert_select "th", text: "Collections"
+    assert_match "Le résumé d’une saison ou d’une collection est facultatif", output
   end
 
   test "container year detail describes the synthesis instead of its legacy provenance" do

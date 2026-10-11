@@ -6,20 +6,20 @@ abort "Usage: bin/rails runner script/record_metadata_audit.rb DIRECTORY" unless
 
 directory = Pathname.new(ARGV.fetch(0))
 audit = RecordMetadataAudit.new.call
-directory.join("record-metadata-audit.json").write(JSON.pretty_generate(audit) + "\n")
+directory.join("record-metadata-audit.json").write("#{JSON.pretty_generate(audit)}\n")
 lines = ["# Fiches à compléter ou consolider", "", "#{audit[:to_work]} fiches sur #{audit[:total]}.", "",
          "| Type | Total | Incomplètes | À consolider | À traiter |", "|---|---:|---:|---:|---:|"]
 RecordMetadataAudit::GROUP_LABELS.each do |group, label|
   counts = audit[:groups].fetch(group)
   lines << "| #{label} | #{counts[:total]} | #{counts[:incomplete]} | #{counts[:review]} | #{counts[:to_work]} |"
 end
-lines.concat(["", "Les lacunes des vidéos ne sont pas répétées sur leurs conteneurs. Le résumé des saisons est facultatif.",
-              "", "| ID | Titre | Manques | À consolider |", "|---|---|---|---|"])
+lines.push("", "Conteneurs : lacunes non répétées ; résumé facultatif des saisons et collections.",
+           "", "| ID | Titre | Manques | À consolider |", "|---|---|---|---|")
 audit[:records].each do |row|
   title = row[:title].to_s.gsub("|", "\\|").gsub(/\r?\n/, " ")
   missing = row[:missing].map { |field| RecordMetadataAudit::LABELS.fetch(field) }.join(", ")
   lines << "| #{row[:id]} | #{title} | #{missing} | #{row[:review].join(', ')} |"
 end
-directory.join("record-metadata-audit.md").write(lines.join("\n") + "\n")
+directory.join("record-metadata-audit.md").write("#{lines.join("\n")}\n")
 puts JSON.pretty_generate(audit.except(:records))
 puts directory.join("record-metadata-audit.md")

@@ -39,6 +39,10 @@ class RecordMetadataValues
   private
 
   def values(record, association)
+    if record.record_kind_collection?
+      return leaves(record).flat_map { |leaf| explicit_or_inherited(leaf, association) }.uniq(&:id)
+    end
+
     inherited = explicit_or_inherited(record, association)
     return inherited if inherited.any? || !record.metadata_container?
 

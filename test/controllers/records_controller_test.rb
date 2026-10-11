@@ -360,7 +360,7 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     ).map { |option| option["value"] }
 
     assert_equal(
-      %w[undetermined standalone_video series],
+      %w[undetermined standalone_video collection series],
       option_values
     )
   end
@@ -416,6 +416,7 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
       %w[
         undetermined
         standalone_video
+        collection
         series
         season
         episode

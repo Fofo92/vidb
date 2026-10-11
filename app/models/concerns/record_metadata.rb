@@ -4,7 +4,7 @@ module RecordMetadata
   extend ActiveSupport::Concern
 
   def metadata_container?
-    %w[series season].include?(record_kind)
+    %w[collection series season].include?(record_kind)
   end
 
   def effective_countries

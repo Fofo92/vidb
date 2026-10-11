@@ -20,6 +20,7 @@ class Record < ApplicationRecord
        {
          undetermined: "undetermined",
          standalone_video: "standalone_video",
+         collection: "collection",
          series: "series",
          season: "season",
          episode: "episode"

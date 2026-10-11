@@ -268,7 +268,7 @@ class RecordTest < ActiveSupport::TestCase
   end
 
   test "rejects unsupported record kinds" do
-    [nil, "", "collection", "unknown"].each do |record_kind|
+    [nil, "", "unsupported_collection", "unknown"].each do |record_kind|
       record = build_record(record_kind: record_kind)
 
       assert_not record.valid?
@@ -285,7 +285,7 @@ class RecordTest < ActiveSupport::TestCase
 
     assert_raises(ActiveRecord::StatementInvalid) do
       Record.transaction(requires_new: true) do
-        record.update_column(:record_kind, "collection")
+        record.update_column(:record_kind, "unsupported_collection")
       end
     end
 
@@ -568,7 +568,7 @@ class RecordTest < ActiveSupport::TestCase
 
   test "lists the kinds allowed for new hierarchy placements" do
     assert_equal(
-      %w[undetermined standalone_video series],
+      %w[undetermined standalone_video collection series],
       Record.allowed_record_kinds_for_new_hierarchy
     )
 

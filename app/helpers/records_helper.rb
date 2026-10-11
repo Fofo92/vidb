@@ -2,6 +2,7 @@ module RecordsHelper
   RECORD_KIND_LABELS = {
     "undetermined" => "À déterminer",
     "standalone_video" => "Vidéo autonome",
+    "collection" => "Collection de films",
     "series" => "Série",
     "season" => "Saison",
     "episode" => "Épisode"

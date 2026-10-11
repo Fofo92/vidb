@@ -11,7 +11,7 @@ module RecordStates
   end
 
   def state_container?
-    %w[series season].include?(record_kind) || (persisted? && has_children?)
+    %w[collection series season].include?(record_kind) || (persisted? && has_children?)
   end
 
   def state_leaves
@@ -19,7 +19,7 @@ module RecordStates
 
     records = descendants.includes(:video_assets).to_a
     parent_ids = records.filter_map { |item| item.ancestry.to_s.split('/').last&.to_i }
-    records.reject { |item| parent_ids.include?(item.id) || %w[series season].include?(item.record_kind) }
+    records.reject { |item| parent_ids.include?(item.id) || %w[collection series season].include?(item.record_kind) }
   end
 
   def state_counts

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,7 +101,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_170000) do
     t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
     t.check_constraint "broadcast_part_count > 0", name: "records_broadcast_part_count_check"
-    t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying::text, 'standalone_video'::character varying::text, 'series'::character varying::text, 'season'::character varying::text, 'episode'::character varying::text])", name: "records_record_kind_check"
+    t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying::text, 'standalone_video'::character varying::text, 'collection'::character varying::text, 'series'::character varying::text, 'season'::character varying::text, 'episode'::character varying::text])", name: "records_record_kind_check"
     t.check_constraint "year_basis::text = ANY (ARRAY['unknown'::character varying::text, 'first_release'::character varying::text, 'production'::character varying::text])", name: "records_year_basis_check"
   end
 
