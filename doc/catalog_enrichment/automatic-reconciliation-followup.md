@@ -24,7 +24,10 @@ Les projets JSON sans copie finale ne prouvent aucune disponibilité.
 La période de 24 heures est une précaution, pas une preuve que l'encodage est
 terminé : l'import contrôlé vérifie à nouveau le fichier avant toute écriture.
 
-Le suivi ne crée ni copie ni fiche et ne modifie aucun état de disponibilité.
+Le suivi ne crée aucune fiche. Il importe désormais les copies accompagnées
+d'un compte rendu d'export video_encoder réussi, uniquement vers un épisode
+existant identifié sans ambiguïté. Les autres fichiers restent des propositions.
+Voir [les règles d'import](video-encoder-completed-exports.md).
 La disparition d'un fichier reste une alerte, pas une suppression automatique.
 Une nouvelle consultation de la page d'accueil lit le bilan actualisé ; une
 page laissée ouverte n'est pas rafraîchie automatiquement.
@@ -57,5 +60,7 @@ Les demandes sont désactivées hors production, sauf si
 VIDB_RECONCILIATION_REFRESH_REQUEST indique explicitement un fichier.
 En production, conserver le chemin par défaut utilisé par l'unité path.
 
-Le scan ne lance ni ffprobe ni appel TMDB et ne parcourt pas /commun.
+Le scan ne lance aucun appel TMDB et ne parcourt pas /commun. L'import d'un
+nouveau compte rendu video_encoder contrôle les pistes finales avec ffprobe ;
+les comptes rendus déjà importés et inchangés ne sont pas sondés de nouveau.
 Il ne remplace pas les rapports de comparaison ou de qualification spécialisés.

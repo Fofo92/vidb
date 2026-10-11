@@ -30,7 +30,14 @@ module VideoAssets
       @guard.call
       report = @reporter.call(inventory)
       @guard.call
+      import_exports(report)
       @journal.call(report: report)
+    end
+
+    def import_exports(report)
+      results = CompletedExports.new.call(report)
+      @guard.call
+      @directory.join('encoder-exports.json').write(JSON.pretty_generate(results))
     end
 
     def consume_request
