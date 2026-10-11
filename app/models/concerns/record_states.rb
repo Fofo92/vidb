@@ -7,6 +7,7 @@ module RecordStates
 
   included do
     before_validation :preserve_recording_history
+    before_create :confirm_initial_unseen_state
   end
 
   def state_container?
@@ -50,6 +51,12 @@ module RecordStates
   end
 
   private
+
+  def confirm_initial_unseen_state
+    return if state_container? || is_seen != false
+
+    self.seen_state_confirmed_at ||= Time.current
+  end
 
   def asset_state(field, assets)
     return complete_video_asset_coverage?(assets) if field == :is_available && assets.any?

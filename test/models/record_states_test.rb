@@ -9,6 +9,8 @@ class RecordStatesTest < ActiveSupport::TestCase
     @season = create_record('Saison 01', parent: @series, record_kind: 'season', year: 1991, rank: 1)
     @first = create_record('Premier', parent: @season, record_kind: 'episode', year: 2020, rank: 1)
     @second = create_record('Deuxième', parent: @season, record_kind: 'episode', year: 2022, rank: 2)
+    # These examples exercise legacy records whose negative state was never confirmed.
+    [@first, @second].each { |record| record.update_columns(seen_state_confirmed_at: nil) }
   end
 
   test 'counts only leaves and ignores parent scalar flags and years' do
