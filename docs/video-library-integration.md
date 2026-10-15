@@ -1,6 +1,10 @@
 # Intégration de la vidéothèque physique
 
-**Statut :** cadrage initial issu de l'audit du 4 octobre 2026
+**Statut :** proposition consolidée du 15 octobre 2026 — à relire avant intégration au dépôt
+
+**Historique :** cadrage initial et inventaire du 4 octobre 2026 ; décisions fonctionnelles complémentaires du 15 octobre 2026.
+
+**Référence examinée :** `Fofo92/vidb`, commit `ab46825`.
 
 **Portée :** articulation entre `vidb`, `video_encoder` et la vidéothèque exposée par MiniDLNA
 
@@ -11,6 +15,10 @@ Ce document complète [le modèle de domaine](domain-model.md) et [le cycle de v
 `vidb` doit devenir la mémoire durable des œuvres connues, qu'un encodage soit actuellement présent, qu'il ait été supprimé volontairement ou qu'aucun fichier n'ait jamais existé. La structure physique reste parallèlement une interface utilisateur : elle doit être intelligible directement sur un téléviseur par l'intermédiaire de MiniDLNA.
 
 L'identité d'une œuvre ne doit donc plus dépendre du nom ou de l'emplacement mutable de son fichier, mais `vidb` doit rester capable de proposer et de contrôler un classement physique lisible.
+
+`vidb` doit assurer une réconciliation continue entre l'identité éditoriale des œuvres, leurs matérialisations et l'organisation physique des fichiers. `/videos` est aussi une interface de consultation autonome, notamment sur téléviseur via MiniDLNA : ses chemins doivent rester intelligibles sans accès à `vidb`.
+
+Une modification éditoriale **validée**, automatiquement lorsque la preuve est suffisante ou manuellement dans les cas sensibles, peut conduire à un renommage ou à un déplacement physique automatique, à condition que la cohérence disque/base soit préservée. Inversement, un déplacement réalisé hors de `vidb` doit pouvoir être détecté, rapproché de la copie existante et répercuté dans la base après contrôle de l'identité. En cas d'incertitude, créer un dossier de validation, jamais une correction silencieuse.
 
 ## Répartition des responsabilités
 
@@ -39,7 +47,7 @@ Une automatisation future ne change pas cette frontière : la file de travail et
 - proposer son nom et son emplacement canoniques dans `/videos` ;
 - contrôler la cohérence entre catalogue, projets et fichiers physiques.
 
-Le transfert automatique du MKV vers son emplacement final reste une décision différée. La proposition de destination relève de `vidb`; l'acteur qui réalise effectivement le déplacement devra être explicite et rendre l'opération sûre, répétable et traçable.
+Au 4 octobre, le transfert automatique du MKV vers son emplacement final restait une décision différée. La cible du 15 octobre inclut des opérations physiques sûres, sans en fixer encore le composant d'exécution. La proposition de destination relève de `vidb`; l'acteur qui réalise effectivement le déplacement devra être explicite et rendre l'opération sûre, répétable et traçable.
 
 ## Concepts à distinguer
 
@@ -50,9 +58,15 @@ Le transfert automatique du MKV vers son emplacement final reste une décision d
 | `VideoProject` | Projet JSON produit par `video_encoder`, reliant notamment source et résultat | Oui |
 | `VideoAsset` | Exemplaire encodé présent, ou trace d'un exemplaire encodé puis supprimé | Oui |
 
-La situation cible ordinaire est **zéro ou un `VideoAsset` présent par `Record`**. Deux exemplaires peuvent coexister temporairement pendant le remplacement d'un ancien encodage, mais l'historisation de toutes les générations successives n'est pas un objectif en soi.
+Dans le cadrage du 4 octobre, la situation cible ordinaire était **zéro ou un `VideoAsset` présent par `Record`** (hypothèse historique, assouplie le 15 octobre). Deux exemplaires peuvent coexister temporairement pendant le remplacement d'un ancien encodage, mais l'historisation de toutes les générations successives n'est pas un objectif en soi.
 
 Un `VideoAsset` supprimé conserve la mémoire qu'un encodage a existé et a été retiré volontairement. Il est notamment nécessaire pour migrer les marqueurs TXT historiques.
+
+L'objectif métier est **une œuvre identifiée, associée à zéro, une ou plusieurs matérialisations** : fichier MKV, DVD conservé en bibliothèque, autre support, voire plusieurs versions encodées. Il ne faut pas confondre deux supports légitimes, deux versions différentes d'une œuvre et deux fichiers numériques redondants.
+
+L'hypothèse de travail est de faire porter l'identité éditoriale par `Record`, les copies numériques par `VideoAsset`, et d'examiner les associations de supports déjà existantes avant toute évolution de schéma. Une œuvre sur DVD et sur disque ne justifie pas à elle seule deux fiches `Record`. Des fiches historiques potentiellement équivalentes doivent être rapprochées avec prudence ; leur fusion n'est jamais implicite.
+
+**Précision sur l'ancien texte :** la règle « zéro ou un `VideoAsset` présent par `Record` » demeure une situation courante souhaitable pour les copies numériques ordinaires, **pas une contrainte absolue du modèle**. Des versions ou exemplaires numériques multiples peuvent exister et nécessiter une comparaison.
 
 ## Sources, faits et décisions
 
@@ -135,13 +149,63 @@ Le chemin de la source enregistré dans le projet JSON doit permettre de relier 
 
 ## Nommage et classement physiques
 
+### Principes
+
+- Les chemins physiques sont conçus pour rester lisibles sur téléviseur avec MiniDLNA.
+- Le titre français est privilégié ; le titre original est ajouté entre parenthèses lorsqu'il est connu, **y compris lorsqu'il est identique au titre français**. Cette répétition est volontaire.
+- Le titre d'un conteneur (série, collection, série documentaire) suit également la forme « titre français (titre original) » lorsque les deux sont connus.
+- L'année est ajoutée lorsqu'elle est connue et pertinente, sans invention.
+- Les films autonomes sont regroupés par **un ou deux genres principaux**, avec les libellés de `vidb`, triés **alphabétiquement** : `Policier, Thriller` et non `Thriller, Policier`.
+- Le classement des collections conserve le rang local des films ; un film n'a qu'un emplacement physique principal dans un premier temps.
+- Les noms sur disque conservent l'UTF-8. Le séparateur `/` ne peut pas apparaître dans un composant de chemin et doit être remplacé selon une règle stable. Les contraintes techniques supplémentaires des systèmes de fichiers seront vérifiées séparément.
+- Certains téléviseurs affichent mal les caractères japonais ou chinois. Prévoir une représentation latinisée **validée** pour le nom physique lorsque nécessaire, sans altérer le titre original conservé dans `vidb`.
+
+### Conventions initiales
+
+```text
+/videos/
+  Films/
+    Policier, Thriller/
+      Titre français (Original Title) (2020).mkv
+      [*] Titre déjà vu (Titre déjà vu) (2018).mkv
+  Collections/
+    Nom français (Original Collection Name)/
+      01 - Premier film (Original Title) (année).mkv
+      [*] 02 - Deuxième film (Deuxième film).mkv
+  Séries/
+    Nom français (Original Series Name)/
+      Saison 01/
+        S01 E01 - Titre français (Original Title).mkv
+        [*] S01 E02 - Autre titre (Autre titre).mkv
+  Documentaires/
+    Nom de série documentaire (Original Series Name)/
+      Saison 01/
+        S01 E01 - Titre français (Original Title).mkv
+    Titre documentaire (Original Title) (année)/
+      Titre documentaire (Original Title) (année).mkv
+```
+
+Les exemples illustrent la syntaxe et non l'existence de ces œuvres. Les extensions réelles doivent être conservées : le renommage ne convertit pas un conteneur.
+
+### Visionnage
+
+Le préfixe **`[*] `** est la convention provisoirement retenue pour représenter `Record.is_seen` dans le nom des fichiers. Il est placé au début pour rester visible dans les listes MiniDLNA tronquées. Une modification de l'état « visionné » dans `vidb` doit pouvoir actualiser automatiquement le nom physique, après contrôles de sécurité et de cohérence. Le préfixe doit être ignoré par les mécanismes d'identification des titres et épisodes. Il ne faut pas créer de répertoire `Vus` par défaut.
+
+### Fichiers associés et compatibilité
+
+Un déplacement ou renommage doit tenir compte des fichiers JSON associés, de leurs éventuels chemins internes et des opérations d'encodage encore actives. Aucun déplacement aveugle de projet n'est acceptable. Les fichiers de provenance peuvent devenir inutiles **après** intégration fiable de leurs informations dans `vidb`, mais pas avant. Les anciens suffixes de complétion restent des indices historiques, pas une partie de l'identité canonique.
+
+Les épisodes spéciaux, les collections atypiques, les variantes de langue ou de montage et les règles détaillées de translittération restent à préciser. La convention devra être confrontée aux répertoires réels et aux capacités de MiniDLNA avant application massive.
+
+### Contexte historique du 4 octobre
+
 Le classement physique doit rester stable et lisible dans MiniDLNA. Il peut inclure le type d'œuvre, la série, la saison, le numéro d'épisode et ses titres, par exemple :
 
 ```text
 /videos/Séries TV/Nom de la série/Saison 01/S01 E01 - Titre français (Titre original).mkv
 ```
 
-Cette forme illustre l'intention et n'est pas encore une convention définitive.
+Cet exemple est conservé comme illustration de la convention envisagée le 4 octobre ; les conventions retenues le 15 octobre figurent ci-dessus.
 
 Les suffixes tels que `(VI - 66_84)` pour une série et `(00_14)` pour une saison sont des résumés manuels de complétion. Ils varient avec une série en cours et ne doivent pas participer à l'identité. La cible privilégiée est un chemin stable et un calcul dynamique de la complétion dans `vidb` ; la convention finale sera décidée après rapprochement avec les usages MiniDLNA.
 
@@ -185,6 +249,26 @@ Autres cas de migration :
 - les deux fichiers TS recensés se trouvent dans un espace de travail `video_encoder` en échec et ne sont pas des médias à importer ;
 - MP4, MOV et vidéos familiales ne sont pas intégrés au premier périmètre sans décision explicite.
 
+## Réconciliation, opérations physiques et décisions
+
+Le traitement cible est continu : inventaire, détection des changements, rapprochement avec les œuvres, qualification des preuves, propositions d'action, validation éventuelle et suivi durable des dossiers non résolus.
+
+Un renommage initié dans `vidb` ou observé sur disque doit mettre à jour le rattachement de la copie existante, et non produire artificiellement une suppression suivie d'une création. L'identité ne peut pas reposer uniquement sur le chemin ; des contrôles adaptés de taille, date, caractéristiques techniques et, lorsque nécessaire, empreinte doivent être envisagés.
+
+Les opérations physiques doivent être **prévisualisables, traçables, reprises après incident et protégées contre les collisions**. Une transaction PostgreSQL ne rend pas à elle seule atomique un déplacement de fichier. Les opérations destructrices exigent une validation explicite.
+
+Les services déjà présents de scanner, rapprochement, suivi et import constituent le socle. Leur fonctionnement effectif en production, leurs effets d'écriture et les points d'entrée de validation restent à auditer. La procédure de rafraîchissement existante peut importer des exports `video_encoder` qualifiés : ne pas la qualifier globalement de lecture seule.
+
+## Copies redondantes et qualité
+
+Deux encodages de la même œuvre peuvent constituer des copies redondantes ou des versions légitimement distinctes. `vidb` doit proposer une comparaison puis, le cas échéant, une consolidation **sur disque et/ou en base**. Les DVD et autres supports physiques associés à la même œuvre ne sont pas des doublons numériques à supprimer.
+
+Pour une première réalisation, comparer ce qui est raisonnablement mesurable : durée, résolution, codec, débit, pistes audio, langues, sous-titres, taille et erreurs de décodage accessibles. Distinguer l'intégrité technique des artefacts visuels, défauts sonores et erreurs de montage, dont la détection exhaustive n'est pas attendue initialement. Une recommandation doit expliciter ses critères et incertitudes ; ni suppression de fichier ni fusion de fiches ne doivent être automatiques.
+
+## Conservation transitoire pendant l'audit
+
+Les encodages peuvent continuer. Conserver les projets et fichiers de découpage JSON, y compris ceux renommés ou modifiés, près des résultats dans `/videos`. Conserver les sources `.m2t` en quarantaine sous `/commun/Quarantaine` ; **ne supprimer aucune source actuellement en quarantaine pendant l'audit initial**. Ensuite, définir une procédure de sortie de quarantaine après validation du résultat, de ses pistes, de son montage et de sa conservation. La quarantaine ne remplace pas une sauvegarde.
+
 ## Déroulement cible, par étapes
 
 ### Première étape
@@ -203,9 +287,19 @@ Autres cas de migration :
 - déplacer de façon sûre le résultat validé vers `/videos` ;
 - tendre vers un flux intégralement automatique si la détection et l'identification deviennent suffisamment fiables.
 
+### Priorités de mise en œuvre au 15 octobre 2026
+
+1. Auditer les services, commandes, automatisations et interfaces existants ; distinguer code disponible et fonctionnement réellement déployé.
+2. Confronter les conventions physiques aux cas réels : films, collections, séries, documentaires et exceptions.
+3. Installer une file durable de réconciliation : preuves, confiance, décisions, anomalies et suivi.
+4. Construire un moteur commun de chemins canoniques et de reconnaissance des déplacements extérieurs.
+5. Proposer des opérations physiques sûres, avec aperçu, vérification, validation adaptée et reprise.
+6. Comparer les copies numériques et proposer leur consolidation.
+7. Étendre progressivement le traitement aux sources de `/commun`, sans rendre `vidb` dépendant de `video_encoder`.
+
 ## Décisions encore ouvertes
 
-- convention canonique exacte des répertoires et fichiers ;
+- détails et exceptions des conventions canoniques, désormais définies dans leurs grandes lignes ;
 - composant autorisé à déplacer le fichier encodé vers sa destination finale ;
 - stratégie de rapprochement lorsqu'une capture reste ambiguë ;
 - représentation précise de la provenance et du niveau de confiance ;
@@ -215,3 +309,20 @@ Autres cas de migration :
 - périmètre éventuel des MP4, MOV et vidéos personnelles.
 
 Ces points doivent rester explicites dans les travaux suivants : une inconnue modélisée vaut mieux qu'une identification ou une correction silencieuse.
+
+
+### Questions complémentaires du 15 octobre 2026
+
+- Représentation exacte des DVD et autres supports dans le schéma actuel.
+- Règles de distinction entre versions légitimes et doublons numériques.
+- Traitement des épisodes spéciaux et des collections atypiques.
+- Convention de translittération et tests MiniDLNA réels.
+- Gestion des collisions, des fichiers associés et de la reprise après incident.
+- Politique précise de validation automatique, d'identification des déplacements et de suppression.
+- Questions historiques du document du 4 octobre non encore tranchées : `(VM)`, champs historiques, captures ambiguës, MP4/MOV et vidéos personnelles.
+
+## Traçabilité documentaire
+
+Le cadrage du **4 octobre 2026** fournit le modèle initial, les constats d'inventaire, les états historiques, les preuves et les règles de migration. Les décisions du **15 octobre 2026** précisent la cible : œuvre et matérialisations, conventions de classement, visionnage, synchronisation des fichiers et de la base, comparaison des copies et conservation transitoire. Les informations historiques sont conservées même lorsqu'une orientation ultérieure les complète ou les révise.
+
+**Précaution :** les décisions fonctionnelles ne prouvent pas que les fonctions correspondantes sont déjà développées ou déployées. Le schéma réel et les services doivent encore être audités avant toute modification.
