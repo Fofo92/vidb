@@ -15,7 +15,8 @@ module CatalogEnrichment
       @plan.fetch('episodes').map do |item|
         entry = item.fetch('local_mapping')
         record = write_episode(item, seasons.fetch(entry.fetch('local_season')))
-        write_link(record, item)
+        abstract_result = enrich_abstract(record, item)
+        write_link(record, item, abstract_result)
       end
     end
 
@@ -38,14 +39,14 @@ module CatalogEnrichment
       return reuse_episode(item, season) if item.fetch('action') == 'reuse_proposal'
 
       entry = item.fetch('local_mapping')
-      season.children.create!(episode_attributes(entry, item))
+      season.children.create!(episode_attributes(entry))
     end
 
-    def episode_attributes(entry, item)
+    def episode_attributes(entry)
       neutral_attributes.merge(french_title: entry.fetch('catalogue_title_fr'),
                                original_title: entry.fetch('catalogue_title_original', entry.fetch('title_original')),
                                record_kind: 'episode',
-                               rank: entry.fetch('local_episode'), abstract: item['overview_fr'])
+                               rank: entry.fetch('local_episode'))
     end
 
     def reuse_episode(item, season)
@@ -53,7 +54,6 @@ module CatalogEnrichment
       record.parent = season
       record.record_kind = 'episode'
       record.rank = item.fetch('local_mapping').fetch('local_episode')
-      record.abstract = item['overview_fr'] if record.abstract.blank?
       record.save!
       record
     end
@@ -63,12 +63,22 @@ module CatalogEnrichment
         is_seen: nil, is_checked: false, countries: @root.countries.to_a, genders: @root.genders.to_a }
     end
 
-    def write_link(record, item)
+    def enrich_abstract(record, item)
+      source = { provider: 'tmdb', external_id: item.fetch('local_mapping').fetch('tmdb_episode_id'),
+                 retrieved_at: @mapping.data['source_snapshot_retrieved_at'] }
+      AbstractEnrichment.new(record: record, text: item['overview_fr'], source: source,
+                             identity_confirmed: true).call(apply: true)
+    end
+
+    def write_link(record, item, abstract_result)
       entry = item.fetch('local_mapping')
       CatalogueEpisodeLink.create!(record: record, provider: 'tmdb',
                                    external_series_id: @mapping.data.fetch('tmdb_series_id'),
                                    external_episode_id: entry.fetch('tmdb_episode_id'),
-                                   **number_attributes(entry), evidence: evidence(item))
+                                   **number_attributes(entry), evidence: evidence(item).merge(
+                                     'abstract_application' => abstract_result.slice(:status, :applied,
+                                                                                     :editorial_validation_required)
+                                   ))
     end
 
     def number_attributes(entry)

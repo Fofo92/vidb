@@ -49,6 +49,19 @@ class TmdbHierarchyApplicationTest < ActiveSupport::TestCase
     assert_nil created.is_available
     assert_not created.is_checked
     assert_equal 'Résumé externe', created.abstract
+    assert_equal 'external', created.abstract_provenance['kind']
+    assert_equal 'tmdb', created.abstract_provenance.dig('source', 'provider')
+    assert_equal 91, created.abstract_provenance.dig('source', 'external_id')
+  end
+
+  test 'a manually cleared existing summary stays empty during hierarchy enrichment' do
+    @existing.update!(abstract: '')
+    service.call(apply: true)
+    assert_equal '', @existing.reload.abstract
+    assert_equal 'manual', @existing.abstract_provenance['kind']
+    link = CatalogueEpisodeLink.find_by!(record: @existing)
+    assert_equal 'protected', link.evidence.dig('abstract_application', 'status')
+    assert_equal 'Résumé externe', link.evidence['overview_fr']
   end
 
   test 'rerun is idempotent and preserves subsequent editorial changes' do

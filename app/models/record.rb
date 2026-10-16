@@ -13,6 +13,7 @@ class Record < ApplicationRecord
   include RecordStates
   include RecordYears
   include RecordMetadata
+  include RecordAbstract
 
   validates :broadcast_part_count, numericality: { only_integer: true, greater_than: 0 }
 

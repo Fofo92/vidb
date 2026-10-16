@@ -131,6 +131,27 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert @record.record_kind_series?
   end
 
+  test "manual summary edits are protected and provenance parameters cannot forge an external origin" do
+    patch record_url(@record), params: {
+      record: { abstract: "Résumé rédigé ici", abstract_provenance: { kind: "external" } }
+    }
+    assert_redirected_to record_url(@record)
+    assert_equal "Résumé rédigé ici", @record.reload.abstract
+    assert_equal "manual", @record.abstract_provenance["kind"]
+    assert @record.abstract_protected?
+
+    patch record_url(@record), params: { record: { abstract: "" } }
+    assert_redirected_to record_url(@record)
+    assert_equal "", @record.reload.abstract
+    assert @record.abstract_protected?
+  end
+
+  test "the edit form explains summary protection" do
+    get edit_record_url(@record)
+    assert_response :success
+    assert_select "[data-record-abstract-protection]", text: /supprimé manuellement/
+  end
+
   test "rejects a record update with invalid attributes" do
     patch record_url(@record), params: {
       record: {
