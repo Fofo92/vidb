@@ -1,3 +1,19 @@
+<% qualification = asset.technical_details.fetch("language_qualification", {}) %>
+<% if qualification.present? %>
+  <p data-copy-language-qualification>
+    Qualification linguistique enregistrée : <%= qualification["language_version"] %>
+    <% if qualification["decided_by"].present? %>
+      — <%= qualification["decided_by"] %>
+    <% end %>
+    <% if qualification["decided_on"].present? %>
+      — <%= qualification["decided_on"] %>
+    <% end %>
+    <% if qualification["reason"].present? %>
+      — <%= qualification["reason"] %>
+    <% end %>
+  </p>
+<% end %>
+
 <% confirmation = asset.technical_details.fetch("confirmation", {}) %>
 <% if confirmation["confirmed_by"].present? && confirmation["confirmed_on"].present? %>
   <p data-copy-confirmation>

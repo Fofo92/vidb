@@ -5,8 +5,14 @@
   <% end %>
 </div>
 <%= render "filters" %>
-<p><strong><%= @result_count %> fiches affichables</strong>, dont <%= @record_filter.matched_ids.size %> correspondent aux critères.
-  Les fiches de contexte sont indiquées dans la colonne Correspondance.</p>
+<% show_search_context = @result_count > @record_filter.matched_ids.size %>
+<% if show_search_context %>
+  <p><strong><%= pluralize(@record_filter.matched_ids.size, "résultat", "résultats") %></strong> —
+    <%= pluralize(@result_count, "fiche affichée", "fiches affichées") %> avec leur arborescence.
+    Les lignes « Arborescence » situent les résultats et ne répondent pas nécessairement aux filtres.</p>
+<% else %>
+  <p><strong><%= pluralize(@result_count, "fiche affichée", "fiches affichées") %></strong></p>
+<% end %>
 <div style="font-size: 1rem;">
   <%= paginate @records, window: 2 %>
 </div>
@@ -23,7 +29,9 @@
       <th>Support(s)</th>
       <th>Rang</th>
       <th>Parents</th>
-      <th>Correspondance</th>
+      <% if show_search_context %>
+        <th data-search-context-column title="Résultats des filtres ou fiches ajoutées pour situer leur arborescence">Recherche</th>
+      <% end %>
       <%= render "state_columns", record: nil, header: true, interactive: false %>
       <th>Actions</th>
     </tr>
@@ -45,7 +53,13 @@
         <td><%= copies.summary_supports %></td>
         <td><%= record.rank || "n/a" %></td>
         <td><%= record_filter_parent(record) %></td>
-        <td><%= @record_filter.matched_ids.include?(record.id) ? "Critères" : "Contexte" %></td>
+        <% if show_search_context %>
+          <% matched = @record_filter.matched_ids.include?(record.id) %>
+          <td data-search-role="<%= matched ? "match" : "context" %>"
+              title="<%= matched ? "Cette fiche répond aux filtres de recherche." : "Fiche affichée pour situer l’arborescence d’un résultat." %>">
+            <%= matched ? "Résultat" : "Arborescence" %>
+          </td>
+        <% end %>
         <%= render "state_columns", record: record, header: false, interactive: false %>
         <td>
           <%= link_to edit_record_path(record) do %>

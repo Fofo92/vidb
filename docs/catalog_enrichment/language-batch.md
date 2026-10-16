@@ -28,7 +28,14 @@ bin/rails runner script/apply_video_asset_languages.rb MANIFESTE_COURANT.json
 bin/rails runner script/apply_video_asset_languages.rb MANIFESTE_COURANT.json --apply
 ```
 
-## Règles à conserver pour les futurs lots
+## Convention actuelle
+
+La conclusion commune du 16 octobre 2026, détaillée dans `language-proposals.md`,
+remplace la restriction historique aux seuls Kdenlive identifiés : en l’absence de projet, une piste audio unique est classée VF sauf VO/VOST explicite.
+Un projet présent mais ambigu empêche l’application automatique de ce raccourci.
+Les qualifications existantes restent conservées.
+
+## Contexte du pilote historique (8 octobre)
 
 Pascal distingue les anciens encodages Kdenlive des extractions DVD HandBrake.
 Pour les Kdenlive identifiés à piste audio unique : VF, sauf VO/VOST explicite

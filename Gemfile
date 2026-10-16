@@ -87,3 +87,5 @@ group :test do
   gem "selenium-webdriver"
   gem "simplecov", require: false
 end
+
+gem "fiddle", "~> 1.1"

@@ -49,10 +49,10 @@ class LanguagePolicyTest < ActiveSupport::TestCase
     assert_equal 'VF', proposal[:suggested_version]
   end
 
-  test 'French filename cannot override foreign audio or an encoder conflict' do
+  test 'single audio convention does not override a conflicting encoder project' do
     @asset.update!(last_known_path: "#{@directory}/episode_vf.mkv")
     prepare_copy('eng')
-    assert_equal 'needs_review', proposal[:status]
+    assert_equal 'VF', proposal[:suggested_version]
     prepare_copy('fra', 'qaa', subtitles: true)
     prepare_project
     assert_equal 'needs_review', proposal[:status]

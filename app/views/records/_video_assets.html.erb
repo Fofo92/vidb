@@ -1,39 +1,58 @@
 <% if record.video_assets.any? %>
-  <p><strong>Copies confirmées :</strong></p>
-  <ul data-confirmed-video-assets>
-    <% record.video_assets.includes(:medium, :language_version).order(:id).each do |asset| %>
-      <li>
-        <%= asset.status_present? ? "Présente" : "Supprimée" %> —
-        <% if asset.broadcast_part_number %>
-          <strong>Partie <%= asset.broadcast_part_number %>/<%= record.broadcast_part_count %></strong> —
-        <% end %>
-        <span title="Durée mesurée du fichier, arrondie à la minute">
-          <%= asset.duration_minutes ? VideoAssets::DisplaySummary.format_minutes(asset.duration_minutes) : "durée inconnue" %>
-        </span>
-        — <%= asset.medium&.short_name || "support non renseigné" %>
-        — <%= asset.language_version&.short_name || "version linguistique non confirmée pour cette copie" %>
-        — <%= asset.last_known_path %>
-        <% if asset.technical_details.present? %>
-          <details>
-            <summary>Détails techniques et provenance</summary>
-            <% storage = asset.technical_details.fetch("storage", {}) %>
-            <p>Stockage : <%= storage["target"] %> (<%= storage["fstype"] %>)
-              — volume <%= storage["uuid"] %></p>
-            <ul>
-              <% asset.technical_details.fetch("streams", []).each do |stream| %>
-                <li>
-                  <%= stream["codec_type"] %> — <%= stream["codec_name"] %>
-                  <% if %w[audio subtitle].include?(stream["codec_type"]) %>
-                    <% language = stream.fetch("tags", {})["language"] %>
-                    — langue déclarée : <%= language.present? && language != "und" ? language : "non renseignée" %>
-                  <% end %>
-                </li>
+  <p class="mb-1"><strong>Copies confirmées :</strong></p>
+  <div class="table-responsive" data-confirmed-video-assets>
+    <table class="table table-sm align-middle mb-2">
+      <thead>
+        <tr>
+          <th scope="col">État</th>
+          <th scope="col">Durée</th>
+          <th scope="col">Support</th>
+          <th scope="col">Version</th>
+          <th scope="col">Fichier et détails</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% record.video_assets.includes(:medium, :language_version).order(:id).each do |asset| %>
+          <tr data-video-asset="<%= asset.id %>" class="<%= 'text-muted' unless asset.status_present? %>">
+            <td class="text-nowrap">
+              <%= asset.status_present? ? "Présente" : "Supprimée" %>
+              <% if asset.broadcast_part_number %>
+                <small class="d-block">Partie <%= asset.broadcast_part_number %>/<%= record.broadcast_part_count %></small>
               <% end %>
-            </ul>
-            <%= render "records/copy_provenance", asset: asset %>
-          </details>
+            </td>
+            <td class="text-nowrap" title="Durée mesurée du fichier, arrondie à la minute">
+              <%= asset.duration_minutes ? VideoAssets::DisplaySummary.format_minutes(asset.duration_minutes) : "—" %>
+            </td>
+            <td class="text-nowrap" title="<%= 'Support non renseigné' unless asset.medium %>">
+              <%= asset.medium&.short_name || "—" %>
+            </td>
+            <td class="text-nowrap" data-copy-language>
+              <% if asset.language_version %>
+                <%= asset.language_version.short_name %>
+              <% else %>
+                <span title="Version linguistique non confirmée pour cette copie ; la version de la fiche n’est pas reprise automatiquement.">À qualifier</span>
+              <% end %>
+            </td>
+            <td>
+              <details>
+                <summary class="text-break" title="Afficher le chemin complet, les détails techniques et la provenance">
+                  <%= asset.last_known_path.present? ? File.basename(asset.last_known_path) : "Chemin inconnu" %>
+                </summary>
+                <div class="small mt-1">
+                  <p class="mb-1"><strong>Chemin :</strong> <code class="text-break" data-copy-path><%= asset.last_known_path.presence || "—" %></code></p>
+                  <% if asset.byte_size %>
+                    <p class="mb-1"><strong>Taille :</strong> <%= number_to_human_size(asset.byte_size) %></p>
+                  <% end %>
+                  <% if asset.technical_details.present? %>
+                    <%= render "records/copy_technical_details", asset: asset %>
+                    <%= render "records/copy_provenance", asset: asset %>
+                  <% end %>
+                </div>
+              </details>
+            </td>
+          </tr>
         <% end %>
-      </li>
-    <% end %>
-  </ul>
+      </tbody>
+    </table>
+  </div>
 <% end %>

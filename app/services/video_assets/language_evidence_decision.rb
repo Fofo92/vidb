@@ -4,7 +4,8 @@ module VideoAssets
   class LanguageEvidenceDecision
     def initialize(filename_reader, filename, encoder_version)
       @reader = filename_reader
-      @filename = filename
+      versions = (filename.fetch(:versions) + filename.fetch(:title_versions, [])).uniq
+      @filename = { versions: versions, version: versions.one? ? versions.first : nil }
       @encoder_version = encoder_version
     end
 

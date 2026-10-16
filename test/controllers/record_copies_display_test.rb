@@ -63,7 +63,7 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
     assert_select "[data-copy-duration='#{@season.id}']", text: '02:04'
   end
 
-  test 'edit prioritizes measured duration and retains catalogue as a separate control' do
+  test 'edit prioritizes measured duration and hides concordant catalogue control without changing it' do
     episode = @episodes.first
     episode.update!(length_in_mn: 86)
     copy(episode, 88)
@@ -71,7 +71,7 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '#record_reference_duration[readonly][value="01:28"]'
     assert_select '#record_reference_duration[name]', count: 0
-    assert_select 'details input[name="record[length_in_mn]"][value="86"]'
+    assert_select 'input[name="record[length_in_mn]"]', count: 0
     assert_equal 86, episode.reload.length_in_mn
   end
 

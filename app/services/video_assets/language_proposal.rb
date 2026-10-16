@@ -23,13 +23,41 @@ module VideoAssets
         return ['needs_review', nil, 'Copie absente, récente ou modifiée depuis son observation.']
       end
 
+      return project_decision(reader) unless @encoder_evidence[:status] == 'absent'
+
+      legacy_decision(reader)
+    end
+
+    def legacy_decision(reader)
+      @basis = 'single_audio_policy_v1'
+      single = SingleAudioLanguageDecision.new(streams, @filename_evidence, @asset.record.complete_title).call
+      return single if single
+
+      observed_decision(reader)
+    end
+
+    def observed_decision(reader)
+      @basis = 'observed_multilingual_policy_v1'
+      decision = ObservedMultilingualDecision.new(streams, @filename_evidence).call
+      return decision if decision
+
+      @basis = 'language_proposal_v3'
+      LanguageEvidenceDecision.new(reader, @filename_evidence, nil).call
+    end
+
+    def project_decision(reader)
+      @basis = 'encoder_project_policy'
       version = EncoderLanguageProposal.new(streams, @encoder_evidence).call
-      LanguageEvidenceDecision.new(reader, @filename_evidence, version).call
+      return LanguageEvidenceDecision.new(reader, @filename_evidence, version).call if version
+
+      ['needs_review', nil, 'Le projet JSON voisin ne permet pas de qualifier cette copie sans ambiguïté.']
     end
 
     def collect_evidence
       reader = FilenameLanguageEvidence.new(@asset.last_known_path, streams)
       @filename_evidence = reader.call
+      @filename_evidence[:title_versions] =
+        FilenameLanguageEvidence.new(@asset.record.complete_title, streams).call[:versions]
       @encoder_evidence = EncoderLanguageEvidence.new(@asset).call
       reader
     end
@@ -50,7 +78,8 @@ module VideoAssets
       end
 
       if languages.uniq == ['fra']
-        return result('candidate', 'VF', 'Toutes les pistes audio sont déclarées en français ; écoute à confirmer.')
+        return result('candidate', 'VF',
+                      'Pistes audio déclarées en français : qualification automatique.')
       end
 
       multilingual_proposal(languages)
@@ -73,7 +102,7 @@ module VideoAssets
         suggested_version: suggested_version, reason: reason,
         observed_at: @asset.technical_details['observed_at'],
         declared_audio_languages: declared_audio_languages,
-        filename_evidence: @filename_evidence, encoder_evidence: @encoder_evidence
+        filename_evidence: @filename_evidence, encoder_evidence: @encoder_evidence, basis: @basis
       }
     end
 

@@ -12,12 +12,14 @@ module VideoAssets
     end
 
     def call
-      return evidence('absent') unless @path.file?
+      return evidence('absent') unless @path.exist? || @path.symlink?
+      return evidence('unreadable') unless File.lstat(@path).file?
       return evidence('copy_not_stable') unless stable_copy?
 
       document = JSON.parse(@path.read)
       return evidence('unsupported_project') unless supported?(document)
 
+      @association = EncoderProjectAssociation.new(@asset, @path).call
       project_evidence(document)
     rescue JSON::ParserError, KeyError, TypeError, ArgumentError, SystemCallError => e
       evidence('unreadable', error: e.class.name)
@@ -36,7 +38,8 @@ module VideoAssets
     end
 
     def evidence(status, **details)
-      { status: status, project_path: @path.to_s, policy: 'video_encoder.track_selection', **details }
+      { status: status, project_path: @path.to_s, policy: 'video_encoder.track_selection',
+        association: @association, **details }
     end
 
     def stable_copy?

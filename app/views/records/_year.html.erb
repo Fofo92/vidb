@@ -1,10 +1,10 @@
 <% value = record.display_range_of_years %>
 <% if value.present? %>
-  <span data-record-year="<%= record.id %>"><%= value %></span>
+  <span data-record-year="<%= record.id %>" title="<%= record.year_basis_description %>"><%= value %></span>
   <% if local_assigns.fetch(:detail, false) %>
     <% if record.metadata_container? %>
       <small class="text-muted">Années des vidéos connues</small>
-    <% else %>
+    <% elsif record.displayed_year_basis != 'first_release' %>
       <small class="text-muted" title="<%= record.year_basis_description %>"><%= record.year_basis_label %></small>
     <% end %>
   <% end %>

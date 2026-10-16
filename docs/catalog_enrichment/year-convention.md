@@ -3,10 +3,14 @@
 Cible : première diffusion originale pour les épisodes; première sortie originale
 pour les films. L’année de production reste une convention distincte.
 
-Affichage compact : Diff. / Prod. / ? / Mixte. Les plages des saisons et séries
-sont calculées sur les années connues des feuilles; elles ne garantissent pas
-la présence d’une année pour chaque épisode. Une plage de conventions différentes
-porte Mixte. Les anciennes saisies restent unknown, sans réinterprétation.
+Affichage compact : l’année qualifiée `first_release` est affichée seule, sans
+suffixe Diff. ou sortie. Son fondement reste accessible dans l’infobulle.
+Prod. indique une année de production; ? une ancienne saisie dont le fondement
+n’est pas encore établi; Mixte une plage de conventions différentes.
+Les plages des saisons et séries sont calculées sur les années connues des
+feuilles; elles ne garantissent pas une année pour chaque épisode.
+Les anciennes saisies restent unknown tant qu’une preuve ne permet pas de les
+qualifier. L’adoption de la convention ne suffit pas à confirmer leur fondement.
 
 records.year_basis : unknown, first_release, production.
 year_evidence contient la source; year_history conserve chaque ancienne valeur,

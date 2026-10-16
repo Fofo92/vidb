@@ -21,6 +21,15 @@ module RecordCopiesHelper
     @record_metadata_values[root_id] ||= RecordMetadataValues.new(records: tree)
   end
 
+  def record_duration_control?(record)
+    return true if record.new_record?
+
+    comparison = VideoAssets::DurationComparison.new(catalogue: record.length_in_mn,
+                                                     copies: record.video_assets.where(status: 'present').to_a,
+                                                     expected_parts: record.broadcast_part_count)
+    !comparison.concordant?
+  end
+
   private
 
   def copy_tree(root_id)

@@ -27,11 +27,11 @@ class LanguageProposalTest < ActiveSupport::TestCase
 
   test 'unknown audio language blocks a proposal even alongside French' do
     assert_equal 'needs_review', propose('fra', 'und')[:status]
-    assert_nil propose('qaa')[:suggested_version]
+    assert_equal 'VF', propose('qaa')[:suggested_version]
   end
 
-  test 'foreign audio alone does not prove original version' do
-    assert_nil propose('eng')[:suggested_version]
+  test 'a single foreign-tagged track follows the catalogue convention without proving original version' do
+    assert_equal 'VF', propose('eng')[:suggested_version]
   end
 
   test 'missing audio and existing qualification remain explicit' do

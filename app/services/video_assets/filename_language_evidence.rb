@@ -9,7 +9,9 @@ module VideoAssets
 
     def call
       stem = File.basename(@path, File.extname(@path))
-      matches = stem.scan(/(?:\A|[ _.-])(VMST|VOST|VF|VO|VM)(?=\z|[ _.-])/i).flatten.map(&:upcase).uniq
+      matches = stem.scan(/(?:\A|[ _().\[\]-])(VMST|VOSTFR|VOST|VF|VO|VM)(?=\z|[ _().\[\]-])/i).flatten.map do |value|
+        value.upcase.sub('VOSTFR', 'VOST')
+      end.uniq
       { versions: matches, version: matches.one? ? matches.first : nil }
     end
 

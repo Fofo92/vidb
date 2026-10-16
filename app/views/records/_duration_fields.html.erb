@@ -9,7 +9,7 @@
 
   <% if record.state_container? %>
     <small class="text-muted">Total calculé à partir des épisodes et vidéos feuilles.</small>
-  <% else %>
+  <% elsif record_duration_control?(record) %>
     <details class="mt-2" <%= "open" if record.new_record? %>>
       <summary>Durée catalogue — contrôle</summary>
       <%= form.input :length_in_mn,
