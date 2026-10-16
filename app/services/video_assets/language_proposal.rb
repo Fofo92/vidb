@@ -23,9 +23,30 @@ module VideoAssets
         return ['needs_review', nil, 'Copie absente, récente ou modifiée depuis son observation.']
       end
 
+      return silent_decision if @asset.record.language_version&.silent?
+
       return project_decision(reader) unless @encoder_evidence[:status] == 'absent'
 
       legacy_decision(reader)
+    end
+
+    def silent_decision
+      @basis = 'declared_silent_work'
+      unless silent_copy_available?
+        return ['needs_review', nil, 'Copie muette absente, récente ou modifiée depuis son référencement.']
+      end
+
+      ['candidate', @asset.record.language_version.short_name,
+       'Œuvre qualifiée Muet dans la fiche ; les pistes sonores ne constituent pas un dialogue.']
+    end
+
+    def silent_copy_available?
+      path = @asset.last_known_path
+      stat = File.lstat(path)
+      stat.file? && File.realpath(path) == path && stat.size == @asset.byte_size &&
+        stat.mtime <= Time.current - 24.hours
+    rescue SystemCallError
+      false
     end
 
     def legacy_decision(reader)

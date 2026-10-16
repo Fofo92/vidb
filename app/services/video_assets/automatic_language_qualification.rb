@@ -26,7 +26,8 @@ module VideoAssets
     def automatic?(proposal)
       proposal[:status] == 'candidate' &&
         (proposal[:suggested_version] == 'VF' || %w[single_audio_policy_v1 observed_multilingual_policy_v1
-                                                    encoder_project_policy].include?(proposal[:basis]))
+                                                    encoder_project_policy
+                                                    declared_silent_work].include?(proposal[:basis]))
     end
 
     def observe_copy(asset)

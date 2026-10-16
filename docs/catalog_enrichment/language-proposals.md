@@ -4,6 +4,24 @@ Le rapport reste en lecture seule. Il ne modifie ni les copies ni les fiches.
 
 ## Convention commune mise à jour le 16 octobre 2026
 
+### Œuvres muettes
+
+La version « Muet » (code `MUET`) décrit une œuvre sans dialogue parlé, même
+si sa copie contient une musique ou un accompagnement sonore. Elle est
+sélectionnable sur une fiche et sur une copie. Une qualification déjà existante
+libellée « Muet » est réutilisée sans imposer un changement de son ancien code.
+
+Une fiche explicitement qualifiée Muet permet de proposer cette qualification
+pour une copie stable encore non qualifiée, avec la provenance
+`declared_silent_work`. Les protections de volume, d’identité et de réobservation
+restent applicables avant écriture. Une piste musicale, même étiquetée française,
+ne déclenche pas VF dans ce cas. L’absence de piste audio ne suffit jamais,
+à elle seule, à reconnaître une œuvre muette.
+
+La fiche peut être qualifiée avant encodage. Cela ne crée aucune copie et ne
+prouve aucune disponibilité. Aelita est actuellement en attente d’encodage :
+sa fiche doit être examinée et corrigée indépendamment de la future sortie.
+
 Une qualification déjà enregistrée sur une copie est conservée. Un projet JSON
 exploitable associé à cette copie est prioritaire. Sinon, en l’absence de projet,
 une seule piste audio implique VF, sauf mention explicite VO/VOST dans le nom

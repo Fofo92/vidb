@@ -7,7 +7,7 @@ require 'json'
 class SingleAudioPolicyTest < ActiveSupport::TestCase
   Copy = Struct.new(:id, :record_id, :record, :last_known_path, :byte_size, :technical_details,
                     :observed_at, :language_version_id, :language_version, keyword_init: true)
-  Film = Struct.new(:complete_title)
+  Film = Struct.new(:complete_title, :language_version)
 
   setup do
     @directory = Dir.mktmpdir('vidb-language-', '/tmp')
@@ -28,6 +28,17 @@ class SingleAudioPolicyTest < ActiveSupport::TestCase
     assert_equal 'VF', result[:suggested_version]
     assert_equal 'single_audio_policy_v1', result[:basis]
     assert_match(/automatique/, result[:reason])
+    assert_equal before, @asset.to_h
+  end
+
+  test 'an explicitly silent record avoids the VF default for a musical track' do
+    @asset.record.language_version = LanguageVersion.new(short_name: 'MUET', long_name: 'Muet')
+    prepare('fra')
+    before = @asset.to_h.deep_dup
+    result = proposal
+    assert_equal 'candidate', result[:status]
+    assert_equal 'MUET', result[:suggested_version]
+    assert_equal 'declared_silent_work', result[:basis]
     assert_equal before, @asset.to_h
   end
 
