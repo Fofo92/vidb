@@ -18,6 +18,7 @@ module ReconciliationWorkbench
 
     def call(followup: JSON.parse(self.class.followup_path.read))
       @known_copies = 0
+      @competing = {}
       source = followup.deep_symbolize_keys
       validate_format!(source)
       candidates = source.fetch(:entries).select { |entry| unique_candidate?(entry) }
@@ -31,10 +32,10 @@ module ReconciliationWorkbench
     private
 
     def summarize(source, seen)
-      summary = { 'proposed' => seen.size, 'known_copies' => @known_copies,
-                  'inventory_at' => source.fetch(:inventory_at),
-                  'source_counts' => VideoAssets::BlockageSummary.new(followup: source).call[:counts] }
-      summary.merge(CopyPreferencePlan.new.call)
+      { 'proposed' => seen.size, 'known_copies' => @known_copies,
+        'inventory_at' => source.fetch(:inventory_at), 'disk_presence' => source.fetch(:disk_presence, {}),
+        'source_counts' => VideoAssets::BlockageSummary.new(followup: source).call[:counts] }
+        .merge(CopyPreferencePlan.new.call(candidates: @competing))
     end
 
     def validate_format!(source)
@@ -102,31 +103,28 @@ module ReconciliationWorkbench
     end
 
     def disk_case(source, entry, record)
-      stat = stable_file(entry[:path], entry)
+      stat = CandidateCopy.stable_file(@root, entry)
       return unless stat
       return if known_copy?(record, entry[:path], stat)
 
-      CaseStore.propose(rule: Rules::DISK, key: entry[:path], payload: disk_payload(source, entry, record, stat),
-                        preserve_pending: true)
+      publish_disk(record, disk_payload(source, entry, record, stat))
     rescue Errno::ENOENT, Errno::EACCES
       nil
     end
 
-    def known_copy?(record, path, stat)
-      known = VideoAsset.where(status: 'present', record_id: record.id, last_known_path: path, byte_size: stat.size)
-                        .where('observed_at >= ?', stat.mtime).exists?
-      @known_copies += 1 if known
-      known
+    def publish_disk(record, payload)
+      if record.video_assets.where(status: 'present').exists?
+        @competing[record.id] = payload
+        return
+      end
+
+      CaseStore.propose(rule: Rules::DISK, key: payload['path'], payload: payload, preserve_pending: true)
     end
 
-    def stable_file(path, entry)
-      return unless path.start_with?("#{@root}/") && Pathname.new(path).cleanpath.to_s == path
-      return unless File.realpath(path) == path
-
-      stat = File.lstat(path)
-      return unless stat.file? && stat.size == entry[:size] && stat.mtime.to_i == Time.iso8601(entry[:modified_at]).to_i
-
-      stat if stat.mtime < Time.current - 24.hours
+    def known_copy?(record, path, stat)
+      known = CandidateCopy.known?(record, path, stat)
+      @known_copies += 1 if known
+      known
     end
 
     def disk_payload(source, entry, record, stat)

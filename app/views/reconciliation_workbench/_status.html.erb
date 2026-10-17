@@ -14,6 +14,10 @@
               Préférences : <%= run.summary.dig('preferences', 'applied').to_i %> copies privilégiées ·
               Exceptions : <%= run.summary.dig('metadata', 'blocked').to_i + run.summary.dig('disk', 'blocked').to_i + run.summary.dig('preferences', 'blocked').to_i %>
             </p>
+            <% presence = run.summary.dig('plan', 'disk_presence') || {} %>
+            <% if presence.values.any?(&:positive?) %>
+              <p class="mb-0 mt-1 small">Contrôle disque : <%= presence['missing'].to_i %> copies devenues introuvables · <%= presence['restored'].to_i %> copies retrouvées. Historique conservé.</p>
+            <% end %>
           </div>
           <% unless run.terminal? %>
             <%= button_to "Arrêter après l’opération en cours", stop_reconciliation_workbench_path(run_id: run.id), class: "btn btn-outline-secondary btn-sm", form: { data: { turbo_frame: '_top' } } %>

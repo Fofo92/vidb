@@ -27,8 +27,8 @@ module ReconciliationWorkbench
         path = input.fetch('path')
         entry = { path: path, size: File.size(path), modified_at: File.mtime(path).iso8601 }
         measured = @observer.call(entry).as_json.except('observed_at')
-        verified = encoder_verified?(input)
-        input.merge('measurement' => measured, 'encoder_verified' => verified)
+        receipt = encoder_receipt(input)
+        input.merge('measurement' => measured, 'encoder_verified' => receipt.present?, 'encoder_receipt' => receipt)
       end
       verify!(samples)
       samples
@@ -56,13 +56,14 @@ module ReconciliationWorkbench
       raise ArgumentError, 'Copie à réobserver avant comparaison'
     end
 
-    def encoder_verified?(input)
+    def encoder_receipt(input)
       expected = input.dig('snapshot', 'technical_details', 'video_encoder_export')
-      unless expected.present? && File.file?("#{input.fetch('path')}#{VideoAssets::CompletedExport::SUFFIX}")
-        return false
+      unless (expected.present? || input['candidate']) && File.file?("#{input.fetch('path')}#{VideoAssets::CompletedExport::SUFFIX}")
+        return nil
       end
 
-      @encoder.call(input.fetch('path')).fetch(:receipt) == expected
+      actual = @encoder.call(input.fetch('path')).fetch(:receipt)
+      actual if input['candidate'] || actual == expected
     end
   end
 end

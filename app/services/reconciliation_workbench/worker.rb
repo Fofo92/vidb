@@ -32,7 +32,7 @@ module ReconciliationWorkbench
     def perform(run)
       run.update!(status: 'running', started_at: run.started_at || Time.current, error: nil)
       ReconciliationCase.where(status: 'running').update_all(status: 'pending')
-      plan = prepare_plan
+      plan = prepare_plan(run)
       run.update!(summary: run.summary.merge('plan' => plan))
       apply_approved(run) if run.mode == 'apply'
       run.update!(status: run.reload.stop_requested? ? 'stopped' : 'completed', finished_at: Time.current)
@@ -44,9 +44,11 @@ module ReconciliationWorkbench
 
     private
 
-    def prepare_plan
+    def prepare_plan(run)
+      refreshed = run.mode == 'refresh'
+      @refresh.call if refreshed
       plan = @planner.call
-      return plan unless plan.fetch('known_copies', 0).positive?
+      return plan if refreshed || !plan.fetch('known_copies', 0).positive?
 
       @refresh.call
       @planner.call
@@ -69,7 +71,7 @@ module ReconciliationWorkbench
       return unless path.file?
 
       latest = ReconciliationRun.order(:created_at, :id).first
-      return if latest && (latest.status == 'stopped' || latest.created_at >= path.mtime)
+      return if latest && (latest.status == 'stopped' || (latest.finished_at || latest.created_at) >= path.mtime)
 
       mode = ReconciliationRuleDecision.where(decision: 'approved').exists? ? 'apply' : 'refresh'
       ReconciliationRun.create!(mode: mode)

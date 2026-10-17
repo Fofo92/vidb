@@ -87,7 +87,7 @@ module VideoAssets
 
     def build_result(entries, missing)
       { format: FORMAT, version: 1, generated_at: Time.current.iso8601, inventory_at: snapshot.iso8601,
-        source_inventory: @report.fetch(:source_inventory),
+        source_inventory: @report.fetch(:source_inventory), disk_presence: @report.fetch(:disk_presence, {}),
         counts: entries.group_by { |item| item[:followup_status] }.transform_values(&:count),
         new_paths: entries.pluck(:path) - previous_entries.keys, absent_since_previous: missing,
         entries: entries }

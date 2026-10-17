@@ -105,6 +105,18 @@ class ReconciliationWorkbenchWorkerTest < ActiveSupport::TestCase
     ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = previous
   end
 
+  test 'the scan published during a completed refresh does not enqueue an endless refresh loop' do
+    path = File.join(@directory, 'current.json')
+    File.write(path, '{}')
+    previous = ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH']
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = path
+    ReconciliationRun.create!(mode: 'refresh', status: 'completed', created_at: 1.hour.ago, finished_at: Time.current)
+    assert_equal({ idle: true }, worker(Object.new).poll)
+    assert_equal 1, ReconciliationRun.count
+  ensure
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = previous
+  end
+
   test 'obsolete candidate entries for known copies trigger one scan before the final plan' do
     calls = 0
     refreshes = 0
@@ -112,10 +124,22 @@ class ReconciliationWorkbenchWorkerTest < ActiveSupport::TestCase
     planner.define_singleton_method(:call) { calls += 1; { 'known_copies' => calls == 1 ? 1 : 0 } }
     refresh = Object.new
     refresh.define_singleton_method(:call) { refreshes += 1 }
-    run = ReconciliationRun.create!(mode: 'refresh')
+    run = ReconciliationRun.create!(mode: 'apply')
     ReconciliationWorkbench::Worker.new(planner: planner, refresh: refresh).poll
     assert_equal 1, refreshes
     assert_equal 2, calls
+    assert_equal 'completed', run.reload.status
+  end
+
+  test 'an explicit refresh scans before planning even with no known copy candidates' do
+    calls = []
+    planner = Object.new
+    planner.define_singleton_method(:call) { calls << :plan; {} }
+    refresh = Object.new
+    refresh.define_singleton_method(:call) { calls << :scan }
+    run = ReconciliationRun.create!(mode: 'refresh')
+    ReconciliationWorkbench::Worker.new(planner: planner, refresh: refresh).poll
+    assert_equal [:scan, :plan], calls
     assert_equal 'completed', run.reload.status
   end
 

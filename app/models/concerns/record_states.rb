@@ -46,7 +46,10 @@ module RecordStates
 
     with_lock do
       recorded = is_recorded == true || recorded_video_asset_coverage?(video_assets.reload.to_a)
-      update!(is_recorded: recorded, is_available: complete_video_asset_coverage?)
+      states = { is_recorded: recorded, is_available: complete_video_asset_coverage? }
+      # These derived flags must not revalidate unrelated legacy catalogue metadata.
+      changed = states.any? { |key, value| public_send(key) != value }
+      update_columns(states.merge(updated_at: Time.current)) if changed
     end
   end
 

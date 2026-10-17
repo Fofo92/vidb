@@ -52,7 +52,7 @@ class ReconciliationRefreshTest < ActiveSupport::TestCase
   test 'recent files remain pending even when their titles match uniquely' do
     report = { format: VideoAssets::ReconciliationReport::FORMAT,
                version: VideoAssets::ReconciliationReport::VERSION,
-               source_inventory: { roots: ['/videos'], generated_at: '2026-10-09T10:00:00Z' },
+               source_inventory: { format: 'vidb.video_library_inventory', version: 1, roots: ['/videos'], generated_at: '2026-10-09T10:00:00Z' },
                observations: [{ path: '/videos/recent.mkv', size: 100, status: 'exact',
                                 candidates: [{ record_id: 1 }], modified_at: '2026-10-09T09:00:00Z' }] }
     result = VideoAssets::ReconciliationFollowup.new(report: report, assets: []).call
@@ -63,7 +63,7 @@ class ReconciliationRefreshTest < ActiveSupport::TestCase
 
   private
 
-  def refresh(directory, scanner: -> { { roots: ['/videos'], entries: [] } }, guard: -> {}, journal: ->(**) { {} })
+  def refresh(directory, scanner: -> { { format: 'vidb.video_library_inventory', version: 1, roots: ['/videos'], generated_at: Time.current.iso8601, entries: [] } }, guard: -> {}, journal: ->(**) { {} })
     reporter = ->(_inventory) { { counts: { 'confirmed' => 1 } } }
     VideoAssets::ReconciliationRefresh.new(directory: directory, scanner: scanner,
                                           guard: guard, reporter: reporter, journal: journal)

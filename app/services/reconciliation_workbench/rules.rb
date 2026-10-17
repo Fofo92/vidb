@@ -17,10 +17,10 @@ module ReconciliationWorkbench
       recurring: true
     )
     PREFERENCE = Rule.new(
-      key: 'richer_encoder_copy', version: 1, axis: 'disk',
+      key: 'richer_encoder_copy', version: 2, axis: 'disk',
       title: 'Privilégier une copie video_encoder plus complète',
       proposal: 'Choisir l’export plus récent, plus riche en pistes et plus petit, sans perdre de piste utile.',
-      limits: 'Copies déjà rattachées. Durées comparables à 2 secondes près, définition conservée. ' \
+      limits: 'Rattachement du candidat après comparaison validée. Durées à 2 secondes près, définition conservée. ' \
               'Qualité visuelle non évaluée ; tous les fichiers sont conservés.', recurring: true
     )
     FIELDS = %w[year abstract country_id language_version_id genres].freeze

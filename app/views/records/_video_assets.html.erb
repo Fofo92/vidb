@@ -15,7 +15,7 @@
         <% record.video_assets.includes(:medium, :language_version).order(:id).each do |asset| %>
           <tr data-video-asset="<%= asset.id %>" class="<%= 'text-muted' unless asset.status_present? %>">
             <td class="text-nowrap">
-              <%= asset.status_present? ? "Présente" : "Supprimée" %>
+              <%= { "present" => "Présente", "missing" => "Introuvable", "deleted" => "Supprimée" }.fetch(asset.status) %>
               <% if asset.status_present? && asset.technical_details.dig('copy_preference', 'preferred') == true %>
                 <span class="badge text-bg-primary d-block mt-1" data-preferred-copy>Copie privilégiée</span>
                 <small class="d-block text-muted">Qualité visuelle non évaluée</small>
