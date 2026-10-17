@@ -17,7 +17,29 @@
     <article class="card mb-3">
       <div class="card-body">
         <h2 class="h5"><%= link_to payload['title'], record_path(payload['record_id']) %></h2>
-        <% if payload['field'] %>
+        <% if payload['comparison'] %>
+          <p><%= payload['comparison']['reason'] %></p>
+          <p class="small text-muted">Qualité visuelle non évaluée. Les anciennes copies restent présentes ; aucun fichier n’est supprimé.</p>
+          <% if payload.fetch('samples', []).empty? %>
+            <ul class="small text-break"><% payload.fetch('copies', []).each do |_id, path| %><li><%= path %></li><% end %></ul>
+          <% end %>
+          <div class="table-responsive"><table class="table table-sm" data-copy-comparison>
+            <thead><tr><th>Copie</th><th>Date du fichier</th><th>Taille</th><th>Audio</th><th>Sous-titres</th><th>Choix proposé</th></tr></thead>
+            <tbody>
+              <% payload.fetch('samples', []).each do |sample| %>
+                <% capabilities = payload.dig('comparison', 'capabilities', sample['asset_id'].to_s) || {} %>
+                <tr>
+                  <td class="text-break"><%= sample['path'] %></td>
+                  <td><%= Time.iso8601(sample['modified_at']).in_time_zone('Europe/Paris').strftime('%d/%m/%Y') %></td>
+                  <td><%= number_to_human_size(sample.dig('measurement', 'byte_size')) %></td>
+                  <td><%= Array(capabilities['audio']).map(&:first).uniq.join(', ').presence || 'À vérifier' %></td>
+                  <td><%= Array(capabilities['subtitles']).map(&:first).uniq.join(', ').presence || 'Aucun / à vérifier' %></td>
+                  <td><%= payload['comparison']['preferred_asset_id'] == sample['asset_id'] ? 'Privilégier' : 'Conserver' %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table></div>
+        <% elsif payload['field'] %>
           <div class="row g-3">
             <div class="col-md-6"><strong>Valeur actuelle</strong><p class="text-muted"><%= workbench_value(payload['field'], payload['before']) %></p></div>
             <div class="col-md-6"><strong>Valeur proposée</strong><p><%= workbench_value(payload['field'], payload['value']) %></p></div>

@@ -90,6 +90,23 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, ReconciliationRun.count
   end
 
+  test 'copy comparisons show the existing paths and a provisional preferred copy' do
+    rule = ReconciliationWorkbench::Rules::PREFERENCE
+    samples = [1, 2].map do |id|
+      { 'asset_id' => id, 'path' => "/videos/copy-#{id}.mkv", 'modified_at' => '2026-10-01T00:00:00Z',
+        'measurement' => { 'byte_size' => 1000 } }
+    end
+    ReconciliationWorkbench::CaseStore.propose(rule: rule, key: "record:#{@record.id}", payload: {
+      'record_id' => @record.id, 'title' => @record.french_title, 'samples' => samples,
+      'comparison' => { 'eligible' => true, 'preferred_asset_id' => 2, 'reason' => 'Plus de pistes utiles' } })
+    get reconciliation_workbench_family_path(rule.key)
+    assert_response :success
+    assert_select 'table[data-copy-comparison] tbody tr', count: 2
+    assert_select 'td', text: 'Privilégier', count: 1
+    assert_select 'td', text: '/videos/copy-1.mkv'
+    assert_includes response.body, 'Qualité visuelle non évaluée'
+  end
+
   private
 
   def decision_params

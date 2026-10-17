@@ -122,4 +122,15 @@ class ReconciliationWorkbenchPlannerTest < ActiveSupport::TestCase
     assert_equal 2, @episode.length_in_mn
     assert_equal 0, ReconciliationRecordChange.where(reconciliation_case: item).count
   end
+  test 'an already confirmed identical path is not proposed as a new import' do
+    @root.update!(record_kind: 'series')
+    @season.update!(record_kind: 'season')
+    @episode.update!(record_kind: 'episode')
+    observed = entry
+    @episode.video_assets.create!(last_known_path: observed[:path], byte_size: observed[:size], observed_at: Time.current)
+    summary = ReconciliationWorkbench::Planner.new(root: @directory).call(followup: followup([observed]))
+    assert_equal 1, summary['known_copies']
+    assert_equal 0, ReconciliationCase.current.count
+  end
+
 end
