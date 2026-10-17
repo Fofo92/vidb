@@ -97,7 +97,7 @@ class FixedRename:
             os.close(parent)
 
 
-def load_worker(manifest, socket_path):
+def load_worker(manifest, socket_path, factory=None):
     if manifest.name != 'plan.json' or manifest.parent != socket_path.parent:
         raise ValueError('The manifest must be plan.json beside the runtime socket')
     fd = os.open(manifest, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
@@ -108,7 +108,7 @@ def load_worker(manifest, socket_path):
         data = file.read(16385)
     if len(data) > 16384:
         raise ValueError('Manifest too large')
-    return worker_from_request(json.loads(data))
+    return (factory or worker_from_request)(json.loads(data))
 
 
 def worker_from_request(document):
@@ -135,7 +135,7 @@ def worker_from_request(document):
     return FixedRename(paths[0], paths[1], expected)
 
 
-def serve(manifest, path):
+def serve(manifest, path, loader=None):
     uid = pwd.getpwnam('vidb').pw_uid
     gid = pwd.getpwnam('vidb').pw_gid
     parent = path.parent
@@ -145,7 +145,7 @@ def serve(manifest, path):
             stat.S_ISDIR(info.st_mode) and info.st_uid == 0 and info.st_gid == gid and not info.st_mode & 0o027
     if not valid:
         raise ValueError('Expected a root-owned private runtime directory and root:vidb worker')
-    worker = load_worker(manifest, path)
+    worker = (loader or load_worker)(manifest, path)
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
         server.bind(str(path))
         os.chmod(path, 0o660)

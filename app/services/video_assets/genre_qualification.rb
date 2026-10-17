@@ -21,9 +21,20 @@ module VideoAssets
 
       raise Refused, "Genres changed since review: #{before.inspect}" unless before == expected_names.sort
 
-      record.genders = names.map { |name| find_genre(name) }
+      persist_reviewed_genres(record, names, before)
       record.touch
       result(record, before, names.sort, changed: true)
+    end
+
+    def persist_reviewed_genres(record, names, before)
+      raise Refused, 'Protected genre provenance requires explicit revision' if record.genre_provenance.present?
+
+      record.with_reviewed_genre_assignment { record.genders = names.map { |name| find_genre(name) } }
+      record.update_columns(genre_provenance: {
+                              'origin' => 'legacy_explicit_qualification', 'protected' => true,
+                              'genres' => names.sort, 'previous_genres' => before,
+                              'recorded_at' => Time.current.iso8601
+                            })
     end
 
     def validate_input!(record, expected_names)

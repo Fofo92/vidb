@@ -1,11 +1,17 @@
 class Record < ApplicationRecord
   include ReconciliationRefreshNotification
+  include RecordGenreProvenance
 
   paginates_per 26
   belongs_to :language_version
   has_many :video_assets, inverse_of: :record
   has_and_belongs_to_many :media
-  has_and_belongs_to_many :genders
+  has_and_belongs_to_many :genders,
+                          before_add: :capture_genres_before_change,
+                          before_remove: :capture_genres_before_change,
+                          after_add: :protect_added_genre,
+                          after_remove: :protect_removed_genre,
+                          extend: RecordGenreProvenance::AssociationMutations
   has_and_belongs_to_many :countries
   has_ancestry
 

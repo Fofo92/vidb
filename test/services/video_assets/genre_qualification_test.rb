@@ -10,6 +10,8 @@ class GenreQualificationTest < ActiveSupport::TestCase
     @before = %w[Action Aventure Thriller]
     @original_genres = @before.map { |name| Gender.find_or_create_by!(name: name) }
     @record.genders = @original_genres
+    # Historical fixture predating the genre provenance migration.
+    @record.update_columns(genre_provenance: {})
   end
 
   test 'replaces the three old genres with Espionnage' do
@@ -56,11 +58,15 @@ class GenreQualificationTest < ActiveSupport::TestCase
 
   test 'leaves film metadata and copy paths unchanged' do
     asset = VideoAsset.create!(record: @record, last_known_path: '/videos/Films/Espionnage/355 (The 355)_vf.mkv')
-    record_before = @record.reload.attributes.except('updated_at')
+    record_before = @record.reload.attributes.except('updated_at', 'genre_provenance')
     copy_before = asset.reload.attributes
     qualify
-    assert_equal record_before, @record.reload.attributes.except('updated_at')
+    assert_equal record_before, @record.reload.attributes.except('updated_at', 'genre_provenance')
     assert_equal copy_before, asset.reload.attributes
+    assert_equal 'legacy_explicit_qualification', @record.genre_provenance['origin']
+    assert_equal ['Espionnage'], @record.genre_provenance['genres']
+    assert_equal @before.sort, @record.genre_provenance['previous_genres']
+    assert_equal true, @record.genre_provenance['protected']
   end
 
   test 'refuses an undetermined record kind' do
@@ -72,6 +78,23 @@ class GenreQualificationTest < ActiveSupport::TestCase
   test 'rolls back association changes when the owner update fails' do
     @record.define_singleton_method(:touch) { raise ActiveRecord::RecordInvalid.new(self) }
     assert_raises(ActiveRecord::RecordInvalid) { qualify }
+    assert_equal @before.sort, @record.genders.reload.pluck(:name).sort
+  end
+
+  test 'legacy qualification cannot bypass a manual genre correction' do
+    @record.genders = [@original_genres.first]
+    before = @record.reload.attributes.deep_dup
+    assert_raises(VideoAssets::GenreQualification::Refused) do
+      VideoAssets::GenreQualification.new.call(record: @record, names: ['Espionnage'], expected_names: ['Action'])
+    end
+    assert_equal before, @record.reload.attributes
+    assert_equal ['Action'], @record.genders.reload.pluck(:name)
+  end
+
+  test 'owner failure rolls back the explicit provenance as well as genres' do
+    @record.define_singleton_method(:touch) { raise ActiveRecord::RecordInvalid.new(self) }
+    assert_raises(ActiveRecord::RecordInvalid) { qualify }
+    assert_equal({}, @record.reload.genre_provenance)
     assert_equal @before.sort, @record.genders.reload.pluck(:name).sort
   end
 
