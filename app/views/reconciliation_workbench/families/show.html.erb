@@ -32,8 +32,13 @@
                   <td class="text-break"><%= sample['path'] %></td>
                   <td><%= Time.iso8601(sample['modified_at']).in_time_zone('Europe/Paris').strftime('%d/%m/%Y') %></td>
                   <td><%= number_to_human_size(sample.dig('measurement', 'byte_size')) %></td>
-                  <td><%= Array(capabilities['audio']).map(&:first).uniq.join(', ').presence || 'À vérifier' %></td>
-                  <td><%= Array(capabilities['subtitles']).map(&:first).uniq.join(', ').presence || 'Aucun / à vérifier' %></td>
+                  <td>
+                    <%= Array(capabilities['audio']).map(&:first).uniq.join(', ').presence || workbench_track_languages(sample, 'audio') %>
+                    <% Array(capabilities['language_assumptions']).each do |assumption| %>
+                      <p class="small text-muted mb-0"><%= assumption %></p>
+                    <% end %>
+                  </td>
+                  <td><%= Array(capabilities['subtitles']).map(&:first).uniq.join(', ').presence || workbench_track_languages(sample, 'subtitle') %></td>
                   <td><%= payload['comparison']['preferred_asset_id'] == sample['asset_id'] ? 'Privilégier' : 'Conserver' %></td>
                 </tr>
               <% end %>
