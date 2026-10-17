@@ -1,0 +1,10 @@
+[Unit]
+Description=Traitements vidb en attente et nouveaux scans
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=30s
+Unit=vidb-reconciliation-workbench.service
+
+[Install]
+WantedBy=timers.target

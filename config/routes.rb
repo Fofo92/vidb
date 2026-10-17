@@ -8,6 +8,17 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Defines the root path route ("/")
+  resource :reconciliation_workbench, only: :show, controller: "reconciliation_workbench/dashboard" do
+    get :status
+    get :exceptions
+    post :refresh
+    post :apply
+    post :proposals
+    post :stop
+    resources :families, only: :show, controller: "reconciliation_workbench/families" do
+      post :decision, on: :member
+    end
+  end
   resources :genders, except: :show
   resources :language_versions, except: :show
   resource :tv_guide, only: :show

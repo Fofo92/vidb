@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -73,6 +73,67 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_100000) do
   create_table "media_records", id: false, force: :cascade do |t|
     t.bigint "medium_id", null: false
     t.bigint "record_id", null: false
+  end
+
+  create_table "reconciliation_cases", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.integer "attempts", default: 0, null: false
+    t.string "axis", null: false
+    t.string "case_key", null: false
+    t.datetime "created_at", null: false
+    t.text "error"
+    t.string "fingerprint", null: false
+    t.datetime "finished_at"
+    t.json "payload", default: {}, null: false
+    t.json "result", default: {}, null: false
+    t.string "rule_key", null: false
+    t.integer "rule_version", null: false
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "axis", "rule_key", "status"], name: "index_reconciliation_cases_on_work"
+    t.index ["rule_key", "case_key", "fingerprint"], name: "index_reconciliation_cases_on_identity", unique: true
+  end
+
+  create_table "reconciliation_record_changes", force: :cascade do |t|
+    t.string "after_digest", null: false
+    t.json "after_snapshot", null: false
+    t.string "before_digest", null: false
+    t.datetime "created_at", null: false
+    t.bigint "reconciliation_case_id", null: false
+    t.bigint "record_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reconciliation_case_id"], name: "index_reconciliation_record_changes_on_reconciliation_case_id"
+    t.index ["record_id", "id"], name: "index_reconciliation_record_changes_on_record_id_and_id"
+  end
+
+  create_table "reconciliation_rule_decisions", force: :cascade do |t|
+    t.json "case_fingerprints", default: [], null: false
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.string "decision", null: false
+    t.string "rule_key", null: false
+    t.integer "rule_version", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["rule_key", "rule_version"], name: "index_reconciliation_decisions_on_rule", unique: true
+    t.index ["user_id"], name: "index_reconciliation_rule_decisions_on_user_id"
+  end
+
+  create_table "reconciliation_runs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "error"
+    t.datetime "finished_at"
+    t.string "mode", default: "refresh", null: false
+    t.string "rule_key"
+    t.datetime "started_at"
+    t.string "status", default: "queued", null: false
+    t.boolean "stop_requested", default: false, null: false
+    t.json "summary", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["status", "created_at"], name: "index_reconciliation_runs_on_status_and_created_at"
+    t.index ["user_id"], name: "index_reconciliation_runs_on_user_id"
   end
 
   create_table "records", force: :cascade do |t|
@@ -310,6 +371,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_100000) do
   end
 
   add_foreign_key "catalogue_episode_links", "records"
+  add_foreign_key "reconciliation_record_changes", "reconciliation_cases"
+  add_foreign_key "reconciliation_rule_decisions", "users"
+  add_foreign_key "reconciliation_runs", "users"
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"
