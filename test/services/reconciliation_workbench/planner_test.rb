@@ -73,6 +73,7 @@ class ReconciliationWorkbenchPlannerTest < ActiveSupport::TestCase
     assert_equal 'blocked', ReconciliationWorkbench::Executor.new.call(item)
     assert_equal 'undetermined', @root.reload.record_kind
   end
+
   test 'replanning approved work preserves the original snapshots after a manual change' do
     planner = ReconciliationWorkbench::Planner.new(root: @directory)
     source = followup([entry])
@@ -93,4 +94,32 @@ class ReconciliationWorkbenchPlannerTest < ActiveSupport::TestCase
     assert_equal 'undetermined', @root.reload.record_kind
   end
 
+  test 'short animation episodes can be qualified without changing their saved duration' do
+    @root.genders << Gender.create!(name: 'Animation')
+    @episode.update_column(:length_in_mn, 3)
+    ReconciliationWorkbench::Planner.new(root: @directory).call(followup: followup([entry]))
+    item = ReconciliationCase.current.sole
+    ReconciliationRuleDecision.create!(rule_key: item.rule_key, rule_version: 1, decision: 'approved')
+
+    assert_equal 'applied', ReconciliationWorkbench::Executor.new.call(item)
+    assert_equal %w[series season episode], [@root, @season, @episode].map { |record| record.reload.record_kind }
+    assert_equal 3, @episode.length_in_mn
+    assert_nil @root.length_in_mn
+    assert_nil @season.length_in_mn
+    assert_equal 'skipped', ReconciliationWorkbench::Executor.new.call(item)
+  end
+
+  test 'an animation episode shorter than three minutes still blocks qualification atomically' do
+    @root.genders << Gender.create!(name: 'Animation')
+    @episode.update_column(:length_in_mn, 2)
+    ReconciliationWorkbench::Planner.new(root: @directory).call(followup: followup([entry]))
+    item = ReconciliationCase.current.sole
+    ReconciliationRuleDecision.create!(rule_key: item.rule_key, rule_version: 1, decision: 'approved')
+
+    assert_equal 'blocked', ReconciliationWorkbench::Executor.new.call(item)
+    assert_equal %w[undetermined undetermined undetermined],
+                 [@root, @season, @episode].map { |record| record.reload.record_kind }
+    assert_equal 2, @episode.length_in_mn
+    assert_equal 0, ReconciliationRecordChange.where(reconciliation_case: item).count
+  end
 end

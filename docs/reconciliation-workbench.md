@@ -36,6 +36,15 @@ sous un format commun, et regroupe leur examen au lieu de livrer un script par l
 La langue de la fiche peut être transmise à la copie dans cette règle explicitement approuvée ;
 les observations techniques audio restent conservées. Aucun fichier n’est déplacé, renommé ou supprimé.
 
+## Durées des épisodes d’animation
+
+La durée catalogue reste facultative et entière, avec une limite supérieure de 240 minutes.
+Le minimum est de 3 minutes pour une fiche qualifiée comme épisode dont le genre Animation
+est renseigné sur l’épisode, sa saison ou sa série. Les autres fiches conservent le minimum
+historique de 10 minutes. Le nom de la série n’intervient pas dans cette règle.
+Une qualification conserve la durée existante ; une valeur sous le seuil reste un blocage,
+sans modification partielle de la hiérarchie. Les durées techniques des copies restent distinctes.
+
 ## Propositions issues de recherches externes
 
 Document JSON importable dans l’onglet Caractéristiques ou avec
