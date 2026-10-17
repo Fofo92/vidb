@@ -2,7 +2,7 @@
   <%= link_to "← Les familles", reconciliation_workbench_path(axis: @rule.axis), class: "small" %>
   <h1 class="h3 mt-3"><%= @rule.title %></h1>
   <p class="lead"><%= @rule.proposal %></p>
-  <div class="alert alert-light border">
+  <div class="bg-light border rounded p-3 mb-3">
     <p class="mb-1"><strong>Limites de la règle :</strong> <%= @rule.limits %></p>
     <p class="mb-0"><strong><%= @total %> propositions actuelles.</strong>
       <% if @rule.recurring %>
