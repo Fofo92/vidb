@@ -20,6 +20,7 @@ class Record < ApplicationRecord
   include RecordYears
   include RecordMetadata
   include RecordAbstract
+  include RecordDuration
 
   validates :broadcast_part_count, numericality: { only_integer: true, greater_than: 0 }
 
@@ -38,13 +39,6 @@ class Record < ApplicationRecord
   validates :original_title, presence: { if: -> { french_title.blank? } }
   validates :french_title, presence: { if: -> { original_title.blank? } }
   validate :validate_year_range
-  validates :length_in_mn,
-            allow_nil: true,
-            numericality: {
-              greater_than_or_equal_to: 10,
-              less_than_or_equal_to: 240,
-              only_integer: true
-            }
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[id french_title original_title year length_in_mn]

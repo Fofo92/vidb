@@ -73,6 +73,26 @@ class ReconciliationWorkbenchDiskActionTest < ActiveSupport::TestCase
     assert_equal '/videos/autre.mkv', existing.reload.last_known_path
   end
 
+  test 'a short animation episode can be attached with its catalogue duration preserved' do
+    series = Record.create!(french_title: 'Série animée', record_kind: 'series',
+                            language_version: @record.language_version)
+    series.genders << Gender.create!(name: 'Animation')
+    @record.update!(parent: series, record_kind: 'episode', length_in_mn: 7)
+    payload = @item.payload.deep_dup
+    payload['records'] = [series, @record].to_h do |record|
+      [record.id.to_s, ReconciliationWorkbench::Snapshot.record(record)]
+    end
+    payload['entry']['candidate'].merge!('record_kind' => 'episode', 'ancestry' => @record.ancestry)
+    @item = ReconciliationWorkbench::CaseStore.propose(rule: ReconciliationWorkbench::Rules::DISK,
+                                                      key: @item.case_key, payload: payload)
+    @observed[:duration_minutes] = 7
+    @observed[:measured_duration_seconds] = 420
+
+    assert_equal 'applied', apply
+    assert_equal 7, @record.reload.length_in_mn
+    assert_equal 7, @record.video_assets.sole.duration_minutes
+  end
+
   test 'physical identity changes are detected before technical observation' do
     Dir.mktmpdir do |directory|
       path = File.join(directory, 'same.mkv')

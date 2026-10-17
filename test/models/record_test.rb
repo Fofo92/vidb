@@ -206,6 +206,49 @@ class RecordTest < ActiveSupport::TestCase
     end
   end
 
+  test "accepts animation episodes from three minutes using their series genre" do
+    series = build_record(record_kind: "series")
+    series.genders << Gender.create!(name: "Animation")
+    series.save!
+    season = series.children.create!(french_title: "Saison 01", record_kind: "season",
+                                     language_version: @language_version)
+    episode = season.children.build(french_title: "Épisode court", record_kind: "episode",
+                                    language_version: @language_version, length_in_mn: 3)
+    assert_equal 3, episode.minimum_catalogue_length
+    assert episode.valid?
+    episode.save!
+    episode.update!(length_in_mn: 7)
+    assert_equal 7, episode.reload.length_in_mn
+    episode.length_in_mn = 2
+    assert_not episode.valid?
+    assert episode.errors[:length_in_mn].any?
+    episode.length_in_mn = 241
+    assert_not episode.valid?
+  end
+
+  test "a direct animation genre also permits a three minute episode" do
+    series = build_record(record_kind: "series")
+    series.save!
+    episode = series.children.build(french_title: "Court épisode", record_kind: "episode",
+                                     language_version: @language_version, length_in_mn: 3)
+    episode.genders << Gender.create!(name: "Animation")
+    assert episode.valid?
+  end
+
+  test "the short animation limit does not apply to other episodes or standalone films" do
+    animation = Gender.create!(name: "Animation")
+    series = build_record(record_kind: "series")
+    series.save!
+    episode = series.children.build(french_title: "Taupek", record_kind: "episode",
+                                     language_version: @language_version, length_in_mn: 3)
+    assert_equal 10, episode.minimum_catalogue_length
+    assert_not episode.valid?
+    film = build_record(record_kind: "standalone_video", length_in_mn: 3)
+    film.genders << animation
+    assert_equal 10, film.minimum_catalogue_length
+    assert_not film.valid?
+  end
+
   test "allows a parent to contain both branches and leaves" do
     series = create_record(
       "Shaun le mouton",
