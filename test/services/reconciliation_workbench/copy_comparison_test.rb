@@ -46,10 +46,30 @@ class ReconciliationWorkbenchCopyComparisonTest < ActiveSupport::TestCase
     assert result['eligible']
   end
 
-  test 'unknown languages are not inferred from a VM label or filename' do
+  test 'the library policy interprets the sole und audio track as French without changing its measurement' do
     streams(@old).last['tags']['language'] = 'und'
+    comparison = result
+    assert comparison['eligible']
+    assert_equal 2, comparison['preferred_asset_id']
+    assert_equal ['fra'], comparison.dig('capabilities', 1, 'audio').map(&:first)
+    assert_equal 1, comparison.dig('capabilities', 1, 'language_assumptions').size
+    assert_equal 'und', streams(@old).last.dig('tags', 'language')
+  end
+
+  test 'und remains unresolved with several audio tracks' do
+    streams(@new).find { |stream| stream['codec_type'] == 'audio' }['tags']['language'] = 'und'
     assert_not result['eligible']
     assert_match 'inconnue', result['reason']
+  end
+
+  test 'a sole und subtitle is not inferred to be French' do
+    streams(@new).last['tags']['language'] = 'und'
+    assert_not result['eligible']
+  end
+
+  test 'missing audio language remains unresolved' do
+    streams(@old).last['tags'].delete('language')
+    assert_not result['eligible']
   end
 
   test 'private original language tags do not establish the actual language' do
