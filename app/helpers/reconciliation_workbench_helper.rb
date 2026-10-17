@@ -26,6 +26,16 @@ module ReconciliationWorkbenchHelper
     end.join(', ')
   end
 
+  def workbench_stream_description(stream)
+    types = { 'audio' => 'Audio', 'subtitle' => 'Sous-titres', 'video' => 'Vidéo' }
+    parts = [types.fetch(stream['codec_type'], stream['codec_type']), "piste #{stream['index'] || '?'}",
+             stream['codec_name'], stream.dig('tags', 'language')]
+    parts << "#{stream['channels']} canaux" if stream['channels']
+    roles = stream.fetch('disposition', {}).select { |_key, value| value.to_i == 1 }.keys
+    parts.concat(roles)
+    parts.compact.join(' · ')
+  end
+
   def workbench_value(field, value)
     return 'Non renseigné' if value.blank?
     return value.join(', ') if value.is_a?(Array)

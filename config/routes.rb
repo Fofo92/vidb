@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     post :stop
     resources :families, only: :show, controller: "reconciliation_workbench/families" do
       post :decision, on: :member
+      post :arbitrate, on: :member
     end
   end
   resources :genders, except: :show
