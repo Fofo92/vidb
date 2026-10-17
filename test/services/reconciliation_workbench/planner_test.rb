@@ -65,6 +65,20 @@ class ReconciliationWorkbenchPlannerTest < ActiveSupport::TestCase
     assert_equal 0, VideoAsset.where(record_id: @episode.id).count
   end
 
+  test 'a competing candidate leaves the unique family and enters the comparison family' do
+    @root.update!(record_kind: 'series')
+    @season.update!(record_kind: 'season')
+    @episode.update!(record_kind: 'episode')
+    @episode.video_assets.create!(last_known_path: '/videos/another-copy.mkv')
+    ReconciliationWorkbench::Planner.new(root: @directory).call(followup: followup([entry]))
+    assert_equal 0, ReconciliationCase.current.where(rule_key: ReconciliationWorkbench::Rules::DISK.key).count
+    item = ReconciliationCase.current.sole
+    assert_equal ReconciliationWorkbench::Rules::PREFERENCE.key, item.rule_key
+    assert_equal 2, item.payload['file_count']
+    assert_equal 'blocked', item.status
+    assert_equal @episode.id, item.payload.dig('candidate', 'record_id')
+  end
+
   test 'a catalog mutation after approval blocks qualification with no partial changes' do
     ReconciliationWorkbench::Planner.new(root: @directory).call(followup: followup([entry]))
     item = ReconciliationCase.current.sole

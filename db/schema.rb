@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -367,7 +367,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_190000) do
     t.check_constraint "byte_size IS NULL OR byte_size >= 0", name: "video_assets_byte_size_check"
     t.check_constraint "duration_minutes IS NULL OR duration_minutes > 0", name: "video_assets_duration_check"
     t.check_constraint "status::text <> 'present'::text OR NULLIF(btrim(last_known_path), ''::text) IS NOT NULL", name: "video_assets_present_path_check"
-    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'missing'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
   end
 
   add_foreign_key "catalogue_episode_links", "records"

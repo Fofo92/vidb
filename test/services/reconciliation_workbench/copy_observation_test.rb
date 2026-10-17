@@ -31,6 +31,18 @@ class ReconciliationWorkbenchCopyObservationTest < ActiveSupport::TestCase
     assert_equal false, @service.measure(input).sole['encoder_verified']
   end
 
+  test 'a candidate can supply a validated encoder receipt without an existing asset receipt' do
+    input = @service.inputs([@asset]).sole
+    input['snapshot']['technical_details'] = {}
+    input['candidate'] = { 'path' => @path }
+    File.write("#{@path}#{VideoAssets::CompletedExport::SUFFIX}", '{}')
+    sample = @service.measure([input]).sole
+    assert_equal true, sample['encoder_verified']
+    assert_equal @receipt, sample['encoder_receipt']
+    File.write(@path, 'modified content')
+    assert_raises(ArgumentError) { @service.verify!([sample]) }
+  end
+
   test 'measurement time alone does not invalidate the family form' do
     input = @service.inputs([@asset])
     assert_equal @service.measure(input), @service.measure(input)

@@ -24,7 +24,8 @@ module ReconciliationWorkbench
         raise ArgumentError, 'Scan incomplet, bilan précédent conservé'
       end
 
-      source = VideoAssets::ReconciliationReport.new(inventory: inventory).call
+      presence = VideoAssets::DiskPresence.new(guard: guard).call(inventory)
+      source = VideoAssets::ReconciliationReport.new(inventory: inventory).call.merge(disk_presence: presence)
       guard.call
       VideoAssets::ReconciliationJournal.new(directory: directory, automatic: true).call(report: source)
     end

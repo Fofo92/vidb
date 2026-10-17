@@ -11,6 +11,7 @@ class VideoAsset < ApplicationRecord
   enum :status,
        {
          present: "present",
+         missing: "missing",
          deleted: "deleted"
        },
        prefix: true,

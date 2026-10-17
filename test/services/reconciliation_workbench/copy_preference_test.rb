@@ -46,7 +46,7 @@ class ReconciliationWorkbenchCopyPreferenceTest < ActiveSupport::TestCase
   end
 
   def approve
-    ReconciliationRuleDecision.create!(rule_key: @item.rule_key, rule_version: 1, decision: 'approved')
+    ReconciliationRuleDecision.create!(rule_key: @item.rule_key, rule_version: @item.rule_version, decision: 'approved')
   end
 
   def apply

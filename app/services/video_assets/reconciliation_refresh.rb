@@ -28,7 +28,8 @@ module VideoAssets
       inventory = @scanner.call.deep_symbolize_keys
       validate_inventory!(inventory)
       @guard.call
-      report = @reporter.call(inventory)
+      presence = DiskPresence.new(guard: @guard).call(inventory)
+      report = @reporter.call(inventory).merge(disk_presence: presence)
       @guard.call
       import_exports(report)
       @journal.call(report: report)
