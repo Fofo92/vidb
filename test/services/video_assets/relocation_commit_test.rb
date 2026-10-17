@@ -53,6 +53,41 @@ class RelocationCommitTest < ActiveSupport::TestCase
     assert @record.reload.is_available
   end
 
+  test 'an injected filesystem adapter receives the exact rechecked plan' do
+    requests = []
+    backend = Object.new
+    backend.define_singleton_method(:call) do |source:, target:, identity:|
+      requests << { source: source, target: target, identity: identity }
+      File.rename(source, target)
+    end
+    result = commit(file_rename: backend)
+    assert_equal :completed, result[:status]
+    assert_equal [{ source: @source, target: @target, identity: @plan.fetch(:identity) }], requests
+    assert_equal @target, @asset.reload.last_known_path
+  end
+
+  test 'a backend false success leaves the database path unchanged and journals inspection' do
+    backend = Object.new
+    backend.define_singleton_method(:call) { |**_options| nil }
+    error = assert_raises(VideoAssets::RelocationCommit::Failed) { commit(file_rename: backend) }
+    assert_equal @source, @asset.reload.last_known_path
+    assert File.exist?(@source)
+    assert_not File.exist?(@target)
+    assert_equal %w[prepared needs_review], events(error.journal_path).map { |entry| entry.fetch('event') }
+  end
+
+  test 'a noncanonical stored source cannot be silently normalized into another request' do
+    raw_path = @source.sub('/ancien.mkv', '//ancien.mkv')
+    @asset.update!(last_known_path: raw_path)
+    backend = Object.new
+    backend.define_singleton_method(:call) { |**_options| raise 'must not reach backend' }
+    error = assert_raises(VideoAssets::RelocationCommit::Failed) { commit(file_rename: backend) }
+    assert_kind_of VideoAssets::RelocationCommit::Refused, error.cause
+    assert_equal raw_path, @asset.reload.last_known_path
+    assert File.exist?(@source)
+    assert_not File.exist?(@target)
+  end
+
   test 'preserves a journal and the renamed file if the database update fails' do
     writer = lambda do |asset, target|
       asset.update!(last_known_path: target)
@@ -157,8 +192,8 @@ class RelocationCommitTest < ActiveSupport::TestCase
 
   private
 
-  def commit(writer: nil)
-    VideoAssets::RelocationCommit.new(root: @root, planner: @planner, writer: writer,
+  def commit(writer: nil, file_rename: nil)
+    VideoAssets::RelocationCommit.new(root: @root, planner: @planner, writer: writer, file_rename: file_rename,
                                          journal_directory: @journal_root, volume_guard: -> { true })
                                     .call(plan: @plan, asset: @asset, genres: [], authorized: true)
   end

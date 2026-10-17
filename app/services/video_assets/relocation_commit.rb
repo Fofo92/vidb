@@ -14,14 +14,18 @@ module VideoAssets
       end
     end
 
-    def initialize(root:, planner:, journal_directory:, volume_guard:, writer: nil)
+    # Keep the existing writer keyword while allowing an explicit filesystem adapter.
+    # rubocop:disable Metrics/ParameterLists
+    def initialize(root:, planner:, journal_directory:, volume_guard:, writer: nil, file_rename: nil)
       @root = Pathname.new(root).cleanpath
       @planner = planner
       @journal = RelocationJournal.new(journal_directory)
       @volume_guard = volume_guard
-      @renamer = RelocationFileRename.new
+      @renamer = file_rename || RelocationFileRename.new
       @writer = writer || ->(asset, target) { asset.update!(last_known_path: target) }
     end
+
+    # rubocop:enable Metrics/ParameterLists
 
     def call(plan:, asset:, genres:, authorized: false)
       validate_request!(plan, asset, authorized)
@@ -54,13 +58,24 @@ module VideoAssets
       current = checked_preview(plan, asset, genres)
       RelocationJournal.append(journal, 'prepared', current.slice(:record_id, :asset_id, :source, :target, :identity))
       @renamer.call(source: current.fetch(:source), target: current.fetch(:target), identity: current.fetch(:identity))
+      verify_rename!(current)
       RelocationJournal.append(journal, 'filesystem_renamed')
       @writer.call(asset, current.fetch(:target))
+    end
+
+    def verify_rename!(plan)
+      source, target = plan.values_at(:source, :target)
+      stat = File.lstat(target)
+      valid = stat.file? && File.realpath(target) == target &&
+              RelocationFileIdentity.call(stat).except(:ctime_ns) == plan.fetch(:identity).except(:ctime_ns) &&
+              !File.exist?(source) && !File.symlink?(source)
+      raise Refused, 'Rename result does not match the reviewed copy' unless valid
     end
 
     def checked_preview(plan, asset, genres)
       @volume_guard.call
       raise Refused, 'Asset is no longer present' unless asset.status_present?
+      raise Refused, 'Source path differs from preview' unless asset.last_known_path == plan[:source]
       raise Refused, 'Genres changed since preview' unless asset.record.genders.reload.map(&:name).sort == genres.sort
 
       current = @planner.recheck(plan: plan, asset: asset, genres: genres)
