@@ -1,0 +1,27 @@
+<turbo-frame id="workbench_status" data-running="<%= runs.any? { |run| !run.terminal? } %>">
+  <% if runs.any? %>
+    <% run = runs.find { |entry| entry.status == 'running' } || runs.first %>
+    <% labels = { 'queued' => 'En attente du service', 'running' => 'Passe en cours', 'completed' => 'Passe terminée', 'stopped' => 'Passe arrêtée', 'failed' => 'Passe interrompue' } %>
+    <div class="card bg-light">
+      <div class="card-body py-3">
+        <div class="d-flex flex-wrap justify-content-between gap-2">
+          <div>
+            <strong><%= labels.fetch(run.status) %></strong>
+            <span class="text-muted small"> — <%= run.created_at.in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M') %></span>
+            <p class="mb-0 mt-1 small">
+              Œuvres : <%= run.summary.dig('metadata', 'applied').to_i %> opérations appliquées ·
+              Disque : <%= run.summary.dig('disk', 'applied').to_i %> copies rattachées ·
+              Exceptions : <%= run.summary.dig('metadata', 'blocked').to_i + run.summary.dig('disk', 'blocked').to_i %>
+            </p>
+          </div>
+          <% unless run.terminal? %>
+            <%= button_to "Arrêter après l’opération en cours", stop_reconciliation_workbench_path(run_id: run.id), class: "btn btn-outline-secondary btn-sm", form: { data: { turbo_frame: '_top' } } %>
+          <% end %>
+        </div>
+        <% if run.error.present? %><p class="text-danger small mt-2 mb-0"><%= run.error %></p><% end %>
+      </div>
+    </div>
+  <% else %>
+    <p class="small text-muted">Aucune passe préparée. Actualise les propositions pour examiner les familles.</p>
+  <% end %>
+</turbo-frame>

@@ -1,0 +1,17 @@
+<div class="container py-4">
+  <%= link_to "← Les familles", reconciliation_workbench_path, class: "small" %>
+  <h1 class="h3 mt-3">Exceptions regroupées</h1>
+  <p><%= number_with_delimiter(@total) %> fichiers concernés dans ce périmètre. Un groupe n’est pas une autorisation de modifier ses fichiers.</p>
+  <% @groups.each do |group| %>
+    <section class="card mb-3"><div class="card-body">
+      <h2 class="h5 text-break"><%= group[:directory] %></h2>
+      <p><strong><%= group[:file_count] %> fichiers</strong> — <%= group[:suggested_action] %></p>
+      <ul class="small text-break"><% group[:examples].each do |entry| %><li><%= entry[:path] %></li><% end %></ul>
+      <%= link_to "Voir cette famille de blocages", exceptions_reconciliation_workbench_path(category: group[:category]), class: "small" %>
+    </div></section>
+  <% end %>
+  <nav class="d-flex gap-3" aria-label="Pages des groupes">
+    <% if @page > 1 %><%= link_to "Page précédente", exceptions_reconciliation_workbench_path(category: @category, page: @page - 1) %><% end %>
+    <% if @groups.size == 30 %><%= link_to "Page suivante", exceptions_reconciliation_workbench_path(category: @category, page: @page + 1) %><% end %>
+  </nav>
+</div>

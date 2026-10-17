@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+package_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+sudo install -d -o vidb -g vidb -m 0700 /srv/vidb/shared/reconciliation-workbench
+sudo install -m 0644 "$package_root/config/systemd/vidb-reconciliation-workbench.service" /etc/systemd/system/
+sudo install -m 0644 "$package_root/config/systemd/vidb-reconciliation-workbench.timer" /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now vidb-reconciliation-workbench.timer

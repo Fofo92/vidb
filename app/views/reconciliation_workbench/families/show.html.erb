@@ -1,0 +1,66 @@
+<div class="container py-4">
+  <%= link_to "← Les familles", reconciliation_workbench_path(axis: @rule.axis), class: "small" %>
+  <h1 class="h3 mt-3"><%= @rule.title %></h1>
+  <p class="lead"><%= @rule.proposal %></p>
+  <div class="alert alert-light border">
+    <p class="mb-1"><strong>Limites de la règle :</strong> <%= @rule.limits %></p>
+    <p class="mb-0"><strong><%= @total %> propositions actuelles.</strong>
+      <% if @rule.recurring %>
+        La validation autorise aussi les futurs cas équivalents de cette version de la règle.
+      <% else %>
+        La validation couvre uniquement les propositions actuelles de toutes les pages de cette famille.
+      <% end %>
+    </p>
+  </div>
+  <% @cases.each do |item| %>
+    <% payload = item.payload %>
+    <article class="card mb-3">
+      <div class="card-body">
+        <h2 class="h5"><%= link_to payload['title'], record_path(payload['record_id']) %></h2>
+        <% if payload['field'] %>
+          <div class="row g-3">
+            <div class="col-md-6"><strong>Valeur actuelle</strong><p class="text-muted"><%= workbench_value(payload['field'], payload['before']) %></p></div>
+            <div class="col-md-6"><strong>Valeur proposée</strong><p><%= workbench_value(payload['field'], payload['value']) %></p></div>
+          </div>
+        <% elsif payload['roles'] %>
+          <p><%= payload['roles'].size %> fiches dont le rôle sera précisé ; <%= payload['file_count'] %> fichiers concernés. Les liens de parenté restent identiques.</p>
+          <details><summary>Voir les rôles proposés</summary><ul class="mt-2">
+            <% payload['roles'].each do |id, role| %>
+              <li><%= payload.dig('records', id, 'attributes', 'french_title') %> → <%= { 'series' => 'série', 'season' => 'saison', 'episode' => 'épisode' }.fetch(role) %></li>
+            <% end %>
+          </ul></details>
+        <% else %>
+          <p class="text-break"><%= payload['path'] %></p>
+          <p class="small text-muted">Le fichier sera rattaché à cette fiche, sans déplacement ni changement de nom.</p>
+        <% end %>
+        <% if payload['reason'] %><p><%= payload['reason'] %></p><% end %>
+        <% Array(payload['sources']).each do |url| %>
+          <p class="small mb-1 text-break"><%= link_to url, url, target: '_blank', rel: 'noopener noreferrer' %></p>
+        <% end %>
+        <% if item.error.present? %><p class="text-danger small mt-2 mb-0"><strong>Exception :</strong> <%= item.error %></p><% end %>
+      </div>
+    </article>
+  <% end %>
+  <nav class="d-flex gap-3 mb-4" aria-label="Pages des propositions">
+    <% if @page > 1 %><%= link_to "Page précédente", reconciliation_workbench_family_path(@rule.key, page: @page - 1) %><% end %>
+    <span>Page <%= @page %> · <%= @total %> propositions au total</span>
+    <% if @page * 30 < @total %><%= link_to "Page suivante", reconciliation_workbench_family_path(@rule.key, page: @page + 1) %><% end %>
+  </nav>
+  <section class="card"><div class="card-body">
+    <h2 class="h5">Une décision pour cette famille</h2>
+    <% if @scope.where(status: 'blocked').exists? %>
+      <p class="small text-muted">Pour réexaminer une fiche modifiée, diffère la famille puis actualise les propositions. Tu pourras examiner leur nouvel état avant une nouvelle validation.</p>
+    <% end %>
+    <%= form_with url: decision_reconciliation_workbench_family_path(@rule.key), method: :post do |form| %>
+      <%= form.hidden_field :scope_digest, value: @scope_digest %>
+      <%= form.label :comment, "Ton avis ou la règle à préciser", class: "form-label" %>
+      <%= form.text_area :comment, value: @decision&.comment, rows: 2, class: "form-control mb-3" %>
+      <div class="d-flex flex-wrap gap-2">
+        <%= form.button "Valider et lancer les règles approuvées", name: 'decision', value: 'approved', disabled: @total.zero?, class: "btn btn-primary" %>
+        <%= form.button "À préciser", name: 'decision', value: 'deferred', class: "btn btn-outline-secondary" %>
+        <%= form.button "Écarter cette règle", name: 'decision', value: 'rejected', class: "btn btn-outline-danger" %>
+      </div>
+      <p class="small text-muted mt-2 mb-0">Une validation sur cet axe n’approuve aucune règle de l’autre axe. Les règles déjà approuvées peuvent continuer à s’appliquer.</p>
+    <% end %>
+  </div></section>
+</div>

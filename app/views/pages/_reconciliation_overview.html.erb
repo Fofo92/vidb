@@ -1,6 +1,7 @@
 <section class="card my-4" aria-labelledby="reconciliation-heading" data-reconciliation-overview>
   <div class="card-body">
     <h2 id="reconciliation-heading" class="h4">Rapprochement de la vidéothèque</h2>
+    <p><%= link_to "Examiner les familles de règles et leurs exceptions", reconciliation_workbench_path, class: "btn btn-outline-primary btn-sm" %></p>
     <% if overview[:available] %>
       <p>
         <strong><%= overview[:confirmed] %> / <%= overview[:total] %> fichiers confirmés</strong>
