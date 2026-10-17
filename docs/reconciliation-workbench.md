@@ -95,8 +95,16 @@ RAILS_ENV=test bin/rails db:migrate
 bin/check
 ```
 
-Puis intégrer la branche à `main` et utiliser `bin/deploy-production COMMIT` selon la procédure
-habituelle (qui réalise la sauvegarde). Après ce déploiement seulement :
+Après intégration de la branche à `main`, effectuer une seule sauvegarde explicite,
+puis déployer le commit validé selon la procédure habituelle :
+
+```sh
+sudo /usr/local/bin/pg_backup_vidb_production.sh
+bin/deploy-production COMMIT
+```
+
+`bin/deploy-production` ne réalise pas lui-même cette sauvegarde.
+Après ce déploiement seulement :
 
 ```sh
 /srv/vidb/current/bin/install-reconciliation-workbench
