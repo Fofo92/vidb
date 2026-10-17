@@ -11,7 +11,8 @@
             <p class="mb-0 mt-1 small">
               Œuvres : <%= run.summary.dig('metadata', 'applied').to_i %> opérations appliquées ·
               Disque : <%= run.summary.dig('disk', 'applied').to_i %> copies rattachées ·
-              Exceptions : <%= run.summary.dig('metadata', 'blocked').to_i + run.summary.dig('disk', 'blocked').to_i %>
+              Préférences : <%= run.summary.dig('preferences', 'applied').to_i %> copies privilégiées ·
+              Exceptions : <%= run.summary.dig('metadata', 'blocked').to_i + run.summary.dig('disk', 'blocked').to_i + run.summary.dig('preferences', 'blocked').to_i %>
             </p>
           </div>
           <% unless run.terminal? %>

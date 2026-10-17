@@ -11,6 +11,19 @@ module ReconciliationWorkbench
         'children' => record.children.order(:id).pluck(:id, :record_kind, :rank, :ancestry, :french_title) }
     end
 
+    def self.asset(asset)
+      asset.attributes.transform_values { |value| value.respond_to?(:iso8601) ? value.iso8601(9) : value }
+    end
+
+    def self.copy_inputs_digest(inputs)
+      states = inputs.map do |input|
+        snapshot = input.fetch('snapshot').except('updated_at')
+        snapshot['technical_details'] = snapshot.fetch('technical_details').except('copy_preference')
+        input.slice('asset_id', 'identity').merge('snapshot' => snapshot)
+      end
+      digest(states)
+    end
+
     def self.canonical(value)
       case value
       when Hash then value.stringify_keys.sort.to_h.transform_values { |item| canonical(item) }

@@ -32,7 +32,7 @@ module ReconciliationWorkbench
     def perform(run)
       run.update!(status: 'running', started_at: run.started_at || Time.current, error: nil)
       ReconciliationCase.where(status: 'running').update_all(status: 'pending')
-      plan = @planner.call
+      plan = prepare_plan
       run.update!(summary: run.summary.merge('plan' => plan))
       apply_approved(run) if run.mode == 'apply'
       run.update!(status: run.reload.stop_requested? ? 'stopped' : 'completed', finished_at: Time.current)
@@ -43,6 +43,14 @@ module ReconciliationWorkbench
     end
 
     private
+
+    def prepare_plan
+      plan = @planner.call
+      return plan unless plan.fetch('known_copies', 0).positive?
+
+      @refresh.call
+      @planner.call
+    end
 
     def apply_approved(run)
       metadata = apply_axis(run, 'metadata')
@@ -75,7 +83,8 @@ module ReconciliationWorkbench
 
         status = @executor.call(item)
         applied += 1 if status == 'applied'
-        update_progress(run, axis, status)
+        category = item.rule_key == Rules::PREFERENCE.key ? 'preferences' : axis
+        update_progress(run, category, status)
       end
       applied
     end

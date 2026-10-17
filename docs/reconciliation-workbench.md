@@ -36,6 +36,44 @@ sous un format commun, et regroupe leur examen au lieu de livrer un script par l
 La langue de la fiche peut être transmise à la copie dans cette règle explicitement approuvée ;
 les observations techniques audio restent conservées. Aucun fichier n’est déplacé, renommé ou supprimé.
 
+## Préférence entre copies concurrentes
+
+Une famille distincte compare les fiches ayant au moins deux copies présentes déjà rattachées.
+Elle ne crée pas de nouvelle copie et ne supprime aucun fichier. Une préférence manuelle signalée
+avec une provenance `manual` est conservée. L’approbation de la règle des rattachements uniques
+ne vaut pas approbation de cette nouvelle famille.
+
+La copie proposée doit réunir tous les critères suivants :
+
+- Un export video_encoder dont le compte rendu enregistré correspond au fichier et au compte rendu actuel vérifié.
+- Une date de modification du fichier plus récente que celles de toutes les autres copies.
+- Une taille strictement inférieure, sans utiliser ce critère comme preuve de qualité.
+- Toutes les langues et tous les sous-titres utiles antérieurs conservés, avec au moins une langue ou un sous-titre supplémentaire.
+- Les rôles des pistes conservés (notamment sous-titres forcés et accessibilité), sans diminution du nombre de canaux audio.
+- Des dimensions vidéo au moins équivalentes et des durées mesurées à deux secondes près.
+
+Les langues absentes, `und`, `mul`, `zxx` ou privées comme `qaa` ne sont pas devinées depuis le nom
+ou une simple étiquette VM. Les commentaires audio existants restent conservés, mais un commentaire supplémentaire
+ne suffit pas à compter comme une version linguistique supplémentaire. Une durée très différente reste à examiner, y compris lorsqu’elle
+s’explique par une suppression de publicités. Un fichier récent sans compte rendu exploitable
+reste également à examiner. Une nouvelle observation technique doit précéder la comparaison si
+la copie a changé depuis son rattachement.
+
+L’écran expose les chemins, dates de fichiers, tailles, langues et le choix proposé.
+Une seule décision de famille couvre les futurs cas équivalents ; les cas incomparables restent
+bloqués sans empêcher les autres de progresser. L’application journalise une préférence provisoire,
+affichée sur la fiche, et conserve les deux fichiers présents. Les modifications manuelles,
+changements physiques ou nouvelles copies intervenus après la proposition bloquent son application.
+
+**La qualité visuelle et la complétude éditoriale ne sont pas prouvées par ces critères techniques.**
+Le futur module de qualité pourra compléter cette décision. Cette version ne libère donc pas
+l’espace occupé par les anciens fichiers et n’autorise pas leur effacement automatique.
+Le compteur des préférences est séparé de celui des nouveaux rattachements.
+
+Les anciennes propositions d’import portant sur un même chemin déjà confirmé sont retirées
+après vérification de la taille et de la date d’observation ; le coordinateur renouvelle alors
+le scan pour remettre le bilan global à jour, sans réimporter ces copies.
+
 ## Durées des épisodes d’animation
 
 La durée catalogue reste facultative et entière, avec une limite supérieure de 240 minutes.

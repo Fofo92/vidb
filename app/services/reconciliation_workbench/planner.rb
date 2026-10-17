@@ -17,6 +17,7 @@ module ReconciliationWorkbench
     end
 
     def call(followup: JSON.parse(self.class.followup_path.read))
+      @known_copies = 0
       source = followup.deep_symbolize_keys
       validate_format!(source)
       candidates = source.fetch(:entries).select { |entry| unique_candidate?(entry) }
@@ -24,11 +25,17 @@ module ReconciliationWorkbench
       structures, seen = collect_cases(source, candidates)
       publish_structures(structures, seen)
       deactivate_obsolete(seen)
-      { 'proposed' => seen.size, 'inventory_at' => source.fetch(:inventory_at),
-        'source_counts' => VideoAssets::BlockageSummary.new(followup: source).call[:counts] }
+      summarize(source, seen)
     end
 
     private
+
+    def summarize(source, seen)
+      summary = { 'proposed' => seen.size, 'known_copies' => @known_copies,
+                  'inventory_at' => source.fetch(:inventory_at),
+                  'source_counts' => VideoAssets::BlockageSummary.new(followup: source).call[:counts] }
+      summary.merge(CopyPreferencePlan.new.call)
+    end
 
     def validate_format!(source)
       return if source[:format] == VideoAssets::ReconciliationFollowup::FORMAT && source[:version] == 1
@@ -95,14 +102,21 @@ module ReconciliationWorkbench
     end
 
     def disk_case(source, entry, record)
-      path = entry[:path]
-      stat = stable_file(path, entry)
+      stat = stable_file(entry[:path], entry)
       return unless stat
+      return if known_copy?(record, entry[:path], stat)
 
-      CaseStore.propose(rule: Rules::DISK, key: path, payload: disk_payload(source, entry, record, stat),
+      CaseStore.propose(rule: Rules::DISK, key: entry[:path], payload: disk_payload(source, entry, record, stat),
                         preserve_pending: true)
     rescue Errno::ENOENT, Errno::EACCES
       nil
+    end
+
+    def known_copy?(record, path, stat)
+      known = VideoAsset.where(status: 'present', record_id: record.id, last_known_path: path, byte_size: stat.size)
+                        .where('observed_at >= ?', stat.mtime).exists?
+      @known_copies += 1 if known
+      known
     end
 
     def stable_file(path, entry)

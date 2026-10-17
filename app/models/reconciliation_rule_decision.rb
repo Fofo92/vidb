@@ -6,7 +6,7 @@ class ReconciliationRuleDecision < ApplicationRecord
 
   def permits?(item)
     rule = ReconciliationWorkbench::Rules.fetch(item.rule_key)
-    decision == 'approved' && rule_version == rule.version &&
+    decision == 'approved' && rule_version == rule.version && ReconciliationWorkbench::Rules.applicable?(item) &&
       (rule.recurring || case_fingerprints.include?(item.fingerprint))
   end
 end

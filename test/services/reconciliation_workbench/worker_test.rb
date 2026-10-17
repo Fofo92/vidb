@@ -105,6 +105,31 @@ class ReconciliationWorkbenchWorkerTest < ActiveSupport::TestCase
     ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = previous
   end
 
+  test 'obsolete candidate entries for known copies trigger one scan before the final plan' do
+    calls = 0
+    refreshes = 0
+    planner = Object.new
+    planner.define_singleton_method(:call) { calls += 1; { 'known_copies' => calls == 1 ? 1 : 0 } }
+    refresh = Object.new
+    refresh.define_singleton_method(:call) { refreshes += 1 }
+    run = ReconciliationRun.create!(mode: 'refresh')
+    ReconciliationWorkbench::Worker.new(planner: planner, refresh: refresh).poll
+    assert_equal 1, refreshes
+    assert_equal 2, calls
+    assert_equal 'completed', run.reload.status
+  end
+
+  test 'preferences are counted separately from imported disk copies' do
+    preference = item(ReconciliationWorkbench::Rules::PREFERENCE, 'record:1')
+    preference.update!(payload: { 'records' => {}, 'comparison' => { 'eligible' => true } })
+    executor = Object.new
+    executor.define_singleton_method(:call) { |entry| entry.update!(status: 'applied'); 'applied' }
+    run = ReconciliationRun.create!(mode: 'apply')
+    worker(executor).poll
+    assert_equal 1, run.reload.summary.dig('preferences', 'applied')
+    assert_equal 0, run.summary.dig('disk', 'applied').to_i
+  end
+
   test 'a second worker cannot enter while the execution lock is held' do
     File.open(File.join(@directory, 'worker.lock'), 'w') do |file|
       file.flock(File::LOCK_EX)

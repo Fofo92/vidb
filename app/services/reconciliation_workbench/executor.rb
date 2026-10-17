@@ -1,15 +1,16 @@
 module ReconciliationWorkbench
   class Executor
-    def initialize(disk: DiskAction.new, metadata: MetadataAction.new)
+    def initialize(disk: DiskAction.new, metadata: MetadataAction.new, preference: CopyPreferenceAction.new)
       @disk = disk
       @metadata = metadata
+      @preference = preference
     end
 
     def call(item)
       return 'skipped' unless item.active? && item.permitted? && %w[pending blocked running].include?(item.status)
 
       item.update!(status: 'running', attempts: item.attempts + 1, started_at: Time.current, error: nil)
-      observed = @disk.observe(item.payload) if item.axis == 'disk'
+      observed = disk_action(item).observe(item.payload) if item.axis == 'disk'
       apply_transaction(item, observed)
       'applied'
     rescue StandardError => e
@@ -21,13 +22,24 @@ module ReconciliationWorkbench
 
     private
 
+    def disk_action(item)
+      item.rule_key == Rules::PREFERENCE.key ? @preference : @disk
+    end
+
+    def apply_action(item, observed)
+      return @metadata.call(item) unless item.axis == 'disk'
+      return @preference.call(item, observed) if item.rule_key == Rules::PREFERENCE.key
+
+      @disk.call(item.payload, observed)
+    end
+
     def apply_transaction(item, observed)
       item.with_lock do
         verify_permission!(item)
         lock_catalog!
         Snapshot.verify!(item.payload.fetch('records'))
         before = item.payload.fetch('records').keys.to_h { |id| [id, Snapshot.record(Record.find(id))] }
-        result = item.axis == 'disk' ? @disk.call(item.payload, observed) : @metadata.call(item)
+        result = apply_action(item, observed)
         record_changes(item, before)
         item.update!(status: 'applied', result: result, finished_at: Time.current)
       end
