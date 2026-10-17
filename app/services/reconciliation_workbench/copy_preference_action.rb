@@ -15,6 +15,8 @@ module ReconciliationWorkbench
     end
 
     def verify_comparison!(payload, samples)
+      return ReviewedCopy.verify!(payload, samples) if payload['manual_review']
+
       result = CopyComparison.new.call(samples)
       expected = payload.fetch('comparison')
       return if result['eligible'] && result['preferred_asset_id'] == expected['preferred_asset_id']
@@ -26,12 +28,13 @@ module ReconciliationWorkbench
       payload = item.payload
       assets = current_assets(payload)
       verify_snapshots!(registered_samples(payload), assets.map { |asset| { 'snapshot' => Snapshot.asset(asset) } })
-      preferred = payload.fetch('comparison').fetch('preferred_asset_id')
+      preferred = (payload['manual_review'] || payload.fetch('comparison')).fetch('preferred_asset_id')
       preferred = import_candidate(payload, samples, assets, preferred) if payload['candidate']
       digest = Snapshot.copy_inputs_digest(@observer.inputs(assets))
       assets.each { |asset| select(asset, preferred, item, digest) }
       @observer.verify!(samples)
-      { preferred_asset_id: preferred, retained_asset_ids: assets.map(&:id), quality_assessed: false }
+      { preferred_asset_id: preferred, retained_asset_ids: assets.map(&:id), quality_assessed: false,
+        manual_review: payload['manual_review'] }
     end
 
     private
@@ -64,9 +67,11 @@ module ReconciliationWorkbench
     end
 
     def select(asset, preferred, item, digest)
-      marker = { 'origin' => 'family_rule', 'rule_version' => Rules::PREFERENCE.version, 'case_id' => item.id,
+      marker = { 'origin' => item.payload['manual_review'] ? 'manual' : 'family_rule',
+                 'rule_version' => item.rule_version, 'rule_key' => item.rule_key, 'case_id' => item.id,
                  'preferred' => asset.id == preferred, 'preferred_asset_id' => preferred,
-                 'inputs_digest' => digest, 'quality_assessed' => false }
+                 'inputs_digest' => digest, 'quality_assessed' => false,
+                 'manual_review' => item.payload['manual_review'] }
       asset.update!(technical_details: asset.technical_details.merge('copy_preference' => marker))
     end
   end

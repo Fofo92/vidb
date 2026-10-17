@@ -23,12 +23,12 @@ module ReconciliationWorkbench
     private
 
     def disk_action(item)
-      item.rule_key == Rules::PREFERENCE.key ? @preference : @disk
+      Rules.copy_preference?(item.rule_key) ? @preference : @disk
     end
 
     def apply_action(item, observed)
       return @metadata.call(item) unless item.axis == 'disk'
-      return @preference.call(item, observed) if item.rule_key == Rules::PREFERENCE.key
+      return @preference.call(item, observed) if Rules.copy_preference?(item.rule_key)
 
       @disk.call(item.payload, observed)
     end

@@ -102,9 +102,39 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     get reconciliation_workbench_family_path(rule.key)
     assert_response :success
     assert_select 'table[data-copy-comparison] tbody tr', count: 2
-    assert_select 'td', text: 'Privilégier', count: 1
-    assert_select 'td', text: '/videos/copy-1.mkv'
+    assert_select 'input[type=radio][value="2"][checked][form="copy-arbitration"]', count: 1
+    assert_select 'form#copy-arbitration', count: 1
+    assert_select 'td', text: /copy-1\.mkv/
     assert_includes response.body, 'Qualité visuelle non évaluée'
+  end
+
+  test 'grouped copy choices submit through the separate form and authorize only those cases' do
+    rule = ReconciliationWorkbench::Rules::PREFERENCE
+    copy = ReconciliationWorkbench::CaseStore.propose(rule: rule, key: "record:#{@record.id}", payload: {
+      'record_id' => @record.id, 'title' => @record.french_title,
+      'samples' => [{ 'asset_id' => 10 }, { 'asset_id' => 'candidate' }],
+      'records' => {}, 'comparison' => { 'eligible' => false, 'reason' => 'Langue à vérifier' } })
+    post arbitrate_reconciliation_workbench_family_path(rule.key), params: {
+      scope_digest: ReconciliationWorkbench::Snapshot.digest([copy.fingerprint]),
+      choices: { copy.id.to_s => 'candidate' }, comment: 'Copie choisie après examen' }
+    assert_redirected_to reconciliation_workbench_path(axis: 'disk')
+    receipt = ReconciliationCase.current.find_by!(rule_key: ReconciliationWorkbench::Rules::MANUAL_COPY.key)
+    assert_equal @user.id, receipt.payload.dig('manual_review', 'user_id')
+    assert_equal 'candidate', receipt.payload.dig('manual_review', 'preferred_asset_id')
+    assert_equal 'Copie choisie après examen', receipt.payload.dig('manual_review', 'comment')
+    assert receipt.permitted?
+    assert_equal 1, ReconciliationRun.count
+    assert_not ReconciliationRuleDecision.exists?(rule_key: rule.key)
+    assert_not copy.reload.active?
+    assert_not @item.permitted?
+  end
+
+  test 'stale grouped forms queue no application' do
+    post arbitrate_reconciliation_workbench_family_path(ReconciliationWorkbench::Rules::PREFERENCE.key),
+      params: { scope_digest: 'old', choices: { @item.id.to_s => 'candidate' } }
+    assert_redirected_to reconciliation_workbench_family_path(ReconciliationWorkbench::Rules::PREFERENCE.key)
+    assert_equal 0, ReconciliationRun.count
+    assert_equal 0, ReconciliationRuleDecision.count
   end
 
   private

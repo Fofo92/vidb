@@ -18,6 +18,19 @@ module ReconciliationWorkbench
       redirect_to reconciliation_workbench_family_path(params[:id]), alert: e.message
     end
 
+    def arbitrate
+      raise ArgumentError, 'Famille incompatible' unless params[:id] == Rules::PREFERENCE.key
+
+      choices = params.permit(choices: {}).fetch(:choices, {})
+      count = CopyArbitration.new(user: current_user, choices: choices,
+                                  scope_digest: params[:scope_digest], page: params[:page],
+                                  comment: params[:comment]).call
+      redirect_to reconciliation_workbench_path(axis: 'disk'),
+                  notice: "#{count} choix confirmés ; application en attente."
+    rescue ArgumentError => e
+      redirect_to reconciliation_workbench_family_path(params[:id]), alert: e.message
+    end
+
     private
 
     def save_decision(rule)

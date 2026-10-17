@@ -14,14 +14,27 @@
   </div>
   <% @cases.each do |item| %>
     <% payload = item.payload %>
+    <% arbitration = @rule.key == ReconciliationWorkbench::Rules::PREFERENCE.key && payload.fetch('samples', []).size >= 2 %>
+    <% suggestion = ReconciliationWorkbench::CopySuggestion.call(payload) if arbitration %>
     <article class="card mb-3">
       <div class="card-body">
         <h2 class="h5"><%= link_to payload['title'], record_path(payload['record_id']) %></h2>
         <% if payload['comparison'] %>
-          <p><%= payload['comparison']['reason'] %></p>
+          <p>Comparaison automatique : <%= payload['comparison']['reason'] %></p>
           <p class="small text-muted">Qualité visuelle non évaluée. Les anciennes copies restent présentes ; aucun fichier n’est supprimé.</p>
           <% if payload.fetch('samples', []).empty? %>
             <ul class="small text-break"><% payload.fetch('copies', []).each do |_id, path| %><li><%= path %></li><% end %></ul>
+          <% end %>
+          <% if arbitration %>
+            <p class="small">Choisis la copie à privilégier, puis confirme les choix de cette page en bas. La suggestion tient compte de la date, de la taille, des pistes, de la durée et de la définition ; elle ne garantit pas les langues ni la qualité visuelle.</p>
+            <label class="small d-block mb-2">
+              <%= radio_button_tag "choices[#{item.id}]", 'defer', suggestion.nil?, form: 'copy-arbitration' %>
+              Laisser cet épisode à examiner
+            </label>
+          <% end %>
+          <% if payload['manual_review'] %>
+            <p class="small">Choix humain confirmé le <%= Time.iso8601(payload['manual_review']['reviewed_at']).in_time_zone('Europe/Paris').strftime('%d/%m/%Y à %H:%M') %>. Langues mesurées conservées.</p>
+            <% if payload['manual_review']['comment'].present? %><p><%= payload['manual_review']['comment'] %></p><% end %>
           <% end %>
           <div class="table-responsive"><table class="table table-sm" data-copy-comparison>
             <thead><tr><th>Copie</th><th>Date du fichier</th><th>Taille</th><th>Audio</th><th>Sous-titres</th><th>Choix proposé</th></tr></thead>
@@ -29,7 +42,17 @@
               <% payload.fetch('samples', []).each do |sample| %>
                 <% capabilities = payload.dig('comparison', 'capabilities', sample['asset_id'].to_s) || {} %>
                 <tr>
-                  <td class="text-break"><%= sample['path'] %></td>
+                  <td class="text-break">
+                    <%= sample['path'] %>
+                    <details class="small mt-1"><summary>Durée, définition et détail des pistes</summary>
+                      <p class="mb-1">Durée mesurée : <%= sample.dig('measurement', 'measured_duration_seconds') || 'À mesurer' %> secondes.</p>
+                      <ul>
+                        <% Array(sample.dig('measurement', 'technical_details', 'streams')).each do |stream| %>
+                          <li><%= workbench_stream_description(stream) %><% if stream['codec_type'] == 'video' %> · <%= stream['width'] %> × <%= stream['height'] %><% end %></li>
+                        <% end %>
+                      </ul>
+                    </details>
+                  </td>
                   <td><%= Time.iso8601(sample['modified_at']).in_time_zone('Europe/Paris').strftime('%d/%m/%Y') %></td>
                   <td><%= number_to_human_size(sample.dig('measurement', 'byte_size')) %></td>
                   <td>
@@ -39,7 +62,17 @@
                     <% end %>
                   </td>
                   <td><%= Array(capabilities['subtitles']).map(&:first).uniq.join(', ').presence || workbench_track_languages(sample, 'subtitle') %></td>
-                  <td><%= payload['comparison']['preferred_asset_id'] == sample['asset_id'] ? 'Privilégier' : 'Conserver' %></td>
+                  <td>
+                    <% if arbitration %>
+                      <label>
+                        <%= radio_button_tag "choices[#{item.id}]", sample['asset_id'], suggestion == sample['asset_id'], form: 'copy-arbitration' %>
+                        Privilégier cette copie
+                      </label>
+                      <% if suggestion == sample['asset_id'] %><span class="badge bg-secondary">Suggestion à confirmer</span><% end %>
+                    <% else %>
+                      <%= (payload.dig('manual_review', 'preferred_asset_id') || payload['comparison']['preferred_asset_id']) == sample['asset_id'] ? 'Privilégier' : 'Conserver' %>
+                    <% end %>
+                  </td>
                 </tr>
               <% end %>
             </tbody>
@@ -73,8 +106,21 @@
     <span>Page <%= @page %> · <%= @total %> propositions au total</span>
     <% if @page * 30 < @total %><%= link_to "Page suivante", reconciliation_workbench_family_path(@rule.key, page: @page + 1) %><% end %>
   </nav>
+  <% if @rule.key == ReconciliationWorkbench::Rules::PREFERENCE.key %>
+    <section class="card mb-3"><div class="card-body">
+      <h2 class="h5">Confirmer les choix de cette page</h2>
+      <p>Une confirmation pour tous les épisodes sélectionnés sur cette page. Les autres restent à examiner. Ces choix ne créent aucune règle automatique pour les futurs conflits et ne suppriment aucun fichier.</p>
+      <%= form_with url: arbitrate_reconciliation_workbench_family_path(@rule.key), method: :post, id: 'copy-arbitration' do |form| %>
+        <%= form.hidden_field :scope_digest, value: @scope_digest %>
+        <%= form.hidden_field :page, value: @page %>
+        <%= form.label :comment, "Justification commune (facultative)", class: 'form-label' %>
+        <%= form.text_area :comment, rows: 2, class: 'form-control mb-3' %>
+        <%= form.submit 'Confirmer les choix et lancer leur application', class: 'btn btn-primary', disabled: @total.zero? %>
+      <% end %>
+    </div></section>
+  <% end %>
   <section class="card"><div class="card-body">
-    <h2 class="h5">Une décision pour cette famille</h2>
+    <h2 class="h5">Validation de la règle de cette famille</h2>
     <% if @scope.where(status: 'blocked').exists? %>
       <p class="small text-muted">Pour réexaminer une fiche modifiée, diffère la famille puis actualise les propositions. Tu pourras examiner leur nouvel état avant une nouvelle validation.</p>
     <% end %>

@@ -85,7 +85,7 @@ module ReconciliationWorkbench
 
         status = @executor.call(item)
         applied += 1 if status == 'applied'
-        category = item.rule_key == Rules::PREFERENCE.key ? 'preferences' : axis
+        category = Rules.copy_preference?(item.rule_key) ? 'preferences' : axis
         update_progress(run, category, status)
       end
       applied

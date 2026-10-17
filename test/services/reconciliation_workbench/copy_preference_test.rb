@@ -111,6 +111,72 @@ class ReconciliationWorkbenchCopyPreferenceTest < ActiveSupport::TestCase
     assert_equal 'blocked', @item.reload.status
   end
 
+  def confirm_manual(asset_id = @new.id)
+    user = User.create!(email: 'copy-review@example.com', password: 'password')
+    digest = ReconciliationWorkbench::Snapshot.digest([@item.fingerprint])
+    ReconciliationWorkbench::CopyArbitration.new(user: user, choices: { @item.id.to_s => asset_id.to_s },
+      scope_digest: digest, comment: 'Copie récente et sous-titrée, piste originale vérifiée').call
+    @source = @item
+    @item = ReconciliationCase.current.find_by!(rule_key: ReconciliationWorkbench::Rules::MANUAL_COPY.key)
+  end
+
+  test 'manual choice applies unknown language evidence without changing languages or approving a recurring rule' do
+    details = @new.technical_details.deep_dup
+    details['streams'].last['tags']['language'] = 'qaa'
+    @new.update!(technical_details: details)
+    @planner.call
+    @item = ReconciliationCase.current.sole
+    assert_not @item.permitted?
+    confirm_manual
+    assert_not @source.reload.active?
+    @planner.call
+    assert_equal [@item.id], ReconciliationCase.current.pluck(:id)
+    assert_equal 'applied', apply
+    assert_equal 'manual', @new.reload.technical_details.dig('copy_preference', 'origin')
+    assert_equal 'qaa', @new.technical_details['streams'].last.dig('tags', 'language')
+    assert_equal @new.id, @item.reload.result.dig('manual_review', 'preferred_asset_id')
+    assert_not ReconciliationRuleDecision.exists?(rule_key: ReconciliationWorkbench::Rules::PREFERENCE.key)
+    assert_equal 'skipped', apply
+    @planner.call
+    assert_equal 0, ReconciliationCase.current.where(rule_key: ReconciliationWorkbench::Rules::PREFERENCE.key).count
+  end
+
+  test 'deferring a queued manual choice allows the original comparison to be examined again' do
+    confirm_manual
+    decision = ReconciliationRuleDecision.find_by!(rule_key: ReconciliationWorkbench::Rules::MANUAL_COPY.key)
+    decision.update!(decision: 'deferred')
+    @planner.call
+    assert @source.reload.active?
+    assert_not @item.reload.permitted?
+  end
+
+  test 'manual choices preserve the existing block on edited catalogue metadata' do
+    confirm_manual
+    @record.update!(abstract: 'Correction après arbitrage')
+    assert_equal 'blocked', apply
+    assert_nil @new.reload.technical_details['copy_preference']
+    assert_match 'modifiée depuis la proposition', @item.reload.error
+  end
+
+  test 'manual choices are still blocked after file measurement changes' do
+    confirm_manual
+    samples = @observer.measure(@observer.inputs([@old, @new]))
+    samples.last['measurement']['measured_duration_seconds'] += 1
+    @observer.stub(:measure, samples) { assert_equal 'blocked', apply }
+    assert_nil @new.reload.technical_details['copy_preference']
+    assert_match 'mesures ont changé', @item.reload.error
+  end
+
+  test 'manual preference and journal roll back on final physical verification failure and can resume' do
+    confirm_manual(@old.id)
+    @observer.fail_verification = true
+    assert_equal 'blocked', apply
+    assert_nil @old.reload.technical_details['copy_preference']
+    @observer.fail_verification = false
+    assert_equal 'applied', apply
+    assert_equal true, @old.reload.technical_details.dig('copy_preference', 'preferred')
+  end
+
   test 'a manual preference is preserved' do
     @old.update!(technical_details: @old.technical_details.merge('copy_preference' => { 'origin' => 'manual', 'preferred' => true }))
     @planner.call

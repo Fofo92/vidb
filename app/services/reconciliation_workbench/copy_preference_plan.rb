@@ -13,7 +13,7 @@ module ReconciliationWorkbench
     end
 
     def propose(record)
-      return unless eligible_record?(record)
+      return unless eligible_record?(record) && !ReviewedCopy.pending?(record)
 
       assets = record.video_assets.where(status: 'present').order(:id).to_a
       inputs = inputs_for(record, assets)

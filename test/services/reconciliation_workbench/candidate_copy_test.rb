@@ -104,6 +104,29 @@ class ReconciliationWorkbenchCandidateCopyTest < ActiveSupport::TestCase
     assert_nil VideoAsset.find_by(last_known_path: @path)
   end
 
+  test 'an explicit choice imports an unknown language candidate atomically and retains the reviewed evidence' do
+    @observer.measurements[@path]['measurement']['technical_details']['streams'].last['tags']['language'] = 'qaa'
+    propose
+    source = @item
+    assert_not source.permitted?
+    user = User.create!(email: 'candidate-review@example.com', password: 'password')
+    ReconciliationWorkbench::CopyArbitration.new(user: user, choices: { source.id.to_s => 'candidate' },
+      scope_digest: ReconciliationWorkbench::Snapshot.digest([source.fingerprint])).call
+    @item = ReconciliationCase.current.find_by!(rule_key: ReconciliationWorkbench::Rules::MANUAL_COPY.key)
+    @observer.fail_verification = true
+    assert_equal 'blocked', apply
+    assert_equal 1, @record.video_assets.count
+    @observer.fail_verification = false
+    assert_equal 'applied', apply
+    created = VideoAsset.find_by!(last_known_path: @path)
+    assert_equal true, created.technical_details.dig('copy_preference', 'preferred')
+    assert_equal 'qaa', created.technical_details['streams'].last.dig('tags', 'language')
+    assert_equal 'candidate', @item.reload.result.dig('manual_review', 'preferred_asset_id')
+    assert_equal created.id, @item.result['preferred_asset_id']
+    assert_equal 'skipped', apply
+    assert_equal 2, @record.video_assets.count
+  end
+
   test 'the existing copy may win over an older candidate' do
     @asset.update!(byte_size: 800)
     @payload['entry']['size'] = 1000
