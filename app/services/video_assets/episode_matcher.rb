@@ -27,6 +27,7 @@ module VideoAssets
 
     def directory_context(entry, number)
       directories = File.dirname(entry[:relative_path].to_s).split('/').map(&:strip)
+                        .reject { |name| ViewingConvention::DIRECTORIES.include?(name.downcase) }
       directory_number = SEASON.match(directories.last.to_s)&.[](1)&.to_i
       season = number[:season]&.to_i || directory_number
       {

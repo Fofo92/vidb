@@ -115,7 +115,7 @@
     <span>Page <%= @page %> · <%= @total %> propositions au total</span>
     <% if @page * 30 < @total %><%= link_to "Page suivante", reconciliation_workbench_family_path(@rule.key, page: @page + 1) %><% end %>
   </nav>
-  <% if @rule.key == ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key %>
+  <% if [ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key, ReconciliationWorkbench::Rules::SERIES_CREATION.key].include?(@rule.key) %>
     <%= render 'reconciliation_workbench/structure_backlog' %>
   <% end %>
   <% if @rule.key == ReconciliationWorkbench::Rules::PREFERENCE.key %>

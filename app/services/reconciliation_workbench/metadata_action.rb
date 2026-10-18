@@ -2,9 +2,7 @@ module ReconciliationWorkbench
   class MetadataAction
     def call(item)
       payload = item.payload
-      return SeasonTitleAction.new.call(payload) if item.rule_key == Rules::SEASON_TITLES.key
-      return SeriesStructureAction.new.call(payload) if item.rule_key == Rules::SOURCED_STRUCTURE.key
-      return structure(payload) if item.rule_key == Rules::STRUCTURE.key
+      return apply_structure(item) unless payload['field']
 
       record = Record.find(payload.fetch('record_id'))
       field = payload.fetch('field')
@@ -16,6 +14,15 @@ module ReconciliationWorkbench
     end
 
     private
+
+    def apply_structure(item)
+      case item.rule_key
+      when Rules::SERIES_CREATION.key then SeriesCreation.call(item.payload)
+      when Rules::SEASON_TITLES.key then SeasonTitleAction.new.call(item.payload)
+      when Rules::SOURCED_STRUCTURE.key then SeriesStructureAction.new.call(item.payload)
+      else structure(item.payload)
+      end
+    end
 
     def apply_field(item, record, field)
       payload = item.payload

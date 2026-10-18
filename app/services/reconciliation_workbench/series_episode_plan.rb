@@ -29,6 +29,8 @@ module ReconciliationWorkbench
     end
 
     def season_for(row)
+      return nil if @root.new_record?
+
       candidates = @root.children.select do |child|
         child.rank == row['local_season'] || season_number(child) == row['local_season']
       end
@@ -52,7 +54,7 @@ module ReconciliationWorkbench
     end
 
     def episode(row, season, references)
-      candidates = SeriesTitles.candidates(@index, row.fetch('observed_title'))
+      candidates = @root.new_record? ? [] : SeriesTitles.candidates(@index, row.fetch('observed_title'))
       positioned = season ? season.children.where(rank: row['local_episode']).to_a : []
       reusable = positioned.one? && candidates == [positioned.first.id]
       return held(row, 'Fiches existantes à départager avant toute création ou réutilisation') unless
@@ -69,6 +71,7 @@ module ReconciliationWorkbench
         'french_title' => EpisodeSourcePolicy.french_title(references, parts.size == 3 ? parts[1] : parts[0]),
         'original_title' => parts.size == 3 ? parts[2] : nil, 'path' => row['path'],
         'observed_title' => row['observed_title'], 'references' => references }
+        .merge(@root.new_record? ? { 'is_seen' => VideoAssets::ViewingConvention.seen_path?(row.fetch('path')) } : {})
     end
 
     def held(row, reason)

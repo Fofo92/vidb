@@ -58,7 +58,7 @@ module VideoAssets
     end
 
     def episode_entry?(entry)
-      entry[:episode].present? || EPISODE_PREFIX.match?(entry[:stem].to_s)
+      entry[:episode].present? || EPISODE_PREFIX.match?(ViewingConvention.strip_prefix(entry[:stem]))
     end
 
     def multiple_file_candidates(observations)

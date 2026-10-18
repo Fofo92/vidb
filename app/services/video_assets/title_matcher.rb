@@ -39,7 +39,7 @@ module VideoAssets
     end
 
     def normalize(value)
-      value.to_s.unicode_normalize(:nfkc).downcase.gsub(/\s+/, ' ').strip
+      ViewingConvention.strip_prefix(value).unicode_normalize(:nfkc).downcase.gsub(/\s+/, ' ').strip
     end
 
     def strip_language_suffix(value)

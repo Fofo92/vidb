@@ -13,15 +13,17 @@ module ReconciliationWorkbenchHelper
     scope.sum(Arel.sql("COALESCE((payload->>'file_count')::bigint, 0)"))
   end
 
-  def workbench_applied_structure_exclusions
-    @workbench_applied_structure_exclusions ||= ReconciliationCase.current.where(
-      rule_key: ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key, status: 'applied'
+  def workbench_applied_structure_exclusions(key = ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key)
+    @workbench_applied_structure_exclusions ||= {}
+    @workbench_applied_structure_exclusions[key] ||= ReconciliationCase.current.where(
+      rule_key: key, status: 'applied'
     ).order(:id).select { |item| item.payload.fetch('held', []).any? }
   end
 
-  def workbench_legacy_structures
-    rule = ReconciliationWorkbench::Rules::SOURCED_STRUCTURE
-    @workbench_legacy_structures ||= ReconciliationCase.current.where(
+  def workbench_legacy_structures(key = ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key)
+    rule = ReconciliationWorkbench::Rules.fetch(key)
+    @workbench_legacy_structures ||= {}
+    @workbench_legacy_structures[key] ||= ReconciliationCase.current.where(
       rule_key: rule.key, status: %w[pending blocked]
     ).where.not(rule_version: rule.version).order(:id).to_a
   end

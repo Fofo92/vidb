@@ -2,6 +2,7 @@ module ReconciliationWorkbench
   class SeriesStructureAction
     def call(payload)
       root = Record.find(payload.fetch('record_id'))
+      @creating_series = payload['new_root'].present?
       verify_root!(root, payload)
       qualify(root, 'series')
       index = SeriesTitles.index
@@ -27,10 +28,9 @@ module ReconciliationWorkbench
     end
 
     def apply(root, operation, index)
-      existing = operation['existing_id']
       candidates = SeriesTitles.candidates(index, operation.fetch('observed_title'))
-      raise ArgumentError, 'Une fiche concurrente est apparue depuis la proposition' unless
-        candidates == (existing ? [existing] : [])
+      raise ArgumentError, 'Une fiche concurrente est apparue depuis la proposition' if
+        !@creating_series && candidates != Array(operation['existing_id'])
 
       season = season(root, operation)
       episode = episode(season, operation)
@@ -107,7 +107,8 @@ module ReconciliationWorkbench
     def create_episode(season, operation)
       season.children.create!(operation.slice('french_title', 'original_title').merge(
                                 'rank' => operation['episode'], 'record_kind' => 'episode',
-                                'language_version_id' => season.root.language_version_id
+                                'language_version_id' => season.root.language_version_id,
+                                'is_seen' => @creating_series && operation.fetch('is_seen', false)
                               ))
     end
 

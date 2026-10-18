@@ -24,15 +24,38 @@ module ReconciliationWorkbench
     end
 
     def propose(group, document, index)
-      root = SeriesEvidence.identity!(group['proposed_existing_root']) if group['proposed_existing_root']
+      if group['proposed_new_root']
+        receipt = creation_receipt(group)
+        return [receipt] if receipt
+      end
+      root = proposed_root(group)
       payload = compile(group, root, index)
       payload.merge!('inventory_at' => document.fetch('inventory_at'), 'inputs' => document.fetch('inputs'),
                      'reference_attribution' => document.fetch('reference_attribution'))
-      item = CaseStore.propose(rule: Rules::SOURCED_STRUCTURE, key: "series:#{group.fetch('directory')}",
+      item = publish(group, payload)
+      payload['new_root'] ? [item] : [item, *SeriesYearProposals.new.call(item.payload)]
+    end
+
+    def proposed_root(group)
+      return SeriesEvidence.identity!(group['proposed_existing_root']) if group['proposed_existing_root']
+
+      SeriesCreation.preview(group) if group['proposed_new_root']
+    end
+
+    def publish(group, payload)
+      rule = payload['new_root'] ? Rules::SERIES_CREATION : Rules::SOURCED_STRUCTURE
+      item = CaseStore.propose(rule: rule, key: "series:#{group.fetch('directory')}",
                                payload: payload, preserve_pending: true)
       item.update!(status: 'blocked', error: exclusion_summary(item.payload)) if
         item.status == 'pending' && item.payload.fetch('operations').empty?
-      [item, *SeriesYearProposals.new.call(item.payload)]
+      item
+    end
+
+    def creation_receipt(group)
+      raise ArgumentError, 'Choisir création ou série existante' if group['proposed_existing_root']
+
+      ReconciliationCase.find_by(rule_key: Rules::SERIES_CREATION.key,
+                                 case_key: "series:#{group.fetch('directory')}", status: 'applied')
     end
 
     def exclusion_summary(payload)
@@ -46,7 +69,8 @@ module ReconciliationWorkbench
       raise ArgumentError, 'Nombre de fichiers de la série incohérent' unless rows.size == group.fetch('file_count')
 
       sources = [SeriesEvidence.source!(group.fetch('reference_url'))]
-      plans = rows.map { |row| plan_row(group, root, index, row) }
+      selected = root&.new_record? && SeriesCreation.conflicts(root, index).any? ? nil : root
+      plans = rows.map { |row| plan_row(group, selected, index, row) }
       operations, held = plans.partition { |plan| plan.key?('kind') }
       operations, conflicts = unique_operations(operations)
       held.concat(conflicts)
@@ -76,22 +100,33 @@ module ReconciliationWorkbench
     end
 
     def seasonal_branch?(root)
+      return true if root.new_record?
+
       root.children.all? do |child|
         %w[season undetermined].include?(child.record_kind) && child.french_title.to_s.match?(/\ASaison\s+\d+\z/i)
       end
     end
 
     def payload(group, root, operations, held, sources)
-      records = root ? [root, *root.descendants.order(:id).to_a] : []
       { 'record_id' => root&.id, 'title' => group.fetch('name'), 'file_count' => group.fetch('file_count'),
         'episode_source_policy' => EpisodeSourcePolicy::VERSION,
         'season_references' => group.fetch('season_references', []),
         'directory' => group.fetch('directory'), 'operations' => operations, 'held' => held,
         'language_version_id' => root&.language_version_id, 'language_label' => root&.language_version&.long_name,
         'reference_show' => group.fetch('reference_show', {}).slice('name', 'premiered', 'ended', 'language'),
-        'sources' => sources, 'records' => records.to_h { |record| [record.id.to_s, Snapshot.record(record)] },
+        'sources' => sources, 'records' => snapshot_records(root),
         'reason' => 'Créer les saisons et épisodes manquants ou qualifier les fiches concordantes. ' \
                     'Titres existants conservés ; langue des nouvelles fiches héritée de la série.' }
+        .merge(creation_attributes(root))
+    end
+
+    def creation_attributes(root)
+      root&.new_record? ? { 'new_root' => root.attributes.slice('french_title', 'original_title') } : {}
+    end
+
+    def snapshot_records(root)
+      records = root&.persisted? ? [root, *root.descendants.order(:id).to_a] : []
+      records.to_h { |record| [record.id.to_s, Snapshot.record(record)] }
     end
   end
 end

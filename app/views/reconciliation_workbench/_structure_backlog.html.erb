@@ -1,8 +1,8 @@
-<% if workbench_applied_structure_exclusions.any? %>
+<% if workbench_applied_structure_exclusions(@rule.key).any? %>
   <section class="border rounded p-3 mb-3">
     <h2 class="h5">Cas laissés de côté lors des applications</h2>
     <p>Ces dossiers ont appliqué leurs opérations prêtes. Les fichiers ci-dessous en étaient exclus et restent à réexaminer. Ce bilan conserve les motifs de l’application ; il ne les réévalue pas et ne relance aucune opération terminée.</p>
-    <% workbench_applied_structure_exclusions.each do |item| %>
+    <% workbench_applied_structure_exclusions(@rule.key).each do |item| %>
       <details class="mb-3"><summary><%= item.payload['title'] %> · <%= item.payload['held'].size %> fichiers laissés de côté</summary>
         <ul class="small text-break mt-2">
           <% item.payload['held'].each do |held| %>
@@ -15,12 +15,12 @@
     <% end %>
   </section>
 <% end %>
-<% if workbench_legacy_structures.any? %>
+<% if workbench_legacy_structures(@rule.key).any? %>
   <section class="border rounded p-3 mb-3">
     <h2 class="h5">Dossiers d’une ancienne version à réexaminer</h2>
     <p>Ces propositions ne sont pas approuvées par une décision de la version actuelle. Réimporte le dossier avec ses chemins et références à jour pour préparer le nouveau périmètre.</p>
     <ul class="small">
-      <% workbench_legacy_structures.each do |item| %>
+      <% workbench_legacy_structures(@rule.key).each do |item| %>
         <li><%= item.payload['title'] %> · version <%= item.rule_version %> · <%= item.payload['file_count'] %> fichiers dans le dossier.</li>
       <% end %>
     </ul>
