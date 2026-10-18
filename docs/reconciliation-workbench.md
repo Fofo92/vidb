@@ -60,6 +60,32 @@ de concurrent. Une saison explicitement nommée peut recevoir son bon rang si ce
 Les épisodes multiples, traductions non concordantes, références génériques, saisons spéciales,
 racines absentes ou concurrentes et rangs concurrents restent affichés parmi les exclusions.
 
+Les nouvelles fiches de saison portent un numéro sans zéro initial : `Saison 3`, `Saison 4`,
+`Saison 5`. Les dossiers du disque peuvent porter `Saison 03`, `Saison 04`, `Saison 05` :
+le rapprochement compare le numéro. La création d’une fiche ne renomme aucun dossier,
+et les titres des saisons existantes restent conservés.
+
+Les dates originales `airdate` au format ISO dans les références concordantes préparent aussi
+des propositions d’année pour les épisodes déjà identifiés. Le groupe peut fournir
+`season_references`, avec `season`, `airdate` et `url`, pour la première diffusion de chaque
+saison. Cette date provient du guide complet, et non du premier fichier présent sur le disque.
+La convention est `first_release`. Les années sont traitées par la famille existante
+**Compléter : année de référence**, avec son approbation propre ; approuver une structure
+ne valide pas implicitement ses années. Les valeurs déjà renseignées et les provenances
+protégées, même sans année, restent intactes. Les nouvelles fiches préparent ces propositions
+dans la transaction de création. Si la règle d’année est déjà approuvée, le service les
+enchaîne dans la même passe ; un cas bloqué n’est tenté qu’une fois par passe.
+
+Les opérations terminées ne sont pas proposées à nouveau, mais leurs fichiers laissés de côté
+restent visibles en lecture seule avec les motifs conservés. Les anciens dossiers non traités
+d’une autre version sont également signalés. Un compteur de propositions à zéro ne signifie
+donc pas que tous les fichiers ont été rapprochés.
+
+La création d’une fiche et l’enrichissement de son année ne prouvent pas qu’une copie a été
+rattachée. Les états d’une saison se lisent à partir de ses épisodes. `is_recorded` conserve
+l’historique d’enregistrement ; la présence actuelle des copies concerne `is_available`.
+L’absence actuelle d’un fichier n’efface pas automatiquement cet historique.
+
 La politique `wikipedia_fr_first_v1`, appliquée par le code, privilégie les références de
 Wikipédia en français pour les titres et la numérotation des épisodes, puis les autres éditions
 de Wikipédia, puis les autres sources en l’absence de référence Wikipédia pour le cas.
@@ -288,3 +314,14 @@ La famille de comparaison propose désormais, pour chaque épisode mesuré, « l
 Le formulaire **Confirmer les choix de cette page** enregistre les choix sélectionnés en une transaction, avec une justification commune facultative. Il ne concerne que les propositions affichées sur cette page (30 au maximum) ; les autres restent à examiner. Un formulaire dont le périmètre a changé est refusé. L’arbitrage conserve l’utilisateur, la date, le choix, la justification, l’empreinte du cas source et celle de toutes les mesures examinées. Il crée des autorisations limitées à ces cas dans la famille **Choix de copies confirmés**, sans approuver la règle automatique ni attribuer une langue à `qaa`.
 
 L’application reste en arrière-plan : contrôle du montage, identité physique, instantanés de fiches et de copies, nouvelles mesures strictement identiques à celles examinées, puis rattachement éventuel du candidat et préférence dans la même transaction SQL que la clôture du cas. Un changement bloque ce choix et laisse continuer les autres. Une reprise ne réimporte pas une copie déjà validée. Les anciennes copies et tous les fichiers restent conservés. Le planificateur préserve un choix humain autorisé en attente et la préférence manuelle appliquée.
+
+## Conventions communes à toutes les séries
+
+Les créations de saisons utilisent `Saison 3` dans le catalogue, même si le répertoire
+du disque s’appelle `Saison 03`. Le rapprochement repose sur le rang numérique.
+Le planificateur prépare aussi la famille `generated_season_titles` pour corriger
+les anciens titres avec zéro initial créés par l’atelier, toutes séries confondues.
+Les reçus d’application attestent la création ; une saison préexistante ou un titre
+personnalisé est exclu. La validation groupée ne couvre que les propositions affichées.
+Les instantanés bloquent une modification manuelle postérieure, même annulée ensuite.
+Aucun nom de répertoire ni fichier n’est modifié par cette famille.

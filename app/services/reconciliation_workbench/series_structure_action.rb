@@ -6,10 +6,18 @@ module ReconciliationWorkbench
       qualify(root, 'series')
       index = SeriesTitles.index
       receipts = payload.fetch('operations').map { |operation| apply(root, operation, index) }
-      { 'episodes' => receipts, 'held_files' => payload.fetch('held').size }
+      years = prepare_years(payload, receipts)
+      { 'episodes' => receipts, 'held_files' => payload.fetch('held').size, 'year_proposals' => years.size }
     end
 
     private
+
+    def prepare_years(payload, receipts)
+      operations = payload.fetch('operations').zip(receipts).map do |operation, receipt|
+        operation.merge('existing_id' => receipt.fetch('episode_id'))
+      end
+      SeriesYearProposals.new.call(payload.merge('operations' => operations))
+    end
 
     def verify_root!(root, payload)
       return if root.root? && %w[series undetermined].include?(root.record_kind) &&
@@ -75,7 +83,7 @@ module ReconciliationWorkbench
     end
 
     def create_season(root, number)
-      record = root.children.create!(french_title: format('Saison %02d', number), rank: number,
+      record = root.children.create!(french_title: "Saison #{number}", rank: number,
                                      record_kind: 'season', language_version_id: root.language_version_id)
       (@created_seasons ||= []) << record.id
       record

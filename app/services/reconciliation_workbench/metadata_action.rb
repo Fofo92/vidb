@@ -2,6 +2,7 @@ module ReconciliationWorkbench
   class MetadataAction
     def call(item)
       payload = item.payload
+      return SeasonTitleAction.new.call(payload) if item.rule_key == Rules::SEASON_TITLES.key
       return SeriesStructureAction.new.call(payload) if item.rule_key == Rules::SOURCED_STRUCTURE.key
       return structure(payload) if item.rule_key == Rules::STRUCTURE.key
 
