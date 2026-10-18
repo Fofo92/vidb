@@ -30,9 +30,18 @@ module ReconciliationWorkbench
       recurring: false
     )
     FIELDS = %w[year abstract country_id language_version_id genres].freeze
+    SOURCED_STRUCTURE = Rule.new(
+      key: 'reviewed_series_structure', version: 1, axis: 'metadata',
+      title: 'Compléter les structures de séries documentées',
+      proposal: 'Créer les saisons et épisodes manquants, qualifier les fiches concordantes ' \
+                'ou corriger un rang de saison explicite.',
+      limits: 'Seulement les opérations affichées. Aucun parent changé, aucun titre existant remplacé. ' \
+              'Les cas à arbitrer restent de côté. Le rapprochement disque conserve sa validation séparée.',
+      recurring: false
+    )
 
     def self.all
-      [STRUCTURE, DISK, PREFERENCE, MANUAL_COPY] + FIELDS.flat_map do |field|
+      [STRUCTURE, SOURCED_STRUCTURE, DISK, PREFERENCE, MANUAL_COPY] + FIELDS.flat_map do |field|
         %w[fill replace].map do |mode|
           sourced_rule(field, mode)
         end
@@ -57,6 +66,7 @@ module ReconciliationWorkbench
 
     def self.applicable?(item)
       return item.payload['manual_review'].present? if item.rule_key == MANUAL_COPY.key
+      return item.payload.fetch('operations').any? if item.rule_key == SOURCED_STRUCTURE.key
 
       item.rule_key != PREFERENCE.key || item.payload.dig('comparison', 'eligible') == true
     end

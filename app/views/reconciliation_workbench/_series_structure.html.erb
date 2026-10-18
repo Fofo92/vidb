@@ -1,0 +1,36 @@
+<p><strong><%= payload['operations'].size %> épisodes proposés</strong> ; <%= payload['held'].size %> fichiers laissés à arbitrer sur <%= payload['file_count'] %>.</p>
+<p class="small">Les nouvelles fiches hériteront de la langue de la série : <%= payload['language_label'] || 'à déterminer' %>. Leurs titres proviennent des fichiers et concordent avec les références ci-dessous. Les titres, années, genres et langues des fiches existantes sont conservés.</p>
+<% if payload.fetch('reference_show', {}).any? %>
+  <p class="small">Série dans la source : <%= payload.dig('reference_show', 'name') %> · première diffusion <%= payload.dig('reference_show', 'premiered') || 'non renseignée' %>.</p>
+<% end %>
+<details><summary>Créations et réutilisations proposées par saison</summary>
+  <% payload['operations'].group_by { |operation| operation['season'] }.sort.each do |number, operations| %>
+    <h3 class="h6 mt-3">Saison <%= format('%02d', number) %> · <%= operations.first['season_id'] ? "saison existante n° #{operations.first['season_id']}" : 'saison à créer' %></h3>
+    <% if operations.first['season_id'] && operations.first['season_rank_before'] != number %>
+      <p class="small"><strong>Corriger le rang de cette saison : <%= operations.first['season_rank_before'] || 'absent' %> → <%= number %>.</strong> Son titre indique déjà ce numéro ; son parent reste identique.</p>
+    <% end %>
+    <ul class="small">
+      <% operations.each do |operation| %>
+        <li>
+          <strong><%= operation['kind'] == 'create_episode' ? 'Créer' : "Réutiliser la fiche n° #{operation['existing_id']}" %></strong>
+          · épisode <%= operation['episode'] %> · <%= operation['observed_title'] %>
+          <% operation['references'].each do |reference| %>
+            · <%= link_to reference['name'], reference['url'], target: '_blank', rel: 'noopener noreferrer' %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</details>
+<% if payload['held'].any? %>
+  <details class="mt-3"><summary>Cas à arbitrer, exclus de cette application (<%= payload['held'].size %>)</summary>
+    <ul class="small text-break mt-2">
+      <% payload['held'].each do |held| %>
+        <li><%= held['path'] %> — <strong><%= held['reason'] %></strong>
+          <% held['candidate_ids'].each do |id| %> · <%= link_to "Fiche n° #{id}", record_path(id) %><% end %>
+        </li>
+      <% end %>
+    </ul>
+  </details>
+<% end %>
+<p class="small text-muted mt-3"><%= payload['reference_attribution'] %></p>

@@ -2,6 +2,7 @@ module ReconciliationWorkbench
   class MetadataAction
     def call(item)
       payload = item.payload
+      return SeriesStructureAction.new.call(payload) if item.rule_key == Rules::SOURCED_STRUCTURE.key
       return structure(payload) if item.rule_key == Rules::STRUCTURE.key
 
       record = Record.find(payload.fetch('record_id'))

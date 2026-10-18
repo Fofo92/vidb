@@ -3,6 +3,8 @@ require 'uri'
 module ReconciliationWorkbench
   class Proposals
     def call(document)
+      return SeriesDossier.new.call(document) if document['format'] == SeriesDossier::FORMAT
+
       unless document['format'] == 'vidb.sourced_metadata_proposals' && document['version'] == 1
         raise ArgumentError, 'Format de propositions incompatible'
       end

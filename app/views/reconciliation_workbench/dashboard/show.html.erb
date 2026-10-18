@@ -57,7 +57,7 @@
   <% if @axis == 'metadata' %>
     <details class="border rounded p-3 mb-4">
       <summary>Ajouter des propositions documentées</summary>
-      <p class="mt-3 small">Le document contient les valeurs proposées, la fiche identifiée, la justification et les liens des sources. L’ajout ne vaut pas validation.</p>
+      <p class="mt-3 small">Ajoute un document de caractéristiques ou un dossier de préparation des structures de séries (fichier plan-22-series.json extrait du dossier). Les créations et réutilisations apparaîtront par série, avec leurs sources et les cas laissés à arbitrer. L’ajout ne vaut pas validation et ne lance aucune application.</p>
       <%= form_with url: proposals_reconciliation_workbench_path, multipart: true do |form| %>
         <%= form.label :proposals, "Document de propositions (JSON)", class: "form-label" %>
         <%= form.file_field :proposals, accept: "application/json,.json", required: true, class: "form-control mb-2" %>
