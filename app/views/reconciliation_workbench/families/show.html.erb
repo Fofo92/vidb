@@ -82,6 +82,13 @@
             <div class="col-md-6"><strong>Valeur actuelle</strong><p class="text-muted"><%= workbench_value(payload['field'], payload['before']) %></p></div>
             <div class="col-md-6"><strong>Valeur proposée</strong><p><%= workbench_value(payload['field'], payload['value']) %></p></div>
           </div>
+        <% elsif payload['season_titles'] %>
+          <p>Seuls les titres du catalogue changent. Les noms des répertoires sur disque restent identiques.</p>
+          <ul>
+            <% payload['season_titles'].each do |id, change| %>
+              <li><%= link_to change['before'], record_path(id) %> → <%= change['after'] %></li>
+            <% end %>
+          </ul>
         <% elsif payload['operations'] %>
           <%= render 'reconciliation_workbench/series_structure', payload: payload %>
         <% elsif payload['roles'] %>
@@ -108,6 +115,9 @@
     <span>Page <%= @page %> · <%= @total %> propositions au total</span>
     <% if @page * 30 < @total %><%= link_to "Page suivante", reconciliation_workbench_family_path(@rule.key, page: @page + 1) %><% end %>
   </nav>
+  <% if @rule.key == ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key %>
+    <%= render 'reconciliation_workbench/structure_backlog' %>
+  <% end %>
   <% if @rule.key == ReconciliationWorkbench::Rules::PREFERENCE.key %>
     <section class="card mb-3"><div class="card-body">
       <h2 class="h5">Confirmer les choix de cette page</h2>

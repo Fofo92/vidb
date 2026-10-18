@@ -8,7 +8,7 @@
 <% end %>
 <details><summary>Créations et réutilisations proposées par saison</summary>
   <% payload['operations'].group_by { |operation| operation['season'] }.sort.each do |number, operations| %>
-    <h3 class="h6 mt-3">Saison <%= format('%02d', number) %> · <%= operations.first['season_id'] ? "saison existante n° #{operations.first['season_id']}" : 'saison à créer' %></h3>
+    <h3 class="h6 mt-3">Saison <%= number %> · <%= operations.first['season_id'] ? "saison existante n° #{operations.first['season_id']}" : 'saison à créer' %></h3>
     <% if operations.first['season_id'] && operations.first['season_rank_before'] != number %>
       <p class="small"><strong>Corriger le rang de cette saison : <%= operations.first['season_rank_before'] || 'absent' %> → <%= number %>.</strong> Son titre indique déjà ce numéro ; son parent reste identique.</p>
     <% end %>

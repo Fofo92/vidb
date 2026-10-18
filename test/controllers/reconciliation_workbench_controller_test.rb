@@ -159,6 +159,30 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'Français'
   end
 
+  test 'applied exclusions and legacy dossiers remain visible without entering the approval scope' do
+    rule = ReconciliationWorkbench::Rules::SOURCED_STRUCTURE
+    applied = ReconciliationWorkbench::CaseStore.propose(rule: rule, key: 'applied:test', payload: {
+      'title' => 'Série déjà traitée', 'file_count' => 1, 'operations' => [],
+      'held' => [{ 'path' => '/videos/exclu.mkv', 'reason' => 'Titre à vérifier' }] })
+    applied.update!(status: 'applied')
+    legacy = ReconciliationWorkbench::CaseStore.propose(rule: rule, key: 'legacy:test', payload: {
+      'title' => 'Ancien dossier', 'file_count' => 3, 'operations' => [], 'held' => [] })
+    legacy.update!(rule_version: rule.version - 1)
+    get reconciliation_workbench_family_path(rule.key)
+    assert_response :success
+    assert_select 'article', count: 0
+    assert_select 'button[value="approved"][disabled]', count: 1
+    assert_includes response.body, 'Série déjà traitée'
+    assert_includes response.body, '/videos/exclu.mkv'
+    assert_includes response.body, 'Ancien dossier'
+    post decision_reconciliation_workbench_family_path(rule.key), params: {
+      decision: 'approved', scope_digest: ReconciliationWorkbench::Snapshot.digest([]) }
+    assert_not applied.reload.permitted?
+    assert_not legacy.reload.permitted?
+    assert_equal 'applied', applied.status
+    assert_equal 'pending', legacy.status
+  end
+
   private
 
   def decision_params

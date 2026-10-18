@@ -21,7 +21,7 @@ module ReconciliationWorkbench
       before = field == 'genres' ? record.genders.order(:name).pluck(:name) : record.public_send(field)
       mode = fillable?(record, field, before) ? 'fill' : 'replace'
       payload = proposal.merge('value' => normalize_value(field, proposal.fetch('value')), 'before' => before,
-                               'title' => record.complete_title, 'file_count' => 0,
+                               'title' => record.complete_title_with_parents, 'file_count' => 0,
                                'records' => { record.id.to_s => Snapshot.record(record) })
       CaseStore.propose(rule: Rules.fetch("sourced_#{field}_#{mode}"), key: "record:#{record.id}:#{field}",
                         payload: payload)

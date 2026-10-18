@@ -78,29 +78,7 @@ module ReconciliationWorkbench
     end
 
     def apply_axis(run, axis)
-      applied = 0
-      axis_scope(run, axis).find_each do |item|
-        break if run.reload.stop_requested?
-        next unless item.permitted?
-
-        status = @executor.call(item)
-        applied += 1 if status == 'applied'
-        category = Rules.copy_preference?(item.rule_key) ? 'preferences' : axis
-        update_progress(run, category, status)
-      end
-      applied
-    end
-
-    def axis_scope(run, axis)
-      scope = ReconciliationCase.current.where(axis: axis, status: %w[pending blocked])
-      run.rule_key.present? ? scope.where(rule_key: run.rule_key) : scope
-    end
-
-    def update_progress(run, axis, status)
-      summary = run.summary
-      summary[axis] ||= { 'applied' => 0, 'blocked' => 0 }
-      summary[axis][status] = summary[axis].fetch(status, 0) + 1
-      run.update!(summary: summary)
+      AxisApplication.new(executor: @executor).call(run, axis)
     end
   end
 end

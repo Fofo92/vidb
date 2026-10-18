@@ -6,7 +6,7 @@ module ReconciliationWorkbench
       validate!(document)
       Record.transaction do
         index = SeriesTitles.index
-        document.fetch('groups').map { |group| propose(group, document, index) }
+        document.fetch('groups').flat_map { |group| propose(group, document, index) }
       end
     end
 
@@ -32,7 +32,7 @@ module ReconciliationWorkbench
                                payload: payload, preserve_pending: true)
       item.update!(status: 'blocked', error: exclusion_summary(item.payload)) if
         item.status == 'pending' && item.payload.fetch('operations').empty?
-      item
+      [item, *SeriesYearProposals.new.call(item.payload)]
     end
 
     def exclusion_summary(payload)
@@ -85,11 +85,11 @@ module ReconciliationWorkbench
       records = root ? [root, *root.descendants.order(:id).to_a] : []
       { 'record_id' => root&.id, 'title' => group.fetch('name'), 'file_count' => group.fetch('file_count'),
         'episode_source_policy' => EpisodeSourcePolicy::VERSION,
+        'season_references' => group.fetch('season_references', []),
         'directory' => group.fetch('directory'), 'operations' => operations, 'held' => held,
         'language_version_id' => root&.language_version_id, 'language_label' => root&.language_version&.long_name,
         'reference_show' => group.fetch('reference_show', {}).slice('name', 'premiered', 'ended', 'language'),
-        'sources' => sources,
-        'records' => records.to_h { |record| [record.id.to_s, Snapshot.record(record)] },
+        'sources' => sources, 'records' => records.to_h { |record| [record.id.to_s, Snapshot.record(record)] },
         'reason' => 'Créer les saisons et épisodes manquants ou qualifier les fiches concordantes. ' \
                     'Titres existants conservés ; langue des nouvelles fiches héritée de la série.' }
     end

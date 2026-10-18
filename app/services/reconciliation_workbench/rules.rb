@@ -30,6 +30,13 @@ module ReconciliationWorkbench
       recurring: false
     )
     FIELDS = %w[year abstract country_id language_version_id genres].freeze
+    SEASON_TITLES = Rule.new(
+      key: 'generated_season_titles', version: 1, axis: 'metadata',
+      title: 'Harmoniser les titres des saisons créées par l’atelier',
+      proposal: 'Remplacer Saison 03 par Saison 3 dans le catalogue, pour toutes les séries concernées.',
+      limits: 'Création attestée par un reçu de l’atelier et titre généré exact uniquement. ' \
+              'Aucun répertoire renommé. Validation limitée aux propositions affichées.', recurring: false
+    )
     SOURCED_STRUCTURE = Rule.new(
       key: 'reviewed_series_structure', version: 2, axis: 'metadata',
       title: 'Compléter les structures de séries documentées',
@@ -41,7 +48,7 @@ module ReconciliationWorkbench
     )
 
     def self.all
-      [STRUCTURE, SOURCED_STRUCTURE, DISK, PREFERENCE, MANUAL_COPY] + FIELDS.flat_map do |field|
+      [STRUCTURE, SOURCED_STRUCTURE, SEASON_TITLES, DISK, PREFERENCE, MANUAL_COPY] + FIELDS.flat_map do |field|
         %w[fill replace].map do |mode|
           sourced_rule(field, mode)
         end

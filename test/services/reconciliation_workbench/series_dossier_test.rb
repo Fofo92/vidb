@@ -63,7 +63,7 @@ class ReconciliationWorkbenchSeriesDossierTest < ActiveSupport::TestCase
     assert_equal 'season', @season.reload.record_kind
     assert_equal 2, @root.children.count
     new_season = @root.children.find_by!(rank: 2)
-    assert_equal 'Saison 02', new_season.french_title
+    assert_equal 'Saison 2', new_season.french_title
     assert_equal 2, new_season.children.count
     assert_equal ['episode'], @root.descendants.where.not(id: @root.children.ids).pluck(:record_kind).uniq
     assert_equal [@language.id], @root.descendants.pluck(:language_version_id).uniq
@@ -303,5 +303,78 @@ class ReconciliationWorkbenchSeriesDossierTest < ActiveSupport::TestCase
     item = import(document(entry))
     assert_match '1 : Titre et numéro non confirmés ensemble par une source', item.error
     assert_no_match 'Identité ou structure à arbitrer', item.error
+  end
+
+  test 'dated structure proposals prepare separate year decisions without changing existing metadata' do
+    episode = @season.children.create!(french_title: 'La découverte', rank: 1, language_version: @language)
+    entry = row
+    entry['reference_same_number'][0]['airdate'] = '1991-03-06'
+    source = document(entry)
+    source['groups'][0]['season_references'] = [{ 'season' => 1, 'airdate' => '1990-09-28',
+      'url' => 'https://fr.wikipedia.org/wiki/Saison_1' }]
+    items = ReconciliationWorkbench::Proposals.new.call(source)
+    structure = items.find { |item| item.rule_key == ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key }
+    assert_nil episode.reload.year
+    assert_equal 2, items.size
+    approve(structure)
+    assert_equal 'applied', ReconciliationWorkbench::Executor.new.call(structure)
+    years = ReconciliationCase.current.where(rule_key: 'sourced_year_fill').to_a
+    assert_equal 2, years.size
+    assert years.none?(&:permitted?)
+    assert_nil episode.reload.year
+    approve(years.first)
+    years.each { |item| assert_equal 'applied', ReconciliationWorkbench::Executor.new.call(item) }
+    assert_equal 1991, episode.reload.year
+    assert_equal 1990, @season.reload.year
+    assert_equal 'first_release', episode.year_basis
+    assert_equal ['https://example.org/series/episodes/1'], episode.year_evidence['sources']
+  end
+
+  test 'new episode years follow an already approved year rule in the same worker pass' do
+    entry = row
+    entry['reference_same_number'][0]['airdate'] = '1990-10-19'
+    structure = import(document(entry))
+    approve(structure)
+    ReconciliationRuleDecision.create!(rule_key: 'sourced_year_fill', rule_version: 1, decision: 'approved')
+    planner = Object.new
+    planner.define_singleton_method(:call) { {} }
+    refresh = Object.new
+    refresh.define_singleton_method(:call) { true }
+    run = ReconciliationRun.create!(mode: 'apply')
+    ReconciliationWorkbench::Worker.new(planner: planner, refresh: refresh).perform(run)
+    assert_equal 'completed', run.reload.status
+    assert_equal 2, run.summary.dig('metadata', 'applied')
+    assert_equal 1990, @season.children.sole.year
+    assert_equal 'first_release', @season.children.sole.year_basis
+    assert_equal 0, VideoAsset.count
+  end
+
+  test 'existing years and protected empty year provenance are never replaced by dated structures' do
+    episode = @season.children.create!(french_title: 'La découverte', rank: 1, language_version: @language,
+      year: 2020, year_basis: 'production', year_evidence: { 'manual' => true })
+    entry = row
+    entry['reference_same_number'][0]['airdate'] = '1990-10-19'
+    assert_equal ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key, import(document(entry)).rule_key
+    assert_equal 2020, episode.reload.year
+    episode.update!(year: nil, year_evidence: { 'manual' => 'à vérifier' })
+    assert_equal ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key, import(document(entry)).rule_key
+    assert_equal 0, ReconciliationCase.where(rule_key: 'sourced_year_fill').count
+  end
+
+  test 'an invalid date for an existing episode rejects the whole dossier without partial proposals' do
+    @season.children.create!(french_title: 'La découverte', rank: 1, language_version: @language)
+    entry = row
+    entry['reference_same_number'][0]['airdate'] = '1990-02-31'
+    assert_raises(ArgumentError) { import(document(entry)) }
+    assert_equal 0, ReconciliationCase.count
+  end
+
+  test 'conflicting dated references cannot choose an arbitrary episode year' do
+    @season.children.create!(french_title: 'La découverte', rank: 1, language_version: @language)
+    entry = row
+    entry['reference_same_number'][0]['airdate'] = '1990-10-19'
+    entry['reference_same_number'] << entry['reference_same_number'][0].merge('airdate' => '1991-10-19')
+    assert_raises(ArgumentError) { import(document(entry)) }
+    assert_equal 0, ReconciliationCase.count
   end
 end

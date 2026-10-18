@@ -32,7 +32,8 @@ module ReconciliationWorkbench
     private
 
     def summarize(source, seen)
-      { 'proposed' => seen.size, 'known_copies' => @known_copies,
+      { 'proposed' => seen.size, 'season_title_proposals' => SeasonTitlePlan.new.call.size,
+        'known_copies' => @known_copies,
         'inventory_at' => source.fetch(:inventory_at), 'disk_presence' => source.fetch(:disk_presence, {}),
         'source_counts' => VideoAssets::BlockageSummary.new(followup: source).call[:counts] }
         .merge(CopyPreferencePlan.new.call(candidates: @competing))

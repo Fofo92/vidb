@@ -47,6 +47,11 @@
             <p class="small text-muted"><%= rule.limits %></p>
             <div class="mt-auto">
               <p class="mb-2"><strong><%= pending.count %></strong> propositions · <strong><%= workbench_file_count(pending) %></strong> fichiers concernés</p>
+              <% if rule.key == ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key %>
+                <% excluded = workbench_applied_structure_exclusions.sum { |item| item.payload['held'].size } %>
+                <% if excluded.positive? %><p class="small"><%= excluded %> fichiers laissés de côté dans les dossiers appliqués, à réexaminer.</p><% end %>
+                <% if workbench_legacy_structures.any? %><p class="small"><%= workbench_legacy_structures.size %> anciens dossiers à réimporter pour cette version de la règle.</p><% end %>
+              <% end %>
               <%= link_to "Examiner la famille", reconciliation_workbench_family_path(rule.key), class: "btn btn-outline-primary btn-sm" %>
             </div>
           </div>
