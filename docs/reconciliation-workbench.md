@@ -80,6 +80,47 @@ sources restent utilisables pour compléter les références absentes. Cette nou
 porte la famille des structures documentées à la version 2 : les validations de la version 1
 ne l’approuvent pas. Réimporter le dossier puis examiner et valider le nouveau périmètre.
 
+Le numéro explicite `Sxx Eyy` peut être précédé du nom français/original de la série ou de
+son sigle, par exemple `Code quantum S03 E04 - …` ou `MAP - S07 E01 - …`. Le préfixe doit
+correspondre à la fiche de série existante, et non à une simple étiquette du dossier. Un préfixe
+inconnu, plusieurs numéros explicites ou un numéro/titre différent restent exclus. Aucun fichier
+n’est renommé. Une série sans opération applicable affiche le décompte de ses motifs d’exclusion
+au lieu d’un message global d’identité ambiguë.
+
+## Retirer le nom de série devant le numéro d’épisode
+
+La convention de fichier reste `S03 E04 - La corde raide.avi`. L’acceptation d’un préfixe
+dans le lecteur ne remplace pas le renommage demandé. Pour les vidéos encore non rattachées,
+le script `script/video_asset_episode_prefix.rb` prépare puis applique ce changement dans un
+répertoire explicitement choisi. Il ne recherche pas d’autres séries sur le disque.
+
+```bash
+bin/rails runner script/video_asset_episode_prefix.rb \
+  --directory '/videos/Séries TV/_incomplet/Code Quantum (V - 93_96)' \
+  --series-title 'Code Quantum' \
+  --journal /srv/vidb/shared/episode-prefix-renames/code-quantum.jsonl
+```
+
+Sans `--apply`, la commande affiche le plan sans écrire de fichier ou de journal.
+Ajouter `--apply` exécute tous les renommages préparés dans cette série. Le processus doit
+avoir accès à la base et le droit de renommer les fichiers du répertoire. Pour la production,
+utiliser le contexte de service avec `/etc/vidb/vidb.env`, le Ruby et le bundle déployés.
+
+Le titre et l’extension sont conservés ; seuls le préfixe et la présentation des numéros
+changent. Les fichiers déjà nommés `Sxx Eyy` ne sont pas touchés. Le volume est contrôlé,
+le plan complet est préparé avant le premier déplacement, les destinations occupées et les
+compagnons à traiter sont refusés. `renameat2(RENAME_NOREPLACE)` assure qu’aucun fichier
+n’est écrasé. Le journal privé est synchronisé sur disque avant les opérations. La reprise
+reconnaît un fichier déjà renommé et termine seulement son journal ; une autre identité
+physique bloque la suite. Les fichiers déjà rattachés à une copie non supprimée sont refusés
+avant tout déplacement : ils relèvent de la procédure de déplacement avec mise à jour SQL,
+et ne doivent pas être transformés en copies manquantes par cette commande.
+
+Après application, une actualisation du rapprochement est demandée. Charger ensuite les
+propositions utilisant les nouveaux chemins. Ne pas approuver de rattachement sur les anciens
+chemins avant ce renommage. La série Code Quantum de 2022, dans son autre répertoire, reste
+hors du périmètre indiqué ci-dessus.
+
 La famille **Compléter les structures de séries documentées** présente toutes les séries,
 leurs créations et réutilisations par saison, les corrections de rang, la langue héritée par
 les nouvelles fiches, les sources et les cas laissés de côté. Une validation porte sur les

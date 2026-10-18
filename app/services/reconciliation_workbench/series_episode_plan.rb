@@ -23,7 +23,9 @@ module ReconciliationWorkbench
     def single_file?(row)
       row['multi_episode_numbers'].blank? && row['local_season'].is_a?(Integer) &&
         row['local_season'].positive? && row['local_episode'].is_a?(Integer) &&
-        row['local_episode'].positive? && SeriesEvidence.file_matches?(row, @group.fetch('directory'))
+        row['local_episode'].positive? && SeriesEvidence.file_matches?(
+          row, @group.fetch('directory'), prefixes: [@root.french_title, @root.original_title]
+        )
     end
 
     def season_for(row)

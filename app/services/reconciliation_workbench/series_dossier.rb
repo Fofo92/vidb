@@ -30,9 +30,15 @@ module ReconciliationWorkbench
                      'reference_attribution' => document.fetch('reference_attribution'))
       item = CaseStore.propose(rule: Rules::SOURCED_STRUCTURE, key: "series:#{group.fetch('directory')}",
                                payload: payload, preserve_pending: true)
-      item.update!(status: 'blocked', error: 'Identité ou structure à arbitrer ; aucune opération applicable.') if
+      item.update!(status: 'blocked', error: exclusion_summary(item.payload)) if
         item.status == 'pending' && item.payload.fetch('operations').empty?
       item
+    end
+
+    def exclusion_summary(payload)
+      reasons = payload.fetch('held').group_by { |row| row.fetch('reason') }
+      details = reasons.map { |reason, rows| "#{rows.size} : #{reason}" }.join(' ; ')
+      "Aucune opération applicable. #{details}"
     end
 
     def compile(group, root, index)
