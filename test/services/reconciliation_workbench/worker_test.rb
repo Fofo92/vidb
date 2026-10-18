@@ -131,6 +131,46 @@ class ReconciliationWorkbenchWorkerTest < ActiveSupport::TestCase
     assert_equal 'completed', run.reload.status
   end
 
+  test 'an old completed run does not cause repeated processing of a scan already handled by the latest run' do
+    path = File.join(@directory, 'current.json')
+    File.write(path, '{}')
+    previous = ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH']
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = path
+    ReconciliationRun.create!(mode: 'apply', status: 'completed', created_at: 2.hours.ago, finished_at: 1.hour.ago)
+    ReconciliationRun.create!(mode: 'apply', status: 'completed', created_at: 5.minutes.ago, finished_at: Time.current)
+    2.times { assert_equal({ idle: true }, worker(Object.new).poll) }
+    assert_equal 2, ReconciliationRun.count
+  ensure
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = previous
+  end
+
+  test 'the latest explicit stop is respected even if an older completed run exists' do
+    path = File.join(@directory, 'current.json')
+    File.write(path, '{}')
+    previous = ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH']
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = path
+    ReconciliationRun.create!(mode: 'apply', status: 'completed', created_at: 2.hours.ago, finished_at: 1.hour.ago)
+    ReconciliationRun.create!(mode: 'apply', status: 'stopped', created_at: 5.minutes.ago)
+    assert_equal({ idle: true }, worker(Object.new).poll)
+    assert_equal 2, ReconciliationRun.count
+  ensure
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = previous
+  end
+
+  test 'a manual resumption after an old stop permits a newer scan to trigger automatic processing' do
+    path = File.join(@directory, 'current.json')
+    File.write(path, '{}')
+    previous = ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH']
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = path
+    ReconciliationRun.create!(mode: 'apply', status: 'stopped', created_at: 2.hours.ago)
+    ReconciliationRun.create!(mode: 'apply', status: 'completed', created_at: 1.hour.ago, finished_at: 30.minutes.ago)
+    worker(Object.new).poll
+    assert_equal 3, ReconciliationRun.count
+    assert_equal 'completed', ReconciliationRun.order(:id).last.status
+  ensure
+    ENV['VIDB_RECONCILIATION_FOLLOWUP_PATH'] = previous
+  end
+
   test 'an explicit refresh scans before planning even with no known copy candidates' do
     calls = []
     planner = Object.new

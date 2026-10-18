@@ -75,6 +75,24 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'queued', queued.reload.status
   end
 
+  test 'completed families are collapsed while pending and blocked work remains directly visible' do
+    post decision_reconciliation_workbench_family_path(@rule.key), params: decision_params
+    get status_reconciliation_workbench_path
+    assert_select 'details[data-application-history]', count: 0
+    assert_select '[data-application-rule="sourced_year_replace"]', count: 1
+    @item.update!(status: 'blocked')
+    get status_reconciliation_workbench_path
+    assert_select 'details[data-application-history]', count: 0
+    assert_select '[data-application-rule="sourced_year_replace"]', text: /1 bloquées/
+    @item.update!(status: 'applied', active: false, finished_at: Time.current)
+    get status_reconciliation_workbench_path
+    assert_select 'details[data-application-history]:not([open])' do
+      assert_select '[data-application-rule="sourced_year_replace"]', text: /1 propositions appliquées/
+    end
+    assert_includes response.body, 'Aucune proposition autorisée en attente'
+    assert_equal 'approved', ReconciliationRuleDecision.find_by!(rule_key: @rule.key).decision
+  end
+
   test 'the live family receipt shows running blocked and completed cases without including unapproved cases' do
     post decision_reconciliation_workbench_family_path(@rule.key), params: decision_params
     get status_reconciliation_workbench_path
