@@ -60,3 +60,18 @@ Le service fait directement le téléchargement et l’import en production.
 Il ne dépend pas du script `bin/update-xmltv` du prototype.
 Après un échec, consulter le journal et relancer le service une fois la cause
 corrigée. Les programmations Kaffeine existantes restent intactes.
+# Fraîcheur et lecture du guide
+
+La dernière vérification réussie est conservée sur la source, séparément de la
+date de création de l’import. Un téléchargement validé mais identique actualise
+cette vérification sans dupliquer l’import. Un échec conserve la date précédente.
+L’alerte de 36 heures et la date affichée utilisent cette vérification ; avant
+la première vérification avec cette version, la date du dernier import sert de
+référence. La migration ajoute `last_verified_at` sans modifier les imports.
+
+Les programmes terminés sont grisés et ne peuvent plus être programmés, y compris
+par une requête directe. Leurs informations et leur historique restent accessibles.
+Les programmes en cours conservent le parcours de programmation existant.
+Un trait rouge indique l’heure actuelle sur le jour affiché ; il suit la projection
+commune du guide, y compris les programmes courts et les changements d’heure à Paris.
+Le trait et l’état des programmes sont actualisés toutes les 15 secondes.

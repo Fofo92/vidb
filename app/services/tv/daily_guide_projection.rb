@@ -21,6 +21,10 @@ module Tv
       position_for(ends_at) - position_for(starts_at)
     end
 
+    def positions
+      @positions.dup
+    end
+
     private
 
     def build_positions

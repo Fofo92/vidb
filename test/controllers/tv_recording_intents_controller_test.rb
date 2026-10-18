@@ -40,6 +40,16 @@ class TvRecordingIntentsControllerTest <
     assert_redirected_to tv_guide_path(guide_params)
   end
 
+  test "refuses an ended programme without creating an intent" do
+    travel_to @observation.ends_at do
+      assert_no_difference("Tv::RecordingIntent.count") do
+        post tv_recording_intents_url, params: request_params
+      end
+      assert_redirected_to tv_guide_url(request_params.except(:broadcast_observation_id))
+      assert_match(/terminé/, flash[:alert])
+    end
+  end
+
   test "selects and schedules a linked channel in one request" do
     connect_channel_to_kaffeine
     client = fake_client([])

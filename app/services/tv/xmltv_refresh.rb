@@ -26,6 +26,7 @@ module Tv
       report(review)
       imported = XmltvImporter.new(guide_source: @guide_source, path:).call
       record_filter_results(imported, filtered)
+      @guide_source.update!(last_verified_at: Time.current)
       puts "Import réussi : #{imported.programme_count} programmes (n° #{imported.id})."
       imported
     end

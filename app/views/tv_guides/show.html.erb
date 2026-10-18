@@ -41,8 +41,8 @@
       <div class="tv-guide-toolbar-updated">
         <% if @latest_guide_import %>
           <span data-tv-guide-last-import>
-            Guide actualisé le
-            <%= @latest_guide_import.finished_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>
+            Dernière vérification réussie le
+            <%= @last_guide_check_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>
           </span>
         <% end %>
         <% if @latest_scheduled_date %>
@@ -108,7 +108,7 @@
     </div>
   <% end %>
 
-  <% if @latest_guide_import && @latest_guide_import.finished_at < 36.hours.ago %>
+  <% if @last_guide_check_at && @last_guide_check_at < 36.hours.ago %>
     <p class="alert alert-warning" data-tv-guide-stale>
       Le guide n’a pas été actualisé depuis plus de 36 heures. Vérifiez l’actualisation quotidienne.
     </p>
@@ -135,7 +135,9 @@
       <div
         class="tv-guide-scroll"
         data-tv-guide-scroll
-        data-controller="tv-guide-scroll tv-guide-information tv-guide-scheduling-risks"
+        data-controller="tv-guide-scroll tv-guide-information tv-guide-scheduling-risks tv-guide-clock"
+        data-tv-guide-clock-start-value="<%= @date.in_time_zone("Europe/Paris").iso8601 %>"
+        data-tv-guide-clock-positions-value="<%= @timeline_projection.positions.to_json %>"
         data-tv-guide-scheduling-risks-url-value="<%= tv_guide_scheduling_risks_path %>"
         data-tv-guide-scheduling-risks-source-value="<%= @guide_source.id %>"
         data-tv-guide-scheduling-risks-date-value="<%= @date.iso8601 %>"
@@ -161,6 +163,10 @@
             --tv-day-height: <%= projected_height %>px;
           ">
           <%= render "multiplex_load", segments: @multiplex_load %>
+
+          <div class="tv-guide-now" data-tv-guide-clock-target="marker" hidden>
+            <span data-tv-guide-clock-target="label"></span>
+          </div>
 
           <aside
             class="tv-guide-time-axis"
@@ -255,10 +261,12 @@
                   <li
                     class="
                       tv-guide-programme
+                      <%= "tv-guide-programme--past" if programme.ended? %>
                       <%= "tv-guide-programme--single-line" if single_line %>
                       <%= "tv-guide-programme--recording-selected" if recording_selected %>
                     "
                     data-tv-guide-programme="<%= programme.id %>"
+                    data-tv-guide-ends-at="<%= programme.ends_at.iso8601 %>"
                     data-tv-guide-recording-status="<%= recording_selected ? "selected" : "unselected" %>"
                     tabindex="0"
                     data-tv-guide-start-minute="<%= item.start_minute %>"
@@ -345,6 +353,8 @@
                             "Kaffeine",
                             type: "submit",
                             class: "tv-guide-schedule-button",
+                            disabled: programme.ended?,
+                            data: { tv_guide_schedule_action: true },
                             aria: { label: "Programmer dans Kaffeine" }
                           ) %>
                         <% end %>
@@ -478,6 +488,7 @@
                         type: "submit",
                         class: "tv-guide-recording-toggle",
                         data: { tv_guide_recording_toggle: true },
+                        disabled: !recording_selected && programme.ended?,
                         aria: { label: recording_label }
                       ) do %>
                         <span class="visually-hidden">

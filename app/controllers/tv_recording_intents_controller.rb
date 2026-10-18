@@ -8,6 +8,8 @@ class TvRecordingIntentsController < ApplicationController
 
   def create
     redirect_to_selected_intent(select_and_schedule)
+  rescue Tv::RecordingIntentScheduler::ProgrammeEnded => e
+    redirect_to tv_guide_path(guide_params), alert: e.message
   rescue Tv::MultiplexCapacityGuard::Warning => e
     redirect_to_capacity_warning(e)
   rescue Tv::RecordingIntentScheduler::ScheduledEpisodeDuplicate => e
@@ -33,6 +35,8 @@ class TvRecordingIntentsController < ApplicationController
 
   def select_and_schedule
     observation = Tv::BroadcastObservation.find(params.require(:broadcast_observation_id))
+    raise Tv::RecordingIntentScheduler::ProgrammeEnded, "Ce programme est terminé." if observation.ended?
+
     intent = Tv::RecordingIntentSelector.new(broadcast_observation: observation).call
     schedule_selected_intent(intent)
   end

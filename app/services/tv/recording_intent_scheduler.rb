@@ -2,6 +2,7 @@ module Tv
   class RecordingIntentScheduler
     class LinkedScheduleMismatch < StandardError; end
     class ScheduledEpisodeDuplicate < StandardError; end
+    class ProgrammeEnded < RecordingIntentScheduleAttributes::Unavailable; end
 
     ERRORS = [
       RecordingIntentScheduleAttributes::Unavailable,
@@ -24,6 +25,10 @@ module Tv
     end
 
     def call
+      if @recording_intent.broadcast_observation.ended?
+        raise ProgrammeEnded, "Ce programme est terminé et ne peut plus être programmé."
+      end
+
       @lock.synchronize do
         attributes = RecordingIntentScheduleAttributes.new(recording_intent: @recording_intent).call
         link = KaffeineScheduleLink.find_by(recording_intent_id: @recording_intent.id)

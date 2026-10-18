@@ -16,6 +16,10 @@ module Tv
               }
     validates :starts_at, :ends_at, presence: true
 
+    def ended?
+      ends_at <= Time.current
+    end
+
     validate :validate_time_interval
     validate :validate_structured_metadata
 

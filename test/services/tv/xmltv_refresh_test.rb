@@ -78,6 +78,27 @@ module Tv
       end
     end
 
+    test "a successful unchanged refresh advances freshness without rewriting import history" do
+      travel_to Time.utc(2029, 12, 28, 5) do
+        @previous = refresh_xml(guide_xml)
+      end
+      original_finished_at = @previous.finished_at
+      travel_to Time.utc(2029, 12, 30, 5) do
+        assert_no_difference("GuideImport.count") { refresh_xml(guide_xml) }
+        assert_equal original_finished_at, @previous.reload.finished_at
+        assert_equal Time.current, @source.reload.last_successful_check_at
+      end
+    end
+
+    test "a failed refresh does not advance the last successful verification" do
+      refresh_xml(guide_xml)
+      checked_at = @source.reload.last_verified_at
+      travel 2.days do
+        assert_raises(Nokogiri::XML::SyntaxError) { refresh_xml("<tv><programme>") }
+        assert_equal checked_at, @source.reload.last_verified_at
+      end
+    end
+
     test "compares only included channels against the previous unfiltered guide" do
       xml = guide_xml.sub("</tv>", <<~XML)
         <channel id="CanalPlus.fr"><display-name>Canal+</display-name></channel>

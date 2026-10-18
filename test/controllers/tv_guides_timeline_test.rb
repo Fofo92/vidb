@@ -54,6 +54,30 @@ class TvGuidesTimelineTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "marks ended programmes and disables selection while retaining their information" do
+    programme = create_short_programme
+    travel_to Time.utc(2026, 9, 18, 8) do
+      get tv_guide_url(date: "2026-09-18")
+      selector = "[data-tv-guide-programme='#{programme.id}']"
+      assert_select "#{selector}.tv-guide-programme--past"
+      assert_select "#{selector} [data-tv-guide-recording-toggle][disabled]"
+      assert_select "[data-tv-guide-clock-start-value='2026-09-18T00:00:00+02:00']"
+      assert_select "[data-tv-guide-clock-target='marker'][hidden]"
+    end
+  end
+
+  test "a recent successful verification keeps an older import fresh" do
+    create_short_programme
+    travel_to Time.utc(2026, 9, 20, 12) do
+      @source.update!(last_verified_at: 1.hour.ago)
+      get tv_guide_url(date: "2026-09-18")
+      assert_select "[data-tv-guide-stale]", count: 0
+      @source.update!(last_verified_at: 37.hours.ago)
+      get tv_guide_url(date: "2026-09-18")
+      assert_select "[data-tv-guide-stale]", count: 1
+    end
+  end
+
   test "keeps a short programme readable and interactive" do
     programme = create_short_programme
 
