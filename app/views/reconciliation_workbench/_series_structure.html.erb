@@ -1,4 +1,7 @@
 <p><strong><%= payload['operations'].size %> épisodes proposés</strong> ; <%= payload['held'].size %> fichiers laissés à arbitrer sur <%= payload['file_count'] %>.</p>
+<% if payload['episode_source_policy'] %>
+  <p class="small"><strong>Sources des épisodes :</strong> Wikipédia en français en priorité, puis les autres éditions de Wikipédia, puis les autres sources si aucune référence Wikipédia n’est fournie pour le cas. Une contradiction de titre ou de numéro reste à arbitrer.</p>
+<% end %>
 <p class="small">Les nouvelles fiches hériteront de la langue de la série : <%= payload['language_label'] || 'à déterminer' %>. Leurs titres proviennent des fichiers et concordent avec les références ci-dessous. Les titres, années, genres et langues des fiches existantes sont conservés.</p>
 <% if payload.fetch('reference_show', {}).any? %>
   <p class="small">Série dans la source : <%= payload.dig('reference_show', 'name') %> · première diffusion <%= payload.dig('reference_show', 'premiered') || 'non renseignée' %>.</p>
@@ -14,6 +17,9 @@
         <li>
           <strong><%= operation['kind'] == 'create_episode' ? 'Créer' : "Réutiliser la fiche n° #{operation['existing_id']}" %></strong>
           · épisode <%= operation['episode'] %> · <%= operation['observed_title'] %>
+          <% if operation['kind'] == 'create_episode' %>
+            · titre de la nouvelle fiche : <%= operation['french_title'] %>
+          <% end %>
           <% operation['references'].each do |reference| %>
             · <%= link_to reference['name'], reference['url'], target: '_blank', rel: 'noopener noreferrer' %>
           <% end %>

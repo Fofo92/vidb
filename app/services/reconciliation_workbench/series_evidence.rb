@@ -20,21 +20,17 @@ module ReconciliationWorkbench
 
     def self.references(row)
       keys = SeriesTitles.keys(row.fetch('observed_title'))
-      references = row.fetch('reference_same_number').select do |reference|
+      references = EpisodeSourcePolicy.preferred(row.fetch('reference_same_number') +
+                                                  row.fetch('reference_other_numbers', []))
+      references.select do |reference|
         reference.values_at('season', 'number') == row.values_at('local_season', 'local_episode') &&
           keys.include?(SeriesTitles.key(reference.fetch('name'))) &&
           !reference.fetch('name').match?(/\A(?:Episode|Épisode)\s*\d+\z/i)
       end
-      references.each { |reference| source!(reference.fetch('url')) }
     end
 
-    def self.file_matches?(row, directory)
-      path = row.fetch('path')
-      return false unless path.start_with?("#{directory}/") && !path.split('/').include?('..')
-
-      match = File.basename(path).match(/\AS(\d+)\s*E(\d+)\s*[-–—]\s*(.+)\.(?:mkv|m4v|mp4|avi)\z/i)
-      match && match.captures.first(2).map(&:to_i) == row.values_at('local_season', 'local_episode') &&
-        SeriesTitles.keys(match[3]) == SeriesTitles.keys(row.fetch('observed_title'))
+    def self.file_matches?(row, directory, prefixes: [])
+      SeriesEpisodeFile.matches?(row, directory, prefixes: prefixes)
     end
   end
 end

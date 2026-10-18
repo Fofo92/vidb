@@ -23,7 +23,9 @@ module ReconciliationWorkbench
     def single_file?(row)
       row['multi_episode_numbers'].blank? && row['local_season'].is_a?(Integer) &&
         row['local_season'].positive? && row['local_episode'].is_a?(Integer) &&
-        row['local_episode'].positive? && SeriesEvidence.file_matches?(row, @group.fetch('directory'))
+        row['local_episode'].positive? && SeriesEvidence.file_matches?(
+          row, @group.fetch('directory'), prefixes: [@root.french_title, @root.original_title]
+        )
     end
 
     def season_for(row)
@@ -64,7 +66,7 @@ module ReconciliationWorkbench
       { 'kind' => record ? 'reuse_episode' : 'create_episode', 'existing_id' => record&.id,
         'season_id' => season&.id, 'season' => row['local_season'], 'episode' => row['local_episode'],
         'season_rank_before' => season&.rank,
-        'french_title' => parts.size == 3 ? parts[1] : parts[0],
+        'french_title' => EpisodeSourcePolicy.french_title(references, parts.size == 3 ? parts[1] : parts[0]),
         'original_title' => parts.size == 3 ? parts[2] : nil, 'path' => row['path'],
         'observed_title' => row['observed_title'], 'references' => references }
     end
