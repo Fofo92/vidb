@@ -2,9 +2,10 @@ class TvRecordingIntentSchedulesController < ApplicationController
   SCHEDULING_ERRORS = Tv::RecordingIntentScheduler::ERRORS
 
   def create
-    intent = Tv::RecordingIntent.find(params[:tv_recording_intent_id])
-    schedule = schedule_intent(intent)
-    redirect_to(return_path, notice: "Programmation Kaffeine confirmée (n° #{schedule.key}).")
+    schedule = schedule_intent(Tv::RecordingIntent.find(params[:tv_recording_intent_id]))
+    redirect_to_confirmed_schedule(schedule)
+  rescue Tv::RecordingIntentScheduler::ProgrammeEnded => e
+    redirect_to(return_path, alert: e.message)
   rescue Tv::MultiplexCapacityGuard::Warning => e
     redirect_to(return_path, alert: "Programmation suspendue : #{e.message}")
   rescue Tv::RecordingIntentScheduler::ScheduledEpisodeDuplicate => e
@@ -14,6 +15,10 @@ class TvRecordingIntentSchedulesController < ApplicationController
   end
 
   private
+
+  def redirect_to_confirmed_schedule(schedule)
+    redirect_to(return_path, notice: "Programmation Kaffeine confirmée (n° #{schedule.key}).")
+  end
 
   def redirect_to_duplicate_warning(error)
     redirect_to(return_path, alert: error.message)

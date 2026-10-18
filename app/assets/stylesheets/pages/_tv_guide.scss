@@ -122,6 +122,7 @@
 }
 
 .tv-guide-grid {
+  position: relative;
   --tv-minute-height: 1px;
 
   display: grid;
@@ -130,6 +131,33 @@
   grid-auto-flow: column;
   width: max-content;
   min-width: 100%;
+}
+
+.tv-guide-now {
+  position: absolute;
+  z-index: 5;
+  width: 100%;
+  border-top: 2px solid #b42318;
+  pointer-events: none;
+}
+
+.tv-guide-now[hidden] {
+  display: none;
+}
+
+.tv-guide-now span {
+  position: absolute;
+  left: 2.25rem;
+  bottom: 0;
+  padding: 0 0.2rem;
+  color: $white;
+  background: #b42318;
+  font-size: 0.75rem;
+}
+
+.tv-guide-programme.tv-guide-programme--past {
+  background: #e5e7eb;
+  color: #4b5563;
 }
 
 .tv-guide-column-heading {

@@ -20,6 +20,7 @@ class TvGuidesController < ApplicationController
 
   def load_header
     @latest_guide_import = @guide_source&.latest_successful_import
+    @last_guide_check_at = @guide_source&.last_successful_check_at
     latest = Tv::RecordingIntent.status_selected
                                 .joins(:kaffeine_schedule_link)
                                 .maximum(:programme_starts_at)

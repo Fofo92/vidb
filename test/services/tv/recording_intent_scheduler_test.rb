@@ -45,6 +45,15 @@ module Tv
       assert @intent.kaffeine_schedule_link.origin_created_by_vidb?
     end
 
+    test "does not contact Kaffeine for an ended programme" do
+      client = FakeClient.new
+      travel_to @intent.broadcast_observation.ends_at do
+        assert_raises(RecordingIntentScheduleAttributes::Unavailable) { scheduler(client).call }
+        assert_empty client.created
+        assert_nil @intent.reload.kaffeine_schedule_link
+      end
+    end
+
     test "reuses an identical schedule without creating another" do
       existing = KaffeineSchedule.new(key: 618, **expected_attributes, non_inactive: false)
       client = FakeClient.new(entries: [existing])
