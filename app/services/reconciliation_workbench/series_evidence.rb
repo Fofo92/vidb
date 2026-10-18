@@ -20,12 +20,13 @@ module ReconciliationWorkbench
 
     def self.references(row)
       keys = SeriesTitles.keys(row.fetch('observed_title'))
-      references = row.fetch('reference_same_number').select do |reference|
+      references = EpisodeSourcePolicy.preferred(row.fetch('reference_same_number') +
+                                                  row.fetch('reference_other_numbers', []))
+      references.select do |reference|
         reference.values_at('season', 'number') == row.values_at('local_season', 'local_episode') &&
           keys.include?(SeriesTitles.key(reference.fetch('name'))) &&
           !reference.fetch('name').match?(/\A(?:Episode|Épisode)\s*\d+\z/i)
       end
-      references.each { |reference| source!(reference.fetch('url')) }
     end
 
     def self.file_matches?(row, directory)

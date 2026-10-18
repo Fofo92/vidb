@@ -47,6 +47,7 @@ class ReconciliationWorkbenchSeriesDossierTest < ActiveSupport::TestCase
     assert_equal before, Record.count
     assert_equal 2, item.payload['operations'].size
     assert_equal [], item.payload['held']
+    assert_equal 'wikipedia_fr_first_v1', item.payload['episode_source_policy']
     assert_not item.permitted?
     assert_equal 'skipped', ReconciliationWorkbench::Executor.new.call(item)
     assert_equal 0, ReconciliationRuleDecision.count
@@ -269,5 +270,16 @@ class ReconciliationWorkbenchSeriesDossierTest < ActiveSupport::TestCase
     assert_equal 'completed', run.reload.status
     assert_equal 1, run.summary.dig('metadata', 'applied')
     assert_equal 1, run.summary.dig('disk', 'applied')
+  end
+
+  test 'new episode titles prefer the concordant French Wikipedia spelling while preserving existing titles' do
+    entry = row(1, 'la decouverte')
+    entry['reference_same_number'] = [{ 'name' => 'La Découverte', 'season' => 1, 'number' => 1,
+      'url' => 'https://fr.wikipedia.org/wiki/Saison_1' }]
+    item = import(document(entry))
+    assert_equal 'La Découverte', item.payload['operations'].sole['french_title']
+    approve(item)
+    assert_equal 'applied', ReconciliationWorkbench::Executor.new.call(item)
+    assert_equal 'La Découverte', @season.children.sole.french_title
   end
 end

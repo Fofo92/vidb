@@ -78,6 +78,7 @@ module ReconciliationWorkbench
     def payload(group, root, operations, held, sources)
       records = root ? [root, *root.descendants.order(:id).to_a] : []
       { 'record_id' => root&.id, 'title' => group.fetch('name'), 'file_count' => group.fetch('file_count'),
+        'episode_source_policy' => EpisodeSourcePolicy::VERSION,
         'directory' => group.fetch('directory'), 'operations' => operations, 'held' => held,
         'language_version_id' => root&.language_version_id, 'language_label' => root&.language_version&.long_name,
         'reference_show' => group.fetch('reference_show', {}).slice('name', 'premiered', 'ended', 'language'),

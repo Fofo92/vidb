@@ -31,10 +31,10 @@ module ReconciliationWorkbench
     )
     FIELDS = %w[year abstract country_id language_version_id genres].freeze
     SOURCED_STRUCTURE = Rule.new(
-      key: 'reviewed_series_structure', version: 1, axis: 'metadata',
+      key: 'reviewed_series_structure', version: 2, axis: 'metadata',
       title: 'Compléter les structures de séries documentées',
       proposal: 'Créer les saisons et épisodes manquants, qualifier les fiches concordantes ' \
-                'ou corriger un rang de saison explicite.',
+                'ou corriger un rang de saison explicite. Références Wikipédia en français prioritaires.',
       limits: 'Seulement les opérations affichées. Aucun parent changé, aucun titre existant remplacé. ' \
               'Les cas à arbitrer restent de côté. Le rapprochement disque conserve sa validation séparée.',
       recurring: false

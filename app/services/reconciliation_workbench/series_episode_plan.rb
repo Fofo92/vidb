@@ -64,7 +64,7 @@ module ReconciliationWorkbench
       { 'kind' => record ? 'reuse_episode' : 'create_episode', 'existing_id' => record&.id,
         'season_id' => season&.id, 'season' => row['local_season'], 'episode' => row['local_episode'],
         'season_rank_before' => season&.rank,
-        'french_title' => parts.size == 3 ? parts[1] : parts[0],
+        'french_title' => EpisodeSourcePolicy.french_title(references, parts.size == 3 ? parts[1] : parts[0]),
         'original_title' => parts.size == 3 ? parts[2] : nil, 'path' => row['path'],
         'observed_title' => row['observed_title'], 'references' => references }
     end
