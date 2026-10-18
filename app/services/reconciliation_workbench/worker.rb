@@ -70,7 +70,7 @@ module ReconciliationWorkbench
       path = Planner.followup_path
       return unless path.file?
 
-      latest = ReconciliationRun.order(:created_at, :id).first
+      latest = ReconciliationRun.order(created_at: :desc, id: :desc).first
       return if latest && (latest.status == 'stopped' || (latest.finished_at || latest.created_at) >= path.mtime)
 
       mode = ReconciliationRuleDecision.where(decision: 'approved').exists? ? 'apply' : 'refresh'

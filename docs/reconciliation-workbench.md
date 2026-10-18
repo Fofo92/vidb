@@ -7,6 +7,15 @@ aucune règle de l’autre axe.
 
 ## Fonctionnement par famille
 
+Le déclenchement automatique compare la date du bilan avec la passe la plus récente
+(date de création, puis identifiant décroissants), pas avec la première passe de
+l’historique. Un scan déjà pris en charge ne crée pas de passe supplémentaire ;
+le dernier arrêt explicite reste respecté et une reprise manuelle ultérieure le remplace.
+Les mesures techniques collectent durée, conteneur et pistes dans un seul appel à
+`ffprobe`. Le contrôle du fichier avant/après et la vérification du stockage restent
+effectués. Cette réduction du nombre de sondes ne constitue pas une mesure du gain
+de temps global sur la vidéothèque.
+
 La famille **Créer les séries absentes depuis leurs guides documentés** utilise le
 même dossier JSON de préparation. Un groupe peut fournir `proposed_new_root`, avec
 `french_title` et éventuellement `original_title`, à la place de `proposed_existing_root`.

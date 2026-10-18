@@ -5,11 +5,11 @@ require 'open3'
 
 module CatalogEnrichment
   class FileObservation
-    def call(path)
+    def call(path, format: nil)
       before = File.stat(path)
       raise ArgumentError, "Not a regular file: #{path}" unless before.file?
 
-      measured = probe(path)
+      measured = format ? measurement(format, path) : probe(path)
       after = File.stat(path)
       raise ArgumentError, "File changed during observation: #{path}" unless identity(before) == identity(after)
 
@@ -28,7 +28,10 @@ module CatalogEnrichment
       )
       raise ArgumentError, "ffprobe failed for #{path}: #{error}" unless status.success?
 
-      format = JSON.parse(output).fetch('format')
+      measurement(JSON.parse(output).fetch('format'), path)
+    end
+
+    def measurement(format, path)
       seconds = Float(format.fetch('duration'))
       raise ArgumentError, "Invalid duration: #{path}" unless seconds.finite? && seconds.positive?
 
