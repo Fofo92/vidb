@@ -1,0 +1,13 @@
+<% counts = entry[:counts] %>
+<div class="border-top pt-2 mt-2" data-application-rule="<%= entry[:rule].key %>" role="status" aria-live="polite">
+  <strong><%= link_to entry[:rule].title, reconciliation_workbench_family_path(entry[:rule].key) %></strong>
+  <p class="small mb-1 text-success">Validation enregistrée le <%= entry[:approved_at].in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M:%S') %>.</p>
+  <p class="mb-1">
+    <%= counts.fetch('pending', 0) %> en attente ·
+    <%= counts.fetch('running', 0) %> en cours ·
+    <strong><%= counts.fetch('blocked', 0) %> bloquées à examiner</strong>
+  </p>
+  <p class="small mb-0"><%= entry[:applied] %> propositions appliquées dans l’historique de cette règle.
+    <% if entry[:last_applied_at] %>Dernière application le <%= entry[:last_applied_at].in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M:%S') %>.<% end %>
+  </p>
+</div>

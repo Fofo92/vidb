@@ -54,6 +54,9 @@ en cours et bloquées, ainsi que les applications conservées dans l’historiqu
 l’heure de la dernière application. Il garde les résultats visibles après une application
 rapide ; il ne présente pas un ancien succès comme celui d’une nouvelle demande.
 Les demandes actives restent visibles même si des passes plus récentes sont terminées.
+Les familles sans proposition autorisée en attente, en cours ou bloquée sont regroupées
+dans un historique replié par défaut. Les reçus restent consultables et les règles
+récurrentes approuvées restent actives ; le repli ne retire aucune autorisation.
 
 1. Le service prépare les propositions à partir du dernier inventaire et des propositions sourcées.
 2. L’écran présente la règle, ses limites, le nombre de fiches/fichiers concernés, les avant/après et les sources.

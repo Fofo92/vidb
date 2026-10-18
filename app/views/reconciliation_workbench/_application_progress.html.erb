@@ -1,21 +1,23 @@
 <% if progress.any? %>
+  <% active, history = progress.partition { |entry| entry[:counts].values.sum.positive? } %>
   <section class="border rounded p-3 mt-3" aria-label="Suivi des familles validées">
     <h2 class="h5">Validations enregistrées et application</h2>
-    <p class="small">Ce suivi se met à jour automatiquement. Une validation enregistrée autorise l’application ; les exceptions restent à examiner.</p>
-    <% progress.each do |entry| %>
-      <% counts = entry[:counts] %>
-      <div class="border-top pt-2 mt-2" data-application-rule="<%= entry[:rule].key %>" role="status" aria-live="polite">
-        <strong><%= link_to entry[:rule].title, reconciliation_workbench_family_path(entry[:rule].key) %></strong>
-        <p class="small mb-1 text-success">Validation enregistrée le <%= entry[:approved_at].in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M:%S') %>.</p>
-        <p class="mb-1">
-          <%= counts.fetch('pending', 0) %> en attente ·
-          <%= counts.fetch('running', 0) %> en cours ·
-          <strong><%= counts.fetch('blocked', 0) %> bloquées à examiner</strong>
-        </p>
-        <p class="small mb-0"><%= entry[:applied] %> propositions appliquées dans l’historique de cette règle.
-          <% if entry[:last_applied_at] %>Dernière application le <%= entry[:last_applied_at].in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M:%S') %>.<% end %>
-        </p>
-      </div>
+    <% if active.any? %>
+      <p class="small">Suivi automatique des propositions autorisées en attente, en cours ou bloquées.</p>
+      <% active.each do |entry| %>
+        <%= render 'reconciliation_workbench/application_progress_entry', entry: entry %>
+      <% end %>
+    <% else %>
+      <p class="mb-2">Aucune proposition autorisée en attente, en cours ou bloquée.</p>
+    <% end %>
+    <% if history.any? %>
+      <details data-application-history class="mt-2">
+        <summary>Historique : <%= history.size %> familles validées sans proposition autorisée en cours</summary>
+        <p class="small mt-2">Les décisions et les preuves d’application restent consultables. Les règles récurrentes restent actives pour les futurs cas équivalents.</p>
+        <% history.each do |entry| %>
+          <%= render 'reconciliation_workbench/application_progress_entry', entry: entry %>
+        <% end %>
+      </details>
     <% end %>
   </section>
 <% end %>
