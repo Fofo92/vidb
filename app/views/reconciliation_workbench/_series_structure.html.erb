@@ -1,4 +1,10 @@
 <p><strong><%= payload['operations'].size %> épisodes proposés</strong> ; <%= payload['held'].size %> fichiers laissés à arbitrer sur <%= payload['file_count'] %>.</p>
+<% if payload['new_root'] %>
+  <p><strong>Créer la série : <%= payload.dig('new_root', 'french_title') %></strong>
+    <% if payload.dig('new_root', 'original_title').present? %> (<%= payload.dig('new_root', 'original_title') %>)<% end %>.
+    Langue initiale : indéterminée. La source identifie l’œuvre, pas les pistes audio des fichiers.</p>
+  <p class="small">Un épisode homonyme d’une autre œuvre peut être créé sous cette nouvelle série documentée. Les fiches existantes restent à leur place et sont conservées.</p>
+<% end %>
 <% if payload['episode_source_policy'] %>
   <p class="small"><strong>Sources des épisodes :</strong> Wikipédia en français en priorité, puis les autres éditions de Wikipédia, puis les autres sources si aucune référence Wikipédia n’est fournie pour le cas. Une contradiction de titre ou de numéro reste à arbitrer.</p>
 <% end %>
@@ -17,6 +23,7 @@
         <li>
           <strong><%= operation['kind'] == 'create_episode' ? 'Créer' : "Réutiliser la fiche n° #{operation['existing_id']}" %></strong>
           · épisode <%= operation['episode'] %> · <%= operation['observed_title'] %>
+          <% if operation['is_seen'] %> · <strong>Déjà vu (répertoire ou préfixe de visionnage)</strong><% end %>
           <% if operation['kind'] == 'create_episode' %>
             · titre de la nouvelle fiche : <%= operation['french_title'] %>
           <% end %>

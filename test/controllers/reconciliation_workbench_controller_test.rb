@@ -225,6 +225,24 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'pending', legacy.status
   end
 
+  test 'new series creation displays its root and preserves excluded files in its own family after application' do
+    rule = ReconciliationWorkbench::Rules::SERIES_CREATION
+    item = ReconciliationWorkbench::CaseStore.propose(rule: rule, key: 'new:series', payload: {
+      'record_id' => nil, 'title' => 'Nouvelle série documentée', 'file_count' => 2,
+      'new_root' => { 'french_title' => 'Nouvelle série documentée' }, 'operations' => [],
+      'held' => [{ 'path' => '/videos/non-concordant.mkv', 'reason' => 'Titre à vérifier', 'candidate_ids' => [] }] })
+    get reconciliation_workbench_family_path(rule.key)
+    assert_response :success
+    assert_includes response.body, 'Créer la série : Nouvelle série documentée'
+    assert_includes response.body, 'Langue initiale : indéterminée'
+    item.update!(status: 'applied')
+    get reconciliation_workbench_family_path(rule.key)
+    assert_includes response.body, '/videos/non-concordant.mkv'
+    assert_select 'article', count: 0
+    get reconciliation_workbench_family_path(ReconciliationWorkbench::Rules::SOURCED_STRUCTURE.key)
+    assert_not_includes response.body, '/videos/non-concordant.mkv'
+  end
+
   private
 
   def decision_params

@@ -19,6 +19,23 @@ module VideoAssets
       assert_equal [@record.id], candidate_ids(observation)
     end
 
+    test 'the viewing prefix is not part of a film identity' do
+      observation = report_for('[*] Tu ne tueras point.mkv')
+      assert_equal 'exact', observation.fetch(:status)
+      assert_equal [@record.id], candidate_ids(observation)
+      assert_equal 'Tu ne tueras point', @record.reload.french_title
+    end
+
+    test 'a viewed episode is identified from its filename even without inventory episode metadata' do
+      series = create_record('Série vue', nil)
+      season = series.children.create!(french_title: 'Saison 1', rank: 1, language_version: @language_version)
+      episode = season.children.create!(french_title: 'Le départ', rank: 1, language_version: @language_version)
+      result = report_for('Série vue/_vus/Saison 01/[*] S01 E01 - Le départ.mkv')
+      assert_equal 'episode_candidate', result[:status]
+      assert_equal 'title_match', result[:title_evidence]
+      assert_equal [episode.id], candidate_ids(result)
+    end
+
     test 'matches an exact original title' do
       observation = report_for('Hacksaw Ridge.m4v')
 

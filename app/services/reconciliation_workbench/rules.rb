@@ -30,6 +30,13 @@ module ReconciliationWorkbench
       recurring: false
     )
     FIELDS = %w[year abstract country_id language_version_id genres].freeze
+    SERIES_CREATION = Rule.new(
+      key: 'reviewed_series_creation', version: 1, axis: 'metadata',
+      title: 'Créer les séries absentes depuis leurs guides documentés',
+      proposal: 'Créer la série, ses saisons et ses épisodes dont titre et numéro concordent avec les sources.',
+      limits: 'Propositions affichées uniquement. Toute identité concurrente bloque la création. ' \
+              'Langue initiale indéterminée ; aucun fichier déplacé ou rattaché par cette validation.', recurring: false
+    )
     SEASON_TITLES = Rule.new(
       key: 'generated_season_titles', version: 1, axis: 'metadata',
       title: 'Harmoniser les titres des saisons créées par l’atelier',
@@ -48,11 +55,12 @@ module ReconciliationWorkbench
     )
 
     def self.all
-      [STRUCTURE, SOURCED_STRUCTURE, SEASON_TITLES, DISK, PREFERENCE, MANUAL_COPY] + FIELDS.flat_map do |field|
-        %w[fill replace].map do |mode|
-          sourced_rule(field, mode)
+      [STRUCTURE, SOURCED_STRUCTURE, SERIES_CREATION, SEASON_TITLES, DISK, PREFERENCE, MANUAL_COPY] +
+        FIELDS.flat_map do |field|
+          %w[fill replace].map do |mode|
+            sourced_rule(field, mode)
+          end
         end
-      end
     end
 
     def self.sourced_rule(field, mode)
@@ -73,7 +81,8 @@ module ReconciliationWorkbench
 
     def self.applicable?(item)
       return item.payload['manual_review'].present? if item.rule_key == MANUAL_COPY.key
-      return item.payload.fetch('operations').any? if item.rule_key == SOURCED_STRUCTURE.key
+      return item.payload.fetch('operations').any? if [SOURCED_STRUCTURE.key,
+                                                       SERIES_CREATION.key].include?(item.rule_key)
 
       item.rule_key != PREFERENCE.key || item.payload.dig('comparison', 'eligible') == true
     end

@@ -7,6 +7,36 @@ aucune règle de l’autre axe.
 
 ## Fonctionnement par famille
 
+La famille **Créer les séries absentes depuis leurs guides documentés** utilise le
+même dossier JSON de préparation. Un groupe peut fournir `proposed_new_root`, avec
+`french_title` et éventuellement `original_title`, à la place de `proposed_existing_root`.
+Le nom de la série dans `reference_show.name` doit correspondre à l’une de ces identités.
+Chaque épisode conserve les contrôles de titre, numéro, chemin, unicité du rang et source.
+Une identité de série concurrente bloque la création à la préparation ou à l’application.
+Les épisodes homonymes d’œuvres extérieures ne sont ni déplacés ni modifiés : le guide
+documente l’identité propre à la nouvelle série. Les protections des séries existantes
+ne changent pas.
+
+L’approbation de cette famille couvre uniquement les propositions affichées. La série,
+ses saisons et les épisodes prêts sont créés dans une seule transaction ; un échec ne
+laisse aucune création partielle. La langue initiale `IND` / `Indéterminée` est créée si
+nécessaire, sans déduire les pistes des fichiers de la langue originale de l’œuvre.
+Un réimport du dossier déjà appliqué retrouve son reçu, sans recréer la série. Les
+exclusions restent visibles après application. Les rapprochements disque et années
+sourcées conservent leurs autorisations distinctes.
+
+Le lecteur de chemins ignore les seuls dossiers de rangement `vus`, `vues`, `_vus`
+et `_vues`, ce qui permet de retrouver la vraie série au-dessus du dossier de saison.
+Un autre dossier intermédiaire reste significatif ; aucun répertoire n’est renommé.
+Ces dossiers sont transitoires. La convention cible reste le préfixe `[*] ` en tête
+du nom du fichier, pas dans le titre de la fiche. Ce marqueur est ignoré pour
+l’identification. Lors de la création d’une nouvelle série documentée, les épisodes
+dont le chemin indique déjà ce visionnage sont proposés avec `is_seen=true` ; les
+états des fiches existantes restent conservés. La suppression des dossiers `_vus`
+attendra une migration physique distincte : marquage des épisodes vus, remontée des
+fichiers avec mise à jour des chemins en base, puis suppression des seuls dossiers
+vides. La tolérance actuelle de lecture ne réalise aucune de ces opérations.
+
 Après validation d’une famille, la confirmation affiche le nombre de propositions
 autorisées et le numéro de la demande d’application. Une demande en attente n’est pas
 encore prise en charge par le service. Le panneau de suivi actualisé toutes les cinq

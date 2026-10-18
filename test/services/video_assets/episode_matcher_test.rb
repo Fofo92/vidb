@@ -26,6 +26,15 @@ module VideoAssets
       assert_empty result[:candidates]
     end
 
+    test 'seen folders do not replace the series or season context and unknown folders are not ignored' do
+      result = match('Une série/_vus/Saison 01/S01 E01 - Pilote.mkv')
+      assert_equal 'episode_candidate', result[:status]
+      assert_equal [@episode.id], result[:candidates].pluck(:record_id)
+      result = match('Une série/Autre branche/Saison 01/S01 E01 - Pilote.mkv')
+      assert_equal 'container_unmatched', result[:reason]
+      assert_empty result[:candidates]
+    end
+
     test 'signals conflicting season numbers in the path' do
       result = match('Une série/Saison 02/S01 E01 - Pilote.mkv')
 
