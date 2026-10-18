@@ -1,13 +1,19 @@
 <turbo-frame id="workbench_status" data-running="<%= runs.any? { |run| !run.terminal? } %>">
+  <div role="status" aria-live="polite" aria-atomic="true">
   <% if runs.any? %>
-    <% run = runs.find { |entry| entry.status == 'running' } || runs.first %>
+    <% run = runs.find { |entry| entry.status == 'running' } || runs.find { |entry| entry.status == 'queued' } || runs.first %>
     <% labels = { 'queued' => 'En attente du service', 'running' => 'Passe en cours', 'completed' => 'Passe terminée', 'stopped' => 'Passe arrêtée', 'failed' => 'Passe interrompue' } %>
     <div class="card bg-light">
       <div class="card-body py-3">
         <div class="d-flex flex-wrap justify-content-between gap-2">
           <div>
-            <strong><%= labels.fetch(run.status) %></strong>
+            <% unless run.terminal? %><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span><% end %>
+            <strong><%= labels.fetch(run.status) %> · demande n° <%= run.id %></strong>
             <span class="text-muted small"> — <%= run.created_at.in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M') %></span>
+            <p class="mb-0 mt-1 small"><%= run.mode == 'apply' ? 'Application des règles approuvées' : 'Actualisation des propositions' %>.</p>
+            <% if run.status == 'queued' %><p class="mb-0 mt-1">La demande est enregistrée. Le service n’a pas encore commencé son traitement ; inutile de valider à nouveau.</p><% end %>
+            <% queued = runs.count { |entry| entry.status == 'queued' } %>
+            <% if queued.positive? %><p class="mb-0 mt-1 small"><%= queued %> demande(s) en attente. Suivi actualisé toutes les 5 secondes lorsque cet onglet est visible.</p><% end %>
             <p class="mb-0 mt-1 small">
               Œuvres : <%= run.summary.dig('metadata', 'applied').to_i %> opérations appliquées ·
               Disque : <%= run.summary.dig('disk', 'applied').to_i %> copies rattachées ·
@@ -29,4 +35,6 @@
   <% else %>
     <p class="small text-muted">Aucune passe préparée. Actualise les propositions pour examiner les familles.</p>
   <% end %>
+  </div>
+  <%= render 'reconciliation_workbench/application_progress', progress: @application_progress || [] %>
 </turbo-frame>

@@ -51,6 +51,48 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, ReconciliationRun.count
   end
 
+  test 'accepting a family confirms validation and its queued application immediately' do
+    post decision_reconciliation_workbench_family_path(@rule.key), params: decision_params
+    run = ReconciliationRun.order(:id).last
+    assert_includes flash[:notice], '1 propositions autorisées'
+    assert_includes flash[:notice], "Demande d’application n° #{run.id}"
+    assert_includes flash[:notice], 'en attente du service'
+    get status_reconciliation_workbench_path
+    assert_response :success
+    assert_includes response.body, 'Validation enregistrée le'
+    assert_select '[data-application-rule="sourced_year_replace"]', text: /1 en attente/
+    assert_equal 'pending', @item.reload.status
+  end
+
+  test 'an older queued application stays visible even after ten newer completed runs' do
+    queued = ReconciliationRun.create!(mode: 'apply')
+    11.times { ReconciliationRun.create!(mode: 'refresh', status: 'completed') }
+    get status_reconciliation_workbench_path
+    assert_response :success
+    assert_includes response.body, "demande n° #{queued.id}"
+    assert_includes response.body, 'Le service n’a pas encore commencé'
+    assert_select '.spinner-border', count: 1
+    assert_equal 'queued', queued.reload.status
+  end
+
+  test 'the live family receipt shows running blocked and completed cases without including unapproved cases' do
+    post decision_reconciliation_workbench_family_path(@rule.key), params: decision_params
+    get status_reconciliation_workbench_path
+    assert_select '[data-application-rule="sourced_year_replace"]', text: /1 en attente/
+    @item.update!(status: 'running')
+    get status_reconciliation_workbench_path
+    assert_select '[data-application-rule="sourced_year_replace"]', text: /1 en cours/
+    @item.update!(status: 'blocked')
+    get status_reconciliation_workbench_path
+    assert_select '[data-application-rule="sourced_year_replace"]', text: /1 bloquées à examiner/
+    @item.update!(status: 'applied', active: false, finished_at: Time.current)
+    ReconciliationWorkbench::CaseStore.propose(rule: @rule, key: 'unapproved', payload: @item.payload.merge('value' => 2020))
+    get status_reconciliation_workbench_path
+    assert_select '[data-application-rule="sourced_year_replace"]', text: /0 en attente.*0 en cours.*0 bloquées.*1 propositions appliquées/m
+    assert_includes response.body, 'Dernière application le'
+    assert_equal 1, ReconciliationRuleDecision.count
+  end
+
   test 'deferring an approved rule prevents later application and does not enqueue work' do
     ReconciliationRuleDecision.create!(rule_key: @rule.key, rule_version: 1, decision: 'approved')
     post decision_reconciliation_workbench_family_path(@rule.key),

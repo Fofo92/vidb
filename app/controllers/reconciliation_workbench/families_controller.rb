@@ -12,8 +12,8 @@ module ReconciliationWorkbench
 
     def decision
       rule = Rules.fetch(params[:id])
-      save_decision(rule)
-      redirect_to reconciliation_workbench_path(axis: rule.axis), notice: 'Décision enregistrée pour cette famille.'
+      receipt = save_decision(rule)
+      redirect_to reconciliation_workbench_path(axis: rule.axis), notice: decision_notice(receipt)
     rescue ArgumentError => e
       redirect_to reconciliation_workbench_family_path(params[:id]), alert: e.message
     end
@@ -41,8 +41,17 @@ module ReconciliationWorkbench
         record = ReconciliationRuleDecision.find_or_initialize_by(rule_key: rule.key, rule_version: rule.version)
         record.update!(decision: value, user: current_user, comment: params[:comment],
                        case_fingerprints: rule.recurring ? [] : items.map(&:fingerprint))
-        ReconciliationRun.create!(mode: 'apply', user: current_user) if value == 'approved'
+        run = ReconciliationRun.create!(mode: 'apply', user: current_user) if value == 'approved'
+        { value: value, count: items.size, run: run }
       end
+    end
+
+    def decision_notice(receipt)
+      return 'Décision enregistrée pour cette famille.' unless receipt[:run]
+
+      "Validation enregistrée : #{receipt[:count]} propositions autorisées. " \
+        "Demande d’application n° #{receipt[:run].id} en attente du service. " \
+        'Le suivi ci-dessous se met à jour automatiquement.'
     end
 
     def reviewed_scope(rule)

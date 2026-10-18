@@ -7,6 +7,15 @@ aucune règle de l’autre axe.
 
 ## Fonctionnement par famille
 
+Après validation d’une famille, la confirmation affiche le nombre de propositions
+autorisées et le numéro de la demande d’application. Une demande en attente n’est pas
+encore prise en charge par le service. Le panneau de suivi actualisé toutes les cinq
+secondes montre les validations enregistrées, les propositions autorisées en attente,
+en cours et bloquées, ainsi que les applications conservées dans l’historique avec
+l’heure de la dernière application. Il garde les résultats visibles après une application
+rapide ; il ne présente pas un ancien succès comme celui d’une nouvelle demande.
+Les demandes actives restent visibles même si des passes plus récentes sont terminées.
+
 1. Le service prépare les propositions à partir du dernier inventaire et des propositions sourcées.
 2. L’écran présente la règle, ses limites, le nombre de fiches/fichiers concernés, les avant/après et les sources.
 3. Une validation de famille autorise les cas équivalents de cette version de la règle.

@@ -141,7 +141,7 @@
       <%= form.label :comment, "Ton avis ou la règle à préciser", class: "form-label" %>
       <%= form.text_area :comment, value: @decision&.comment, rows: 2, class: "form-control mb-3" %>
       <div class="d-flex flex-wrap gap-2">
-        <%= form.button "Valider et lancer les règles approuvées", name: 'decision', value: 'approved', disabled: @total.zero?, class: "btn btn-primary" %>
+        <%= form.button "Valider et lancer les règles approuvées", name: 'decision', value: 'approved', disabled: @total.zero?, class: "btn btn-primary", data: { turbo_submits_with: 'Enregistrement de la validation…' } %>
         <%= form.button "À préciser", name: 'decision', value: 'deferred', class: "btn btn-outline-secondary" %>
         <%= form.button "Écarter cette règle", name: 'decision', value: 'rejected', class: "btn btn-outline-danger" %>
       </div>
