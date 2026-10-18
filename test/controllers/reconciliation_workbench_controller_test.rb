@@ -137,6 +137,28 @@ class ReconciliationWorkbenchControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, ReconciliationRuleDecision.count
   end
 
+  test 'series proposals show grouped operations rank corrections and excluded files including missing roots' do
+    rule = ReconciliationWorkbench::Rules::SOURCED_STRUCTURE
+    payload = { 'record_id' => @record.id, 'title' => 'Série documentée', 'file_count' => 2,
+      'language_label' => 'Français', 'operations' => [{ 'kind' => 'reuse_episode', 'existing_id' => @record.id,
+        'season_id' => 12, 'season_rank_before' => 1, 'season' => 2, 'episode' => 1,
+        'observed_title' => 'Épisode documenté', 'references' => [{ 'name' => 'Référence épisode',
+          'url' => 'https://example.org/episode' }] }], 'held' => [{ 'path' => '/videos/multiple.mkv',
+        'reason' => 'Épisode double à arbitrer', 'candidate_ids' => [@record.id] }],
+      'reference_attribution' => 'Sources documentées', 'sources' => [] }
+    ReconciliationWorkbench::CaseStore.propose(rule: rule, key: 'series:test', payload: payload)
+    ReconciliationWorkbench::CaseStore.propose(rule: rule, key: 'series:missing',
+      payload: payload.merge('record_id' => nil, 'title' => 'Série à identifier', 'operations' => []))
+    get reconciliation_workbench_family_path(rule.key)
+    assert_response :success
+    assert_select 'article', count: 2
+    assert_select 'a[href="https://example.org/episode"]', text: 'Référence épisode'
+    assert_includes response.body, 'Corriger le rang de cette saison'
+    assert_includes response.body, 'Épisode double à arbitrer'
+    assert_includes response.body, 'Série à identifier'
+    assert_includes response.body, 'Français'
+  end
+
   private
 
   def decision_params

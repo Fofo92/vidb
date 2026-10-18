@@ -26,6 +26,7 @@ mettent le travail en attente ; les requêtes HTTP ne scannent pas `/videos`.
 | Axe | Automatisation fournie | Limites |
 | --- | --- | --- |
 | Caractéristiques | Qualification série/saison/épisode dans une hiérarchie déjà explicite | Aucun parent créé, aucun déplacement, aucun titre modifié |
+| Caractéristiques | Structures de séries documentées : créations, réutilisations et correction explicite d’un rang de saison | Approbation des seules propositions affichées ; homonymes, déplacements de fiches et numérotations divergentes exclus |
 | Caractéristiques | Année, résumé, pays, langue de fiche et genres documentés | Identité française/originale exacte, justification, sources HTTPS, provenance conservée |
 | Disque | Copie unique, titre exact ou numéro et titre d’épisode concordants | Fiche qualifiée, placement cohérent, fichier stable 24 h, volume vérifié, pas de copie concurrente |
 
@@ -35,6 +36,47 @@ pas résoudre automatiquement tout le stock en attente. Elle reçoit les résult
 sous un format commun, et regroupe leur examen au lieu de livrer un script par lot.
 La langue de la fiche peut être transmise à la copie dans cette règle explicitement approuvée ;
 les observations techniques audio restent conservées. Aucun fichier n’est déplacé, renommé ou supprimé.
+
+## Dossier de structures de séries
+
+Dans **Caractéristiques des œuvres → Ajouter des propositions documentées**, charger le JSON
+de préparation (par exemple `plan-22-series.json`, extrait de l’archive de recherche).
+Le format accepté est `vidb.series_structure_preparation`, version 1. Le même chargeur est
+disponible avec l’option `--proposals` du script de l’atelier. Limite HTTP : 2 Mio.
+
+Le document comporte `groups`, `series_group_count`, `file_count`, `inventory_at`, `inputs`
+et `reference_attribution`. Chaque groupe indique son répertoire, sa série existante proposée
+(ou `null`), les autres racines homonymes, son URL de référence et ses fichiers. Les fichiers
+portent le titre observé, les numéros locaux, les candidats de saison et les références
+`reference_same_number` avec titre, saison, numéro et URL HTTPS. Les étiquettes de confiance,
+les opérations descriptives et les autres suggestions du dossier ne sont pas exécutées.
+
+Le chargeur contrôle les identités partielles du dossier contre les fiches actuelles, puis
+capture leurs instantanés complets. Il recalcule les concordances titre/numéro et recherche
+les titres français et originaux dans tout le catalogue. Une fiche concordante ne peut être
+réutilisée que si elle est déjà au bon emplacement. Un titre trouvé ailleurs reste à arbitrer :
+un homonyme n’autorise pas un déplacement. Une nouvelle fiche n’est proposée qu’en l’absence
+de concurrent. Une saison explicitement nommée peut recevoir son bon rang si celui-ci est libre.
+Les épisodes multiples, traductions non concordantes, références génériques, saisons spéciales,
+racines absentes ou concurrentes et rangs concurrents restent affichés parmi les exclusions.
+
+La famille **Compléter les structures de séries documentées** présente toutes les séries,
+leurs créations et réutilisations par saison, les corrections de rang, la langue héritée par
+les nouvelles fiches, les sources et les cas laissés de côté. Une validation porte sur les
+empreintes actuelles de cette famille, et n’approuve aucun dossier futur. L’ancienne règle
+de qualification des hiérarchies existantes n’autorise pas ces créations.
+
+L’application est une transaction par série : qualification, création, correction et reçu
+réussissent ensemble ou sont annulés ensemble. Les titres et autres métadonnées existantes
+restent intacts. Une modification manuelle, même annulée ensuite, bloque la reprise ; une
+nouvelle fiche concurrente bloque également la création. Une reprise conserve les instantanés
+approuvés et ignore les séries déjà appliquées. Les reçus gardent les identifiants créés/réutilisés
+et les références des épisodes ; le dossier n’est pas jeté après application.
+
+Après les changements du catalogue, le service renouvelle son observation et prépare les liens
+avec le disque. Il les applique dans la même passe **uniquement si leur propre règle est déjà
+approuvée** et si les contrôles habituels passent. Un épisode créé ne constitue donc pas encore
+une copie confirmée. Les compteurs du catalogue et des copies doivent être lus séparément.
 
 ## Préférence entre copies concurrentes
 

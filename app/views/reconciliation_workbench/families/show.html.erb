@@ -18,7 +18,7 @@
     <% suggestion = ReconciliationWorkbench::CopySuggestion.call(payload) if arbitration %>
     <article class="card mb-3">
       <div class="card-body">
-        <h2 class="h5"><%= link_to payload['title'], record_path(payload['record_id']) %></h2>
+        <h2 class="h5"><%= payload['record_id'] ? link_to(payload['title'], record_path(payload['record_id'])) : payload['title'] %></h2>
         <% if payload['comparison'] %>
           <p>Comparaison automatique : <%= payload['comparison']['reason'] %></p>
           <p class="small text-muted">Qualité visuelle non évaluée. Les anciennes copies restent présentes ; aucun fichier n’est supprimé.</p>
@@ -82,6 +82,8 @@
             <div class="col-md-6"><strong>Valeur actuelle</strong><p class="text-muted"><%= workbench_value(payload['field'], payload['before']) %></p></div>
             <div class="col-md-6"><strong>Valeur proposée</strong><p><%= workbench_value(payload['field'], payload['value']) %></p></div>
           </div>
+        <% elsif payload['operations'] %>
+          <%= render 'reconciliation_workbench/series_structure', payload: payload %>
         <% elsif payload['roles'] %>
           <p><%= payload['roles'].size %> fiches dont le rôle sera précisé ; <%= payload['file_count'] %> fichiers concernés. Les liens de parenté restent identiques.</p>
           <details><summary>Voir les rôles proposés</summary><ul class="mt-2">
