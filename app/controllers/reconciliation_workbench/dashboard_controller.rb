@@ -8,7 +8,9 @@ module ReconciliationWorkbench
     end
 
     def status
-      @runs = ReconciliationRun.order(id: :desc).limit(10)
+      active = ReconciliationRun.where(status: %w[running queued]).order(:id).to_a
+      @runs = active + ReconciliationRun.where.not(status: %w[running queued]).order(id: :desc).limit(10).to_a
+      @application_progress = ApplicationProgress.new.call
       render partial: 'reconciliation_workbench/status', locals: { runs: @runs }
     end
 
