@@ -1,5 +1,6 @@
 <div class="container py-4">
   <%= link_to "← Les familles", reconciliation_workbench_path(axis: @rule.axis), class: "small" %>
+  <p class="mt-2"><%= link_to "Choisir les propositions à consolider", reconciliation_workbench_reviews_path(axis: @rule.axis), class: "btn btn-outline-primary btn-sm" %></p>
   <h1 class="h3 mt-3"><%= @rule.title %></h1>
   <p class="lead"><%= @rule.proposal %></p>
   <div class="bg-light border rounded p-3 mb-3">

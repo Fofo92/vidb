@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     post :apply
     post :proposals
     post :stop
+    resources :reviews, only: %i[index create], controller: "reconciliation_workbench/reviews"
     resources :families, only: :show, controller: "reconciliation_workbench/families" do
       post :decision, on: :member
       post :arbitrate, on: :member

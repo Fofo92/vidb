@@ -46,8 +46,7 @@ module ReconciliationWorkbench
     end
 
     def verify_permission!(item)
-      decision = ReconciliationRuleDecision.lock.find_by!(rule_key: item.rule_key, rule_version: item.rule_version)
-      return if item.active? && decision.permits?(item)
+      return if item.active? && Permission.call(item, lock: true)
 
       raise ArgumentError, 'Validation retirée ou proposition remplacée'
     end

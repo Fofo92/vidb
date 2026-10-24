@@ -1,0 +1,43 @@
+<% payload = item.payload %>
+<% rule = consolidation_rule(item) %>
+<article class="card mb-3" data-consolidation-case="<%= item.id %>">
+  <div class="card-body py-2">
+    <div class="d-flex align-items-start gap-2">
+      <% unless @state == 'applied' %>
+        <%= check_box_tag 'case_ids[]', item.id, false, id: "consolidation_case_#{item.id}",
+                          class: "form-check-input mt-1",
+                          data: { consolidation_selection_target: "case", action: "change->consolidation-selection#update" },
+                          aria: { label: "Examiner #{payload['title']}" } %>
+      <% end %>
+      <div class="flex-grow-1">
+        <h2 class="h6 mb-1"><%= payload['record_id'].present? && payload['record_id'].to_i.positive? ? link_to(payload['title'], record_path(payload['record_id'])) : payload['title'] %></h2>
+        <p class="small mb-1"><strong><%= consolidation_review_label(item) %></strong> · <%= rule&.title || item.rule_key %></p>
+        <% if payload['field'] %>
+          <div class="row small g-2">
+            <div class="col-md-6"><strong>Actuel :</strong> <%= workbench_value(payload['field'], payload['before']) %></div>
+            <div class="col-md-6"><strong>Proposé :</strong> <%= workbench_value(payload['field'], payload['value']) %></div>
+          </div>
+        <% elsif payload['operations'] %>
+          <%= render 'reconciliation_workbench/series_structure', payload: payload %>
+        <% elsif payload['roles'] %>
+          <p class="small mb-1"><%= payload['roles'].size %> rôles à qualifier, placement existant conservé.</p>
+        <% elsif payload['season_titles'] %>
+          <ul class="small mb-1"><% payload['season_titles'].each do |_id, change| %><li><%= change['before'] %> → <%= change['after'] %></li><% end %></ul>
+        <% else %>
+          <p class="small text-break mb-1"><%= payload['path'] %></p>
+        <% end %>
+        <% if payload['comparison'] %>
+          <p class="small mb-1"><%= payload.dig('comparison', 'reason') %></p>
+          <ul class="small text-break"><% Array(payload['samples']).each do |sample| %><li><%= sample['path'] %></li><% end %></ul>
+          <p class="small">Les choix de copies concurrentes se font dans le détail de la famille.</p>
+        <% end %>
+        <% if payload['reason'] %><p class="small mt-1 mb-1"><%= payload['reason'] %></p><% end %>
+        <% consolidation_links(item).each do |url| %>
+          <p class="small mb-1 text-break"><%= link_to url, url, target: '_blank', rel: 'noopener noreferrer' %></p>
+        <% end %>
+        <% if item.error.present? %><p class="small text-danger mb-1"><%= item.error %></p><% end %>
+        <% if rule %><%= link_to "Détail de la famille et arbitrages", reconciliation_workbench_family_path(rule.key), class: "small" %><% end %>
+      </div>
+    </div>
+  </div>
+</article>

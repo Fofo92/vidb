@@ -5,6 +5,6 @@ class ReconciliationCase < ApplicationRecord
   validates :status, inclusion: { in: %w[pending running applied blocked superseded] }
 
   def permitted?
-    ReconciliationRuleDecision.find_by(rule_key: rule_key, rule_version: rule_version)&.permits?(self) == true
+    ReconciliationWorkbench::Permission.call(self)
   end
 end

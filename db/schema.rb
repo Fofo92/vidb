@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_24_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,6 +101,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_160000) do
   create_table "media_records", id: false, force: :cascade do |t|
     t.bigint "medium_id", null: false
     t.bigint "record_id", null: false
+  end
+
+  create_table "reconciliation_case_reviews", force: :cascade do |t|
+    t.string "case_key", null: false
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.string "decision", null: false
+    t.string "fingerprint", null: false
+    t.json "history", default: [], null: false
+    t.bigint "reconciliation_case_id", null: false
+    t.string "rule_key", null: false
+    t.integer "rule_version", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["reconciliation_case_id"], name: "idx_case_reviews_case"
+    t.index ["rule_key", "rule_version", "case_key"], name: "idx_case_reviews_identity", unique: true
+    t.index ["user_id"], name: "index_reconciliation_case_reviews_on_user_id"
+    t.check_constraint "decision::text = ANY (ARRAY['approved'::character varying, 'deferred'::character varying, 'rejected'::character varying]::text[])", name: "case_reviews_decision_check"
   end
 
   create_table "reconciliation_cases", force: :cascade do |t|
@@ -410,6 +428,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_160000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "catalogue_episode_links", "records"
+  add_foreign_key "reconciliation_case_reviews", "reconciliation_cases"
+  add_foreign_key "reconciliation_case_reviews", "users"
   add_foreign_key "reconciliation_record_changes", "reconciliation_cases"
   add_foreign_key "reconciliation_rule_decisions", "users"
   add_foreign_key "reconciliation_runs", "users"

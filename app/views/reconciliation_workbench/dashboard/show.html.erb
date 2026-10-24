@@ -19,6 +19,8 @@
   <% end %>
   <turbo-frame id="workbench_status" src="<%= status_reconciliation_workbench_path %>"
                data-controller="workbench-progress" class="d-block mb-4"></turbo-frame>
+  <p><%= link_to "Consolider les propositions par lot", reconciliation_workbench_reviews_path(axis: @axis),
+                  class: "btn btn-outline-primary", data: { consolidation_queue: true } %></p>
   <nav class="nav nav-tabs mb-4" aria-label="Les deux axes du travail">
     <%= link_to "1 · Caractéristiques des œuvres", reconciliation_workbench_path(axis: 'metadata'), class: "nav-link #{@axis == 'metadata' ? 'active' : ''}" %>
     <%= link_to "2 · Liens avec le disque", reconciliation_workbench_path(axis: 'disk'), class: "nav-link #{@axis == 'disk' ? 'active' : ''}" %>

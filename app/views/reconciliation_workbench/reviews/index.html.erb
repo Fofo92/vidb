@@ -1,0 +1,63 @@
+<div class="container py-3" data-consolidation-queue>
+  <p><%= link_to "← Atelier de réconciliation", reconciliation_workbench_path(axis: @axis) %></p>
+  <h1 class="h3">Consolider les propositions</h1>
+  <p class="small text-muted">Les décisions portent uniquement sur les propositions cochées.
+    Les règles automatiques déjà approuvées restent actives ; une décision sur un cas est prioritaire.
+    Les propositions nouvelles ou ambiguës ne sont pas validées implicitement.</p>
+  <nav class="nav nav-tabs mb-3" aria-label="Axes de consolidation">
+    <%= link_to "1 · Fiches et métadonnées", reconciliation_workbench_reviews_path(axis: 'metadata'), class: "nav-link #{@axis == 'metadata' ? 'active' : ''}" %>
+    <%= link_to "2 · Fichiers et rattachements", reconciliation_workbench_reviews_path(axis: 'disk'), class: "nav-link #{@axis == 'disk' ? 'active' : ''}" %>
+  </nav>
+  <%= form_with url: reconciliation_workbench_reviews_path, method: :get, class: "row g-2 align-items-end mb-3" do |form| %>
+    <%= form.hidden_field :axis, value: @axis %>
+    <div class="col-md-5"><%= form.label :q, "Titre, dossier ou chemin", class: "form-label" %>
+      <%= form.search_field :q, value: @query, maxlength: 200, class: "form-control" %></div>
+    <div class="col-md-2"><%= form.label :tree_id, "N° de fiche de l’arbre", class: "form-label" %>
+      <%= form.number_field :tree_id, value: @tree_id, min: 1, class: "form-control" %></div>
+    <div class="col-md-3"><%= form.label :state, "État", class: "form-label" %>
+      <%= form.select :state, [['À examiner', 'pending'], ['Validées, en attente', 'approved'], ['À revoir', 'deferred'], ['Écartées', 'rejected'], ['Appliquées', 'applied'], ['Toutes les propositions actives', 'all']], { selected: @state }, class: "form-select" %></div>
+    <div class="col-md-2"><%= form.submit "Filtrer", class: "btn btn-outline-primary" %></div>
+  <% end %>
+  <p><strong><%= @total %></strong> propositions dans ce périmètre · page <%= @page %>.</p>
+  <turbo-frame id="workbench_status" src="<%= status_reconciliation_workbench_path %>"
+               data-controller="workbench-progress" class="d-block mb-3"></turbo-frame>
+  <% if @cases.empty? %>
+    <p class="alert alert-info">Aucune proposition dans ce périmètre. Les cas sans proposition exploitable restent dans les exceptions.</p>
+    <p><%= link_to "Voir les groupes d’exceptions", exceptions_reconciliation_workbench_path %></p>
+  <% else %>
+    <%= form_with url: reconciliation_workbench_reviews_path, method: :post, data: { controller: "consolidation-selection" } do |form| %>
+      <%= hidden_field_tag :axis, @axis %>
+      <%= hidden_field_tag :state, @state %>
+      <%= hidden_field_tag :q, @query %>
+      <%= hidden_field_tag :tree_id, @tree_id %>
+      <%= hidden_field_tag :page, @page %>
+      <%= hidden_field_tag :review_token, @review_token %>
+      <% unless @state == 'applied' %>
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-2">
+          <label class="small"><input type="checkbox" class="form-check-input me-1"
+            data-consolidation-selection-target="all" data-action="change->consolidation-selection#toggleAll">
+            Cocher cette page</label>
+          <span class="small text-muted" aria-live="polite" data-consolidation-selection-target="count"></span>
+        </div>
+      <% end %>
+      <% @cases.each do |item| %>
+        <%= render 'reconciliation_workbench/reviews/proposal', item: item %>
+      <% end %>
+      <% unless @state == 'applied' %>
+        <%= form.label :comment, "Justification commune (facultative)", class: "form-label" %>
+        <%= form.text_area :comment, rows: 2, maxlength: 2000, class: "form-control mb-2" %>
+        <div class="d-flex flex-wrap gap-2">
+          <%= form.button "Valider les propositions cochées", name: 'decision', value: 'approved', class: "btn btn-primary" %>
+          <%= form.button "À revoir plus tard", name: 'decision', value: 'deferred', class: "btn btn-outline-secondary" %>
+          <%= form.button "Écarter les propositions cochées", name: 'decision', value: 'rejected', class: "btn btn-outline-danger" %>
+        </div>
+        <p class="small text-muted mt-2">Valider les fiches ne valide pas leurs fichiers, et inversement.
+          Les cas à arbitrer restent protégés par les contrôles de l’atelier.</p>
+      <% end %>
+    <% end %>
+  <% end %>
+  <nav class="d-flex gap-3 mt-3" aria-label="Pages de consolidation">
+    <% if @page > 1 %><%= link_to "Page précédente", consolidation_page_path(@page - 1) %><% end %>
+    <% if @page * 30 < @total %><%= link_to "Page suivante", consolidation_page_path(@page + 1) %><% end %>
+  </nav>
+</div>
