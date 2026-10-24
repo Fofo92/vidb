@@ -10,9 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_24_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "catalogue_episode_links", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -134,6 +162,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_170000) do
     t.bigint "user_id"
     t.index ["status", "created_at"], name: "index_reconciliation_runs_on_status_and_created_at"
     t.index ["user_id"], name: "index_reconciliation_runs_on_user_id"
+  end
+
+  create_table "record_posters", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "record_id", null: false
+    t.jsonb "source", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_id"], name: "index_record_posters_on_record_id", unique: true
   end
 
   create_table "records", force: :cascade do |t|
@@ -371,10 +407,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_170000) do
     t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'missing'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "catalogue_episode_links", "records"
   add_foreign_key "reconciliation_record_changes", "reconciliation_cases"
   add_foreign_key "reconciliation_rule_decisions", "users"
   add_foreign_key "reconciliation_runs", "users"
+  add_foreign_key "record_posters", "records"
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"

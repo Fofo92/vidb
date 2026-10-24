@@ -2,6 +2,7 @@
 <div data-controller="record-states" data-record-states-url-value="<%= record_states_path(@record) %>">
   <div class="small" role="status" aria-live="polite" data-record-states-target="message"></div>
 
+<%= render "records/poster", record: @record %>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <h4>
     <%= link_to @record.complete_title_with_parents, (@record.has_parent? ? record_path(@record.parent) : nil) %>
@@ -45,6 +46,8 @@
   <strong>, disponible sur : </strong><span data-copy-supports="<%= @record.id %>"><%= copies.supports %></span>
   <strong>, version linguistique : </strong><span data-copy-languages="<%= @record.id %>"><%= copies.languages %></span>
 </p>
+<div class="clearfix"></div>
+<%= render "records/poster_controls", record: @record %>
 <div data-record-states-target="summary">
   <%= render "state_summary", record: @record %>
 </div>

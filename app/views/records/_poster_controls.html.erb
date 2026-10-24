@@ -1,0 +1,20 @@
+<details class="small mb-2" data-record-poster-controls>
+  <summary>Pochette</summary>
+  <div class="d-flex flex-wrap align-items-end gap-2 mt-2">
+    <%= form_with url: record_poster_path(record), method: :patch, multipart: true do |form| %>
+      <%= form.label :image, "Image JPEG, PNG ou WebP · 5 Mo maximum", for: "poster_image" %>
+      <%= file_field_tag "poster[image]", id: "poster_image", accept: "image/jpeg,image/png,image/webp", required: true %>
+      <%= form.submit "Enregistrer l’image", class: "btn btn-outline-primary btn-sm" %>
+    <% end %>
+    <% if RecordPosters::Target.call(record) %>
+      <%= button_to "Récupérer depuis TMDB", fetch_record_poster_path(record), class: "btn btn-outline-primary btn-sm" %>
+    <% end %>
+    <% if record.record_poster&.image&.attached? %>
+      <%= button_to "Retirer cette pochette", record_poster_path(record), method: :delete,
+                    class: "btn btn-outline-secondary btn-sm" %>
+    <% end %>
+  </div>
+  <p class="text-muted mt-1 mb-0">Les images personnelles sont prioritaires.
+    Pour une saison ou un épisode sans pochette, l’affiche de la série est utilisée.
+    Ce produit utilise l’API TMDB sans être approuvé ni certifié par TMDB.</p>
+</details>

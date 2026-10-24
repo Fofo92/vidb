@@ -5,6 +5,7 @@ class Record < ApplicationRecord
   paginates_per 26
   belongs_to :language_version
   has_many :video_assets, inverse_of: :record
+  has_one :record_poster, dependent: :destroy
   has_and_belongs_to_many :media
   has_and_belongs_to_many :genders,
                           before_add: :capture_genres_before_change,

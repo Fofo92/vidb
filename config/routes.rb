@@ -33,6 +33,9 @@ Rails.application.routes.draw do
              controller: "tv_recording_confirmations"
   end
   resources :records do
+    resource :poster, only: %i[show update destroy], controller: "record_posters" do
+      post :fetch, on: :member
+    end
     resource :states, only: :update, controller: "record_states"
     resource :hierarchy_placement,
              controller: "record_hierarchy_placements",

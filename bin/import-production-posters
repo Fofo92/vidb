@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == '--help' ]]; then
+  printf '%s\n' 'Usage: bin/import-production-posters [--apply] [RECORD_ID ...]' \
+    'Sans --apply : bilan des identités disponibles, sans téléchargement ni écriture.'
+  exit 0
+fi
+for argument in "$@"; do
+  [[ "$argument" == '--apply' || "$argument" =~ ^[1-9][0-9]*$ ]] || {
+    printf 'Argument invalide : %s\n' "$argument" >&2
+    exit 1
+  }
+done
+sudo systemd-run --quiet --wait --pipe --collect \
+  --uid=vidb --working-directory=/srv/vidb/current \
+  --property=EnvironmentFile=/etc/vidb/vidb.env \
+  --setenv=HOME=/srv/vidb --setenv=RAILS_ENV=production \
+  --setenv=BUNDLE_PATH=/srv/vidb/shared/bundle \
+  --setenv=BUNDLE_WITHOUT=development:test \
+  --setenv=PATH=/opt/rubies/4.0.6/bin:/usr/local/bin:/usr/bin:/bin \
+  /opt/rubies/4.0.6/bin/bundle _2.7.1_ exec bin/rails runner \
+  script/fetch_record_posters.rb "$@"
