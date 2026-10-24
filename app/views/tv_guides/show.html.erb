@@ -115,14 +115,27 @@
   <% end %>
 
   <% if @selection_alerts.unplaced.any? %>
-    <div class="alert alert-warning" data-tv-guide-unplaced-alerts>
-      <strong>Sélections à vérifier hors de la grille actuelle :</strong>
-      <ul>
+    <details class="alert alert-warning py-2 mb-2" data-tv-guide-unplaced-alerts>
+      <summary class="fw-semibold">
+        <%= pluralize(@selection_alerts.unplaced.size, "sélection", "sélections") %> à vérifier hors de la grille actuelle
+      </summary>
+      <p class="small mt-2 mb-1">
+        Le programme n’a pas été retrouvé dans la grille affichée : les horaires ou les chaînes visibles ont pu changer.
+        Les programmations Kaffeine restent inchangées.
+        Vérifie la chaîne et la plage de capture avant de conserver ou de reprogrammer une sélection.
+      </p>
+      <ul class="small mb-2">
         <% @selection_alerts.unplaced.each do |message| %>
           <li><%= message %></li>
         <% end %>
       </ul>
-    </div>
+      <div class="d-flex flex-wrap gap-2">
+        <%= link_to "Consulter les programmations Kaffeine", tv_kaffeine_schedules_path,
+                    class: "btn btn-sm btn-outline-secondary" %>
+        <%= link_to "Gérer les sélections vidb", tv_recording_intents_path,
+                    class: "btn btn-sm btn-outline-secondary" %>
+      </div>
+    </details>
   <% end %>
 
   <section data-tv-guide-day="<%= @date.iso8601 %>">

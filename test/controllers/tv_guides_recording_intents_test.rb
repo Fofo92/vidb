@@ -305,8 +305,16 @@ class TvGuidesRecordingIntentsTest <
     get tv_guide_url, params: guide_params
 
     assert_response :success
-    assert_select "[data-tv-guide-unplaced-alerts]", text: /aucune plage aux mêmes horaires/
+    assert_select "details[data-tv-guide-unplaced-alerts]:not([open])", text: /aucune plage aux mêmes horaires/ do
+      assert_select "summary", text: /1 sélection à vérifier/
+      assert_select "a[href='#{tv_kaffeine_schedules_path}']", text: /Consulter/
+      assert_select "a[href='#{tv_recording_intents_path}']", text: /Gérer/
+      assert_select "form", count: 0
+    end
+    assert_select "[data-tv-guide-unplaced-alerts] + section[data-tv-guide-day]", count: 1
     assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='unselected']"
+    assert_equal "selected", intent.reload.status
+    assert_equal 123, intent.kaffeine_schedule_link.kaffeine_key
   end
 
   private
