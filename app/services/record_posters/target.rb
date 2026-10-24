@@ -15,8 +15,8 @@ module RecordPosters
       case @record.record_kind
       when 'series' then series_target(@record)
       when 'season' then season_target
-      when 'standalone_video' then explicit_target('movie', 'tmdb_movie_id')
-      when 'collection' then explicit_target('collection', 'tmdb_collection_id')
+      when 'standalone_video' then explicit_target('movie')
+      when 'collection' then explicit_target('collection')
       end
     end
 
@@ -28,7 +28,7 @@ module RecordPosters
       evidence = series.year_evidence.to_h
       ids << evidence['tmdb_series_id']
       ids << evidence['external_series_id'] if evidence['provider'] == 'tmdb'
-      ids.concat(url_ids(evidence, 'tv'))
+      ids.concat(Evidence.ids(series, 'tv'))
       id = unique_id(ids)
       { type: 'tv', id: id } if id
     end
@@ -43,17 +43,9 @@ module RecordPosters
       target.merge(season: number) if target && number
     end
 
-    def explicit_target(type, key)
-      evidence = @record.year_evidence.to_h
-      id = unique_id([evidence[key]] + url_ids(evidence, type))
+    def explicit_target(type)
+      id = unique_id(Evidence.ids(@record, type))
       { type: type, id: id } if id
-    end
-
-    def url_ids(evidence, type)
-      [evidence['url'], evidence['source']].filter_map do |url|
-        match = url.to_s.match(%r{\Ahttps://www\.themoviedb\.org/#{type}/([1-9]\d*)(?:[/?].*)?\z})
-        match[1] if match
-      end
     end
 
     def unique_id(values)

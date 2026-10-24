@@ -1,0 +1,11 @@
+[Unit]
+Description=Verification periodique des pochettes vidb
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=30min
+RandomizedDelaySec=1min
+Unit=vidb-posters-refresh.service
+
+[Install]
+WantedBy=timers.target

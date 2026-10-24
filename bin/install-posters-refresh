@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+sudo test -f /srv/vidb/current/app/services/record_posters/film_target.rb
+for unit in service timer; do
+  sudo install -o root -g root -m 0644 \
+    "config/systemd/vidb-posters-refresh.$unit" \
+    "/etc/systemd/system/vidb-posters-refresh.$unit"
+done
+sudo systemctl daemon-reload
+sudo systemctl enable --now vidb-posters-refresh.timer
+sudo systemctl start --no-block vidb-posters-refresh.service
+printf '%s\n' 'Pochettes automatiques activées ; premier passage en arrière-plan.'
+printf '%s\n' 'Bilan : sudo journalctl -u vidb-posters-refresh.service -n 30 --no-pager'

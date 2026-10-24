@@ -1,0 +1,23 @@
+[Unit]
+Description=Recuperation automatique des pochettes vidb
+After=network-online.target postgresql.service
+Wants=network-online.target
+RequiresMountsFor=/srv/vidb/shared
+
+[Service]
+Type=oneshot
+User=vidb
+Group=vidb
+WorkingDirectory=/srv/vidb/current
+EnvironmentFile=/etc/vidb/vidb.env
+Environment=HOME=/srv/vidb
+Environment=RAILS_ENV=production
+Environment=BUNDLE_PATH=/srv/vidb/shared/bundle
+Environment=BUNDLE_DEPLOYMENT=1
+Environment=BUNDLE_WITHOUT=development:test
+Environment=PATH=/opt/rubies/4.0.6/bin:/usr/bin:/bin
+ExecStart=/opt/rubies/4.0.6/bin/bundle _2.7.1_ exec bin/rails runner script/fetch_record_posters.rb --apply
+UMask=0077
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=6h

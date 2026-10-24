@@ -98,11 +98,27 @@ class RecordPosterTest < ActiveSupport::TestCase
     assert_equal "manual", @series.record_poster.reload.source["kind"]
   end
 
+  test "automatic identification retrieves artwork without changing film metadata" do
+    film = Record.create!(french_title: "16 levers de soleil", record_kind: "standalone_video", year: 2018,
+                          abstract: "Un documentaire sur une mission dans l’espace", language_version: @series.language_version)
+    before = film.attributes
+    resolver = Object.new
+    resolver.define_singleton_method(:call) { |_record| { type: "movie", id: 123 } }
+    client = Object.new
+    client.define_singleton_method(:poster) { |_target| { path: "/abc.png", url: "https://www.themoviedb.org/movie/123" } }
+    png = PNG
+    download = Object.new
+    download.define_singleton_method(:call) { |_path| png }
+    fetcher = RecordPosters::Fetch.new(client: client, download: download, film_target: resolver)
+    assert_equal :attached, fetcher.call(film)
+    assert_equal before, film.reload.attributes
+    assert_equal({ "type" => "movie", "id" => 123 }, film.record_poster.source["target"])
+    assert_equal :preserved, fetcher.call(film)
+  end
+
   test "fetch without identity has no network call and no database change" do
     assert_no_difference("RecordPoster.count") do
-      assert_raises(RecordPosters::Fetch::Error) do
-        RecordPosters::Fetch.new(client: Object.new, download: Object.new).call(@series)
-      end
+      assert_equal :unidentified, RecordPosters::Fetch.new(client: Object.new, download: Object.new).call(@series)
     end
   end
 end

@@ -25,7 +25,8 @@ class RecordPostersController < ApplicationController
   def fetch
     result = RecordPosters::Fetch.new.call(@record, restore: true)
     message = { attached: 'Pochette récupérée.', preserved: 'Pochette déjà conservée.',
-                absent: 'Aucune pochette proposée par TMDB.' }.fetch(result)
+                absent: 'Aucune pochette proposée par TMDB.',
+                unidentified: 'Identification automatique insuffisante ; pochette conservée en attente.' }.fetch(result)
     redirect_to record_path(@record), notice: message
   rescue RecordPosters::Fetch::Error, RecordPosters::ImageDownload::Error,
          RecordPosters::Store::Error, CatalogEnrichment::TmdbClient::Error => e
