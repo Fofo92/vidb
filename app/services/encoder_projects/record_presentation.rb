@@ -2,7 +2,8 @@ module EncoderProjects
   class RecordPresentation
     def self.call(record)
       record.attributes.slice('french_title', 'original_title', 'year', 'record_kind', 'abstract').merge(
-        'genres' => record.genders.map(&:name), 'countries' => record.countries.map(&:long_name)
+        'language_version' => record.language_version.short_name,
+        'genres' => record.effective_genders.map(&:name), 'countries' => record.effective_countries.map(&:long_name)
       ).merge(episode_placement(record))
     end
 

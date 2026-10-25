@@ -10,16 +10,26 @@ module EncoderProjects
 
     def call(data)
       request = ProjectRequest.new(data)
-      ReconciliationCase.transaction do
+      result = ReconciliationCase.transaction do
         lock_projects!
         previous = Binding.current(request.project_id)
         next identified(previous) if previous
 
         resolve(request)
       end
+      episode_review(result, request)
     end
 
     private
+
+    def episode_review(result, request)
+      return result unless result[:status] == 'identified' && result.dig(:metadata, 'record_kind') == 'episode'
+
+      token = CatalogueScope.issue(user: @user, project: request.data)
+      record = Record.find(result.dig(:binding, 'record_id'))
+      query = URI.encode_www_form(request_token: token, enrich: '1', series_id: record.parent.parent.id)
+      result.merge(review_url: "#{@url}/encoder_projects/episode?#{query}")
+    end
 
     def lock_projects!
       return unless Record.connection.adapter_name == 'PostgreSQL'

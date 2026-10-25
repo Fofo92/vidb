@@ -1,0 +1,49 @@
+<% submitted = @submitted || {} %>
+<% language = proposal['language_version'].presence %>
+<% language = @scope.dig('project', 'language_hint').presence || 'IND' if language.blank? || language == 'IND' %>
+<% language = submitted['language_version'] if submitted['language_version'].present? %>
+<% values = proposal.merge((@submitted || {}).slice('title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
+<section class="card my-3"><div class="card-body">
+<% if proposal.dig('source', 'provider').present? %>
+  <h2 class="h5">Proposition <%= index + 1 %> · <%= proposal.dig('source', 'provider') %></h2>
+  <p><%= link_to 'Consulter la source', proposal.dig('source', 'url'), target: '_blank', rel: 'noopener' %></p>
+<% end %>
+<% if proposal['existing_record_id'] %>
+  <p><%= link_to 'Modifier ou effacer une information déjà renseignée', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %></p>
+<% end %>
+<%= form_with url: encoder_projects_episode_path, method: :post do |form| %>
+  <%= form.hidden_field :request_token, value: params[:request_token] %>
+  <% if proposal.present? %>
+    <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: proposal) %>
+  <% end %>
+  <%= form.hidden_field :q, value: @query %>
+  <%= form.label :series_id, 'Série (vérifie aussi son année)', for: "episode-series-#{index}" %>
+  <%= form.select :series_id, @series.map { |record| ["#{record.complete_title} · #{record.year} · fiche #{record.id}", record.id] }, { selected: proposal['series_id'] || params[:series_id], prompt: 'Choisir la série' }, required: true, id: "episode-series-#{index}" %>
+  <%= form.label :title, 'Titre de l’épisode', for: "episode-title-#{index}" %>
+  <%= form.text_field :title, value: values['title'].presence || @episode.title, maxlength: 300, id: "episode-title-#{index}" %>
+  <% if values['title'].blank? && @episode.title.blank? %><p class="small text-warning">Titre : à compléter.</p><% end %>
+  <%= form.label :year, 'Année de première diffusion', for: "episode-year-#{index}" %>
+  <%= form.number_field :year, value: values['year'], min: 1900, max: Date.current.year, placeholder: 'À compléter', id: "episode-year-#{index}" %>
+  <% if values['year'].blank? %><p class="small text-warning">Année : à compléter.</p><% end %>
+  <%= form.label :abstract, 'Résumé', for: "episode-abstract-#{index}" %>
+  <%= form.text_area :abstract, value: values['abstract'], maxlength: 12000, placeholder: 'À compléter', id: "episode-abstract-#{index}" %>
+  <% if values['abstract'].blank? %><p class="small text-warning">Résumé : à compléter.</p><% end %>
+  <%= form.label :gender_ids, 'Genres principaux (deux maximum)', for: "episode-genres-#{index}" %>
+  <%= form.select :gender_ids, Gender.order(:name).map { |item| [item.name, item.id] }, { selected: values['gender_ids'] }, multiple: true, id: "episode-genres-#{index}" %>
+  <% if values.fetch('gender_ids', []).empty? %><p class="small text-warning">Genres : à compléter.</p><% end %>
+  <%= form.label :country_ids, 'Pays de production', for: "episode-countries-#{index}" %>
+  <%= form.select :country_ids, Country.order(:long_name).map { |item| [item.long_name, item.id] }, { selected: values['country_ids'] }, multiple: true, id: "episode-countries-#{index}" %>
+  <% if values.fetch('country_ids', []).empty? %><p class="small text-warning">Pays : à compléter.</p><% end %>
+  <%= form.label :language_version, 'Version linguistique prévue', for: "episode-language-#{index}" %>
+  <%= form.select :language_version, LanguageVersion.order(:id).map { |item| [item.long_name, item.short_name] }, { selected: language }, id: "episode-language-#{index}" %>
+  <% if language == 'IND' %>
+    <p class="small text-warning">Version linguistique : à compléter ; elle sera vérifiée sur le fichier final.</p>
+  <% end %>
+  <%= form.label :source, 'Lien de référence', for: "episode-source-#{index}" %>
+  <%= form.url_field :source, value: (@submitted || {})['source'].presence || proposal.dig('source', 'url'), id: "episode-source-#{index}" %>
+  <p class="small">Un champ vide conserve la proposition disponible. Les informations déjà renseignées sont préservées, sauf correction explicite de ta part.
+    Pays et genres complètent la série lorsqu’ils y manquent ; l’épisode en hérite.
+    Le support HD et la durée réelle seront établis à l’import de l’encodage terminé.</p>
+  <%= form.submit 'Confirmer et préparer l’épisode' %>
+<% end %>
+</div></section>

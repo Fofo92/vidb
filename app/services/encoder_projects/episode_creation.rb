@@ -1,5 +1,9 @@
 module EncoderProjects
   class EpisodeCreation
+    def initialize(previous_title: nil)
+      @previous_title = previous_title
+    end
+
     def call(project:, series_id:, title:, year:, source:)
       numbers = EpisodeRequest.new(project)
       validate!(title, year, source)
@@ -42,15 +46,27 @@ module EncoderProjects
       raise ArgumentError, 'Plusieurs fiches occupent ce rang' if matches.size > 1
 
       existing = matches.first
-      if existing
-        raise ArgumentError, 'Le rang est occupé par une autre fiche' unless existing.record_kind_episode? &&
-                                                                             existing.french_title == title
+      return reviewed_existing(existing, season, title) if existing
 
-        return existing
-      end
       raise ArgumentError, 'Ce titre existe déjà dans la saison' if season.children.where(french_title: title).exists?
 
       create_episode(season, numbers.episode, title, year, source)
+    end
+
+    def reviewed_existing(existing, season, title)
+      existing.lock!
+      valid = existing.record_kind_episode? && [title, @previous_title].compact.include?(existing.french_title)
+      raise ArgumentError, 'Le rang est occupé par une autre fiche ou son titre a été modifié' unless valid
+
+      rename_existing(existing, season, title) if existing.french_title != title
+      existing
+    end
+
+    def rename_existing(existing, season, title)
+      raise ArgumentError, 'Ce titre existe déjà dans la saison' if
+        season.children.where.not(id: existing.id).where(french_title: title).exists?
+
+      existing.update!(french_title: title)
     end
 
     def create_episode(season, rank, title, year, source)

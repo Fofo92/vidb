@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'minitest/mock'
 
 class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
@@ -19,7 +20,10 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
       get encoder_projects_catalogue_path, params: { request_token: @token }
     end
     assert_redirected_to encoder_projects_episode_path(request_token: @token)
-    follow_redirect!
+    catalogue = Object.new
+    catalogue.define_singleton_method(:call) { |_series, _numbers| [] }
+    catalogue.define_singleton_method(:warnings) { [] }
+    EncoderProjects::EpisodeCatalogue.stub(:new, -> { catalogue }) { follow_redirect! }
     assert_response :success
     assert_select 'input[name="title"][value="Un nouvel espoir"]'
     assert_select 'select[name="series_id"] option', text: /Cat's Eyes/

@@ -11,6 +11,11 @@ module EncoderProjects
       data.fetch('query').fetch('search').map { |item| item.fetch('title') }
     end
 
+    def search_series(title)
+      data = get(action: 'query', list: 'search', srsearch: "#{title} série télévisée", srnamespace: 0, srlimit: 3)
+      data.fetch('query').fetch('search').map { |item| item.fetch('title') }
+    end
+
     def page(title)
       get(action: 'parse', page: title, prop: 'text', redirects: 1).fetch('parse')
     end

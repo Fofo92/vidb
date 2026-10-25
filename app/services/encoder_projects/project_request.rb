@@ -4,7 +4,11 @@ module EncoderProjects
     attr_reader :data
 
     def initialize(data)
-      @data = data.slice('project_id', 'project_path', 'output_path', 'source_paths')
+      @data = data.slice('project_id', 'project_path', 'output_path', 'source_paths', 'language_hint')
+      hint = @data['language_hint']
+      raise ArgumentError, 'Version linguistique proposée invalide' if hint && !%w[IND VF VO VOST VM VMST
+                                                                                   Muet].include?(hint)
+
       validate!
     end
 
