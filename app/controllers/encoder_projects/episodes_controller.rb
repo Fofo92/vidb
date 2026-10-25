@@ -11,8 +11,7 @@ module EncoderProjects
     end
 
     def create
-      record = EpisodeCreation.new.call(project: @scope.fetch('project'), series_id: params.require(:series_id),
-                                        title: params[:title], year: parsed_year, source: params[:source])
+      record = create_and_bind
       redirect_to record_path(record), notice: 'Épisode prêt. Reprends l’identification dans video_encoder.'
     rescue ArgumentError, ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound,
            ActiveRecord::SoleRecordExceeded => e
@@ -20,6 +19,15 @@ module EncoderProjects
     end
 
     private
+
+    def create_and_bind
+      Record.transaction do
+        record = EpisodeCreation.new.call(project: @scope.fetch('project'), series_id: params.require(:series_id),
+                                          title: params[:title], year: parsed_year, source: params[:source])
+        EpisodeBinding.new(user: current_user, url: request.base_url).call(@scope.fetch('project'), record)
+        record
+      end
+    end
 
     def parsed_year
       Integer(params[:year], 10) if params[:year].present?
