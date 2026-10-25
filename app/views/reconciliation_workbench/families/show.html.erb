@@ -132,6 +132,9 @@
       <% end %>
     </div></section>
   <% end %>
+  <% if @rule.key == ReconciliationWorkbench::Rules::ENCODER_PROJECT.key %>
+    <p>Choisis une seule fiche par projet dans la file de consolidation. Une validation globale de cette famille est désactivée.</p>
+  <% else %>
   <section class="card"><div class="card-body">
     <h2 class="h5">Validation de la règle de cette famille</h2>
     <% if @scope.where(status: 'blocked').exists? %>
@@ -149,4 +152,5 @@
       <p class="small text-muted mt-2 mb-0">Une validation sur cet axe n’approuve aucune règle de l’autre axe. Les règles déjà approuvées peuvent continuer à s’appliquer.</p>
     <% end %>
   </div></section>
+  <% end %>
 </div>

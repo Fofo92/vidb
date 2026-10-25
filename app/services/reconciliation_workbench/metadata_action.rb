@@ -17,6 +17,7 @@ module ReconciliationWorkbench
 
     def apply_structure(item)
       case item.rule_key
+      when Rules::ENCODER_PROJECT.key then EncoderProjects::BindingAction.new.call(item)
       when Rules::SERIES_CREATION.key then SeriesCreation.call(item.payload)
       when Rules::SEASON_TITLES.key then SeasonTitleAction.new.call(item.payload)
       when Rules::SOURCED_STRUCTURE.key then SeriesStructureAction.new.call(item.payload)

@@ -13,11 +13,34 @@ module VideoAssets
 
     private
 
-    def import(observation)
+    def validate_legacy_match!(observation)
       matched = observation[:status] == 'episode_candidate' && observation[:title_evidence] == 'title_match'
-      raise ArgumentError, 'Épisode sans concordance unique' unless matched && observation.fetch(:candidates, []).one?
+      return if matched && observation.fetch(:candidates, []).one?
 
+      raise ArgumentError, 'Export sans liaison vidb validée ni concordance unique'
+    end
+
+    def bound_observation(observation, record)
+      fields = record.attributes.symbolize_keys.slice(:ancestry, :rank, :french_title, :original_title)
+      observation.merge(candidates: [fields.merge(record_id: record.id)])
+    end
+
+    def bound_record(receipt)
+      record = EncoderProjects::Binding.record_for(receipt) || EncoderProjects::Resume.call(receipt)
+      return record if record
+      return unless EncoderProjects::Binding.pending?(receipt['project_id'])
+
+      raise ArgumentError, 'Identification du projet à valider dans vidb'
+    end
+
+    def import(observation)
       export = CompletedExport.new(observation.fetch(:path)).call
+      record = bound_record(export.fetch(:receipt))
+      if record
+        observation = bound_observation(observation, record)
+      else
+        validate_legacy_match!(observation)
+      end
       CompletedExportImport.new(observation, export).call
     rescue StandardError => e
       { status: 'needs_review', reason: e.message }

@@ -5,6 +5,7 @@ module ReconciliationWorkbench
 
     def initialize(user:, parameters:)
       @user = user
+      @queue = parameters.fetch(:queue, true)
       @axis = parameters[:axis]
       @decision = parameters[:decision]
       @token = parameters[:token]
@@ -53,9 +54,18 @@ module ReconciliationWorkbench
         raise ArgumentError, 'Les propositions ont changé ou ont déjà été appliquées ; actualise la page.'
       end
       return unless @decision == 'approved'
+
+      validate_exclusive_choices!(items)
       return if items.all? { |item| approvable?(item) }
 
       raise ArgumentError, 'Un cas exige encore un arbitrage ou une mise à jour de sa proposition ; ouvre son détail.'
+    end
+
+    def validate_exclusive_choices!(items)
+      groups = items.filter_map { |item| item.payload['exclusive_group'].presence }
+      return if groups.size == groups.uniq.size
+
+      raise ArgumentError, 'Choisis une seule fiche pour chaque projet.'
     end
 
     def approvable?(item)
@@ -66,7 +76,7 @@ module ReconciliationWorkbench
     end
 
     def queue_application(changed)
-      ReconciliationRun.create!(mode: 'apply', user: @user) if @decision == 'approved' && changed.positive?
+      ReconciliationRun.create!(mode: 'apply', user: @user) if @queue && @decision == 'approved' && changed.positive?
     end
 
     def save_review(item)

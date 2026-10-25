@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  printf '%s\n' 'Usage: bin/install-encoder-project-bridge https://zeus.fodiman.fr [USER_ID]' >&2
+  exit 1
+fi
+sudo systemd-run --quiet --wait --pipe --collect \
+  --uid=vidb --working-directory=/srv/vidb/current \
+  --property=EnvironmentFile=/etc/vidb/vidb.env \
+  --setenv=HOME=/srv/vidb --setenv=RAILS_ENV=production \
+  --setenv=BUNDLE_PATH=/srv/vidb/shared/bundle --setenv=BUNDLE_WITHOUT=development:test \
+  --setenv=PATH=/opt/rubies/4.0.6/bin:/usr/local/bin:/usr/bin:/bin \
+  /opt/rubies/4.0.6/bin/bundle _2.7.1_ exec bin/rails runner script/configure_encoder_project_bridge.rb "$@"
+client_directory="${XDG_CONFIG_HOME:-$HOME/.config}/video_encoder"
+mkdir -p "$client_directory"
+test ! -L "$client_directory/vidb.json"
+sudo install -o "$(id -un)" -g "$(id -gn)" -m 0600 \
+  /srv/vidb/shared/encoder-bridge/server.json "$client_directory/vidb.json"
+printf '%s\n' 'Configuration video_encoder installée ; aucun secret affiché.'

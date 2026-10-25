@@ -29,6 +29,13 @@ module ReconciliationWorkbench
       limits: 'Décision limitée aux preuves et fichiers examinés. Aucune langue réécrite, aucun fichier supprimé.',
       recurring: false
     )
+    ENCODER_PROJECT = Rule.new(
+      key: 'encoder_project_identity', version: 1, axis: 'metadata',
+      title: 'Associer les projets video_encoder à leurs fiches',
+      proposal: 'Confirmer la fiche correspondant au projet avant ou après son encodage.',
+      limits: 'Une seule fiche par projet. Aucun état de visionnage modifié, aucune vidéo déclarée disponible.',
+      recurring: false
+    )
     FIELDS = %w[year abstract country_id language_version_id genres].freeze
     SERIES_CREATION = Rule.new(
       key: 'reviewed_series_creation', version: 1, axis: 'metadata',
@@ -55,7 +62,7 @@ module ReconciliationWorkbench
     )
 
     def self.all
-      [STRUCTURE, SOURCED_STRUCTURE, SERIES_CREATION, SEASON_TITLES, DISK, PREFERENCE, MANUAL_COPY] +
+      [STRUCTURE, SOURCED_STRUCTURE, SERIES_CREATION, SEASON_TITLES, ENCODER_PROJECT, DISK, PREFERENCE, MANUAL_COPY] +
         FIELDS.flat_map do |field|
           %w[fill replace].map do |mode|
             sourced_rule(field, mode)

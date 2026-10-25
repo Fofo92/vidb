@@ -50,8 +50,10 @@ module VideoAssets
     end
 
     def qualified?(record, parent)
-      record.record_kind_episode? && record.children.empty? && parent&.record_kind_season? &&
-        parent.parent&.record_kind_series?
+      return false unless record.children.empty? && record.hierarchy_placement_status == :consistent
+      return true if record.record_kind_standalone_video?
+
+      record.record_kind_episode? && parent&.record_kind_season? && parent.parent&.record_kind_series?
     end
 
     def validate_file!
