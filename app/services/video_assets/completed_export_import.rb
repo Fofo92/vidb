@@ -26,10 +26,19 @@ module VideoAssets
 
     def attach!(record)
       asset = create_asset(record)
+      confirm_default_unseen(record)
       minutes = asset.duration_minutes
       record.update!(length_in_mn: minutes) if record.length_in_mn.nil? && minutes.between?(10, 240)
       { status: 'imported', record_id: record.id, video_asset_id: asset.id,
         language: asset.language_version&.short_name }
+    end
+
+    def confirm_default_unseen(record)
+      return unless record.effective_state(:is_seen).nil?
+
+      # Import must not revalidate unrelated legacy catalogue metadata.
+      now = Time.current
+      record.update_columns(is_seen: false, seen_state_confirmed_at: now, updated_at: now)
     end
 
     def lock_import

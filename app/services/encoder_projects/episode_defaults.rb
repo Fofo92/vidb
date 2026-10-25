@@ -4,6 +4,7 @@ module EncoderProjects
       existing = existing_episode(series, numbers)
       values = candidate.merge('series_id' => series.id, 'season' => numbers.season, 'episode' => numbers.episode)
       values.merge(editorial(existing, numbers, candidate)).merge(references(existing || series, candidate))
+            .merge(summary(existing, candidate))
     end
 
     def self.existing_episode(series, numbers)
@@ -14,8 +15,26 @@ module EncoderProjects
     def self.editorial(existing, numbers, candidate)
       { 'title' => existing&.french_title.presence || candidate['title'].presence || numbers.title,
         'year' => existing&.year || candidate['year'],
-        'abstract' => existing&.abstract.presence || candidate['abstract'],
         'existing_record_id' => existing&.id, 'language_version' => existing&.language_version&.short_name }
+    end
+
+    def self.summary(existing, candidate)
+      return candidate.slice('abstract', 'abstract_source') unless existing&.abstract.present?
+      if synopsis_upgrade?(existing, candidate)
+        return candidate.slice('abstract', 'abstract_source').merge('previous_abstract' => existing.abstract,
+                                                                    'replace_external_abstract' => true)
+      end
+
+      { 'abstract' => existing.abstract, 'abstract_source' => existing.abstract_provenance['source'],
+        'abstract_notice' => candidate['abstract_notice'].presence ||
+          'Résumé existant conservé ; toute correction reste à ta main.' }
+    end
+
+    def self.synopsis_upgrade?(existing, candidate)
+      source = candidate['abstract_source'] || candidate['source']
+      current = existing.abstract_provenance['source']
+      !existing.abstract_protected? && candidate['abstract'].present? &&
+        SynopsisPreference.rank(source) <= SynopsisPreference.rank(current)
     end
 
     def self.references(series, candidate)

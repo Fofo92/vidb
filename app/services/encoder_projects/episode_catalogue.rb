@@ -17,7 +17,7 @@ module EncoderProjects
       proposals.each do |item|
         item.merge!('series_id' => series.id, 'season' => numbers.season, 'episode' => numbers.episode)
       end
-      proposals.uniq { |item| item.dig('source', 'url') }
+      SynopsisPreference.call(proposals.uniq { |item| item.dig('source', 'url') })
     end
 
     private
@@ -71,7 +71,23 @@ module EncoderProjects
     def tmdb_proposals(series, numbers)
       ids = @links.where(provider: 'tmdb', record_id: series.subtree.select(:id))
                   .distinct.limit(3).pluck(:external_series_id)
+      ids = searched_series_ids(series) if ids.empty?
       ids.flat_map { |id| collect('TMDB') { [tmdb_proposal(id, series, numbers)].compact } }
+    end
+
+    def searched_series_ids(series)
+      title = series.french_title.presence || series.original_title
+      rows = tmdb.search(title: title).fetch('results').select { |row| matching_series?(series, row) }
+      rows.first(3).map { |row| row.fetch('id') }
+    end
+
+    def matching_series?(series, row)
+      local = SynopsisPreference.normalized_titles([series.french_title, series.original_title])
+      remote = SynopsisPreference.normalized_titles(row.values_at('name', 'original_name'))
+      return false unless local.intersect?(remote)
+
+      year = row['first_air_date'].to_s[/\A\d{4}/]&.to_i
+      series.year.nil? || year.nil? || series.year == year
     end
 
     def tmdb_proposal(id, series, numbers)
@@ -95,7 +111,7 @@ module EncoderProjects
     end
 
     def tmdb
-      @tmdb ||= CatalogEnrichment::TmdbClient.new(cache_dir: Rails.root.join('tmp/catalogue-episodes'))
+      @tmdb ||= TmdbSeriesClient.new(cache_dir: Rails.root.join('tmp/catalogue-episodes'))
     end
   end
 end

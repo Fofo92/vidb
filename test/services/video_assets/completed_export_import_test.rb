@@ -47,6 +47,59 @@ class CompletedExportImportTest < ActiveSupport::TestCase
     assert_equal 'VF', asset.language_version.short_name
   end
 
+  test 'a successful export confirms an unknown viewing state as unseen' do
+    @record.update_columns(is_seen: nil, seen_state_confirmed_at: nil)
+    assert_nil @record.reload.effective_state(:is_seen)
+
+    VideoAssets::CompletedExportImport.new(@observation, @export).call
+
+    assert_equal false, @record.reload.is_seen
+    assert_equal false, @record.effective_state(:is_seen)
+    assert_not_nil @record.seen_state_confirmed_at
+    assert_equal true, @record.effective_state(:is_recorded)
+    assert_equal true, @record.effective_state(:is_available)
+  end
+
+  test 'a legacy unconfirmed negative becomes confirmed unseen after export' do
+    @record.update_columns(is_seen: false, is_checked: false, seen_state_confirmed_at: nil)
+    assert_nil @record.reload.effective_state(:is_seen)
+
+    VideoAssets::CompletedExportImport.new(@observation, @export).call
+
+    assert_equal false, @record.reload.effective_state(:is_seen)
+    assert_not_nil @record.seen_state_confirmed_at
+  end
+
+  test 'a confirmed unseen state keeps its original confirmation date' do
+    confirmed = 2.days.ago.change(usec: 0)
+    @record.update_columns(is_seen: false, seen_state_confirmed_at: confirmed)
+
+    VideoAssets::CompletedExportImport.new(@observation, @export).call
+
+    assert_equal false, @record.reload.effective_state(:is_seen)
+    assert_equal confirmed, @record.seen_state_confirmed_at
+  end
+
+  test 'a failed import never changes an unknown viewing state' do
+    @record.update_columns(is_seen: nil, seen_state_confirmed_at: nil)
+    File.write(@path, 'replacement')
+
+    assert_raises(ArgumentError) { VideoAssets::CompletedExportImport.new(@observation, @export).call }
+
+    assert_nil @record.reload.is_seen
+    assert_nil @record.seen_state_confirmed_at
+  end
+
+  test 'replaying an import does not reset a later viewing decision' do
+    @record.update_columns(is_seen: nil, seen_state_confirmed_at: nil)
+    VideoAssets::CompletedExportImport.new(@observation, @export).call
+    @record.update!(is_seen: true)
+
+    assert_equal 'already_imported', VideoAssets::CompletedExportImport.new(@observation, @export).call[:status]
+
+    assert_equal true, @record.reload.effective_state(:is_seen)
+  end
+
   test 'replaying the same receipt is idempotent' do
     VideoAssets::CompletedExportImport.new(@observation, @export).call
     assert_no_difference 'VideoAsset.count' do

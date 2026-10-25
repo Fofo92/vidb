@@ -17,7 +17,7 @@ module EncoderProjects
       dates = section.value('Première diffusion')
       { 'title' => heading.text.squish.sub(/\AÉpisode \d+\s*:\s*/i, ''),
         'year' => dates.scan(/\b(?:19|20)\d{2}\b/).map(&:to_i).min,
-        'abstract' => (section.value('Résumé détaillé').presence || section.value('Résumé')).truncate(1200),
+        'abstract' => section.value('Résumé détaillé').presence || section.value('Résumé'),
         'source' => { 'provider' => 'wikipedia', 'url' => wiki_url(page.fetch('title')),
                       'diffusion_text' => dates.truncate(600) } }
     end

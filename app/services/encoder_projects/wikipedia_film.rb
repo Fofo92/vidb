@@ -48,12 +48,12 @@ module EncoderProjects
       unless marker
         return @document.css('p').find do |paragraph|
           paragraph.text.squish.present?
-        end&.text&.squish.to_s.first(4000)
+        end&.text&.squish.to_s
       end
 
       node = marker.ancestors.find { |ancestor| ancestor.name.match?(/\Ah[1-6]\z/) } || marker
       node = node.parent if node.parent['class'].to_s.include?('mw-heading')
-      paragraphs_after(node).join("\n\n").first(4000)
+      paragraphs_after(node).join("\n\n")
     end
 
     def paragraphs_after(node)

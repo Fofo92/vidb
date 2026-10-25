@@ -1,6 +1,6 @@
 <div class="container py-4">
   <h1 class="h3">Identifier le film et préparer sa fiche vidb</h1>
-  <p>Recherche Wikipédia prioritaire, puis TMDB si aucun film n’est proposé. Vérifie l’œuvre avant de confirmer.</p>
+  <p>Wikipédia reste prioritaire pour l’identité ; le synopsis TMDB est privilégié lorsqu’il concorde. Vérifie l’œuvre avant de confirmer.</p>
   <p class="small text-break">Source : <%= @scope.fetch('project').fetch('source_paths').join(' · ') %></p>
   <%= form_with url: encoder_projects_catalogue_path, method: :get do |form| %>
     <%= form.hidden_field :request_token, value: params[:request_token] %>
@@ -17,6 +17,11 @@
       <h2 class="h4"><%= candidate['french_title'] %> · <%= candidate['year'] || 'Année à compléter' %></h2>
       <p><strong>Genres :</strong> <%= candidate['genres_text'] %> · <strong>Pays :</strong>
         <%= candidate['countries_text'].presence || candidate.fetch('country_codes', []).join(', ') %></p>
+      <% if candidate['abstract_notice'].present? %><p class="small text-muted"><%= candidate['abstract_notice'] %></p><% end %>
+      <% if candidate['abstract'].present? && candidate.dig('abstract_source', 'provider').present? %>
+        <% synopsis_label = { 'tmdb' => 'TMDB', 'wikipedia' => 'Wikipédia', 'senscritique' => 'SensCritique' }.fetch(candidate.dig('abstract_source', 'provider'), candidate.dig('abstract_source', 'provider')) %>
+        <p class="small">Synopsis : <%= link_to synopsis_label, candidate.dig('abstract_source', 'url'), target: '_blank', rel: 'noopener' %></p>
+      <% end %>
       <p><%= candidate['abstract'] %></p>
       <p><%= link_to candidate.fetch('source').fetch('url'), candidate.fetch('source').fetch('url'), target: '_blank', rel: 'noopener noreferrer' %></p>
       <%= form_with url: encoder_projects_catalogue_path, method: :post do |form| %>

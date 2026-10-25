@@ -11,10 +11,11 @@ module EncoderProjects
     def call(query)
       title = query.to_s.strip
       raise ArgumentError, 'Titre ou lien limité à 300 caractères' unless title.present? && title.bytesize <= 300
-      return tmdb_id(title) ? [movie(tmdb_id(title))] : [] if title.start_with?('https://www.themoviedb.org/')
+      return tmdb_id(title) ? SynopsisPreference.call([movie(tmdb_id(title))]) : [] if title.start_with?('https://www.themoviedb.org/')
 
       films = wikipedia_films(title)
-      films.any? ? films : tmdb_films(title)
+      query = films.first&.fetch('french_title', nil).presence || title
+      SynopsisPreference.call(films + tmdb_synopses(query))
     end
 
     private
@@ -41,6 +42,13 @@ module EncoderProjects
 
     def tmdb_id(title)
       title[%r{\Ahttps://www\.themoviedb\.org/movie/([1-9]\d*)(?:[-/?].*)?\z}, 1]&.to_i
+    end
+
+    def tmdb_synopses(title)
+      tmdb_films(title)
+    rescue CatalogEnrichment::TmdbClient::Error, IOError, SystemCallError, Timeout::Error, JSON::ParserError,
+           ArgumentError
+      []
     end
 
     def tmdb_films(title)

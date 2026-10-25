@@ -75,23 +75,13 @@ module EncoderProjects
 
     def fill_abstract(record)
       return if value('abstract').blank? || record.abstract == value('abstract')
+      return if record.abstract.present? && !summary_change_requested?
 
-      if record.abstract.present?
-        return unless explicit_change?('abstract', value('abstract'))
-
-        check_unchanged!(record.abstract, @candidate['abstract'])
-      end
-      persist_abstract(record)
+      SummaryImport.new(candidate: @candidate, parameters: @parameters).call(record, value('abstract'))
     end
 
-    def persist_abstract(record)
-      raise ArgumentError, 'Résumé limité à 12 000 caractères' if value('abstract').length > 12_000
-
-      if @parameters['abstract'].present? && @parameters['abstract'] != @candidate['abstract']
-        record.update!(abstract: value('abstract'))
-      else
-        record.save_external_abstract!(value('abstract'), source: @candidate.fetch('source', {}))
-      end
+    def summary_change_requested?
+      explicit_change?('abstract', value('abstract')) || @candidate['replace_external_abstract']
     end
 
     def fill_language(record)

@@ -25,6 +25,11 @@
   <%= form.label :year, 'Année de première diffusion', for: "episode-year-#{index}" %>
   <%= form.number_field :year, value: values['year'], min: 1900, max: Date.current.year, placeholder: 'À compléter', id: "episode-year-#{index}" %>
   <% if values['year'].blank? %><p class="small text-warning">Année : à compléter.</p><% end %>
+  <% if proposal['abstract_notice'].present? %><p class="small text-muted"><%= proposal['abstract_notice'] %></p><% end %>
+  <% if proposal['abstract'].present? && proposal.dig('abstract_source', 'provider').present? %>
+    <% synopsis_label = { 'tmdb' => 'TMDB', 'wikipedia' => 'Wikipédia', 'senscritique' => 'SensCritique' }.fetch(proposal.dig('abstract_source', 'provider'), proposal.dig('abstract_source', 'provider')) %>
+    <p class="small">Synopsis : <%= link_to synopsis_label, proposal.dig('abstract_source', 'url'), target: '_blank', rel: 'noopener' %></p>
+  <% end %>
   <%= form.label :abstract, 'Résumé', for: "episode-abstract-#{index}" %>
   <%= form.text_area :abstract, value: values['abstract'], maxlength: 12000, placeholder: 'À compléter', id: "episode-abstract-#{index}" %>
   <% if values['abstract'].blank? %><p class="small text-warning">Résumé : à compléter.</p><% end %>
