@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   post "encoder_projects/identify", to: "encoder_projects/identifications#create"
+  get "encoder_projects/catalogue", to: "encoder_projects/catalogue#show"
+  post "encoder_projects/catalogue", to: "encoder_projects/catalogue#create"
   devise_for :users
   root to: "pages#home"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

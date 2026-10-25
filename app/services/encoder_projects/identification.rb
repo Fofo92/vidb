@@ -75,19 +75,28 @@ module EncoderProjects
     end
 
     def identified(binding)
+      record = Record.find(binding.fetch('record_id'))
       { status: 'identified', binding: binding,
-        record_title: Record.find(binding.fetch('record_id')).complete_title_with_parents }
+        record_title: record.complete_title_with_parents, metadata: RecordPresentation.call(record) }
     end
 
     def pending(request, records, observation)
       query = URI.encode_www_form(axis: 'metadata', q: request.project_id)
       review_url = "#{@url}/reconciliation_workbench/reviews?#{query}"
-      review_url = "#{@url}/records" if records.empty?
+      review_url = catalogue_url(request) if records.empty?
       { status: records.empty? ? 'unmatched' : 'needs_review', review_url: review_url, reason: observation[:reason],
         candidates: records.map do |record|
           { record_id: record.id, title: record.complete_title_with_parents,
             year: record.year, qualified: Matcher.qualified?(record) }
         end }
+    end
+
+    def catalogue_url(request)
+      stem = File.basename(request.data.fetch('output_path'), '.mkv')
+      return "#{@url}/records" if VideoAssets::ReconciliationReport::EPISODE_PREFIX.match?(stem)
+
+      token = CatalogueScope.issue(user: @user, project: request.data)
+      "#{@url}/encoder_projects/catalogue?#{URI.encode_www_form(request_token: token)}"
     end
   end
 end
