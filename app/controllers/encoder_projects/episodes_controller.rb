@@ -8,36 +8,31 @@ module EncoderProjects
       @series = Record.where(record_kind: 'series').where(
         'french_title ILIKE :q OR original_title ILIKE :q', q: "%#{Record.sanitize_sql_like(@query)}%"
       ).order(:french_title).limit(30)
+      @unqualified_series = unqualified_series
       prepare_proposals
     end
 
     def create
       record = create_and_bind
       redirect_to record_path(record), notice: 'Épisode prêt. Reprends l’identification dans video_encoder.'
-    rescue ArgumentError, ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound,
-           ActiveRecord::SoleRecordExceeded => e
+    rescue ArgumentError, KeyError, CatalogEnrichment::TmdbClient::Error, ActiveRecord::RecordInvalid,
+           ActiveRecord::RecordNotFound, ActiveRecord::SoleRecordExceeded => e
       failed_submission(e)
     end
 
     private
 
     def create_and_bind
-      Record.transaction do
-        enrichment = EpisodeEnrichment.new(candidate: @scope['candidate'], parameters: enrichment_parameters,
-                                           project: @scope.fetch('project'))
-        creator = EpisodeCreation.new(previous_title: @scope.dig('candidate', 'title'))
-        record = creator.call(project: @scope.fetch('project'), series_id: params.require(:series_id),
-                              **enrichment.creation_values)
-        enrichment.call(record)
-        EpisodeBinding.new(user: current_user, url: request.base_url).call(@scope.fetch('project'), record)
-        record
-      end
+      EpisodePreparation.new(user: current_user, url: request.base_url).call(
+        scope: @scope, parameters: enrichment_parameters, series_id: params[:series_id]
+      )
     end
 
     def failed_submission(error)
       @episode = EpisodeRequest.new(@scope.fetch('project'))
       @query = params[:q].presence || @episode.series
       @series = Record.where(record_kind: 'series', id: params[:series_id])
+      @unqualified_series = unqualified_series
       @proposals = [@scope['candidate'] || {}]
       @submitted = enrichment_parameters
       @warnings = [error.message]
@@ -45,17 +40,41 @@ module EncoderProjects
     end
 
     def enrichment_parameters
-      params.permit(:title, :year, :source, :abstract, :language_version, gender_ids: [], country_ids: []).to_h
+      params.permit(:title, :original_title, :year, :source, :abstract, :language_version,
+                    gender_ids: [], country_ids: []).to_h
     end
 
     def prepare_proposals
       @proposals = []
       @warnings = []
-      series = @series.find { |record| record.id.to_s == params[:series_id] } || (@series.sole if @series.one?)
+      return prepare_missing_series if missing_series_lookup?
+
+      series = selected_series
       return unless series
 
       candidates = consult_sources? ? external_proposals(series) : []
       @proposals = (candidates.presence || [{}]).map { |item| EpisodeDefaults.call(series, @episode, item) }
+    end
+
+    def unqualified_series
+      Record.where(record_kind: 'undetermined', ancestry: nil).where(
+        'french_title ILIKE :q OR original_title ILIKE :q', q: "%#{Record.sanitize_sql_like(@query)}%"
+      ).order(:french_title).limit(10)
+    end
+
+    def selected_series
+      @series.find { |record| record.id.to_s == params[:series_id] } || (@series.sole if @series.one?)
+    end
+
+    def missing_series_lookup?
+      @series.empty? || params[:external_series] == '1'
+    end
+
+    def prepare_missing_series
+      catalogue = MissingSeriesCatalogue.new
+      @proposals = catalogue.call(@query, @episode)
+      @warnings = catalogue.warnings
+      @warnings << 'Aucune proposition exploitable : précise le titre de la série.' if @proposals.empty?
     end
 
     def consult_sources?

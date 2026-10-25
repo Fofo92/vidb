@@ -26,4 +26,18 @@ class TmdbSeriesSnapshotTest < ActiveSupport::TestCase
     assert_equal 3, calls.length
     assert result[:read_only]
   end
+  test 'can include special episodes explicitly without changing the default' do
+    client = Object.new
+    client.define_singleton_method(:get) do |path, language: 'fr-FR'|
+      if path == 'tv/4057'
+        { 'id' => 4057, 'original_language' => 'en', 'seasons' => [{ 'season_number' => 0 }] }
+      else
+        { 'season_number' => 0, 'episodes' => [{ 'id' => 101, 'episode_number' => 1,
+                                               'name' => 'Preview', 'air_date' => '2011-01-01', 'runtime' => 10 }] }
+      end
+    end
+    snapshot = CatalogEnrichment::TmdbSeriesSnapshot.new(client: client, series_id: 4057, include_specials: true).call
+    assert_equal 0, snapshot[:episodes].sole[:season_number]
+  end
+
 end

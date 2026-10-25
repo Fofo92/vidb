@@ -14,6 +14,8 @@ module EncoderProjects
 
     def self.editorial(existing, numbers, candidate)
       { 'title' => existing&.french_title.presence || candidate['title'].presence || numbers.title,
+        'original_title' => existing&.original_title.presence || candidate['original_title'],
+        'previous_original_title' => existing&.original_title,
         'year' => existing&.year || candidate['year'],
         'existing_record_id' => existing&.id, 'language_version' => existing&.language_version&.short_name }
     end

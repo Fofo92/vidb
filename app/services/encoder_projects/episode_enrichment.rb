@@ -15,8 +15,7 @@ module EncoderProjects
       Record.transaction do
         lock_records(record)
         verify!(record)
-        fill_year(record)
-        fill_abstract(record)
+        fill_editorial(record)
         EpisodeReferenceEnrichment.new(@candidate, @parameters).call(record)
         fill_language(record)
         record
@@ -46,6 +45,12 @@ module EncoderProjects
                 @candidate['episode'] == record.rank
 
       raise ArgumentError, 'La proposition concerne une autre série ou un autre épisode'
+    end
+
+    def fill_editorial(record)
+      EpisodeOriginalTitleImport.new(@candidate, @parameters).call(record, created: @created)
+      fill_year(record)
+      fill_abstract(record)
     end
 
     def fill_year(record)

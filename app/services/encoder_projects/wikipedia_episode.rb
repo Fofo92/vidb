@@ -16,6 +16,7 @@ module EncoderProjects
     def candidate(page, heading, section)
       dates = section.value('Première diffusion')
       { 'title' => heading.text.squish.sub(/\AÉpisode \d+\s*:\s*/i, ''),
+        'original_title' => section.value('Titre original'),
         'year' => dates.scan(/\b(?:19|20)\d{2}\b/).map(&:to_i).min,
         'abstract' => section.value('Résumé détaillé').presence || section.value('Résumé'),
         'source' => { 'provider' => 'wikipedia', 'url' => wiki_url(page.fetch('title')),

@@ -6,7 +6,8 @@ class CatalogueEpisodeLink < ApplicationRecord
   validates :provider, inclusion: { in: ['tmdb'] }
   validates :external_episode_id, uniqueness: { scope: :provider }
   validates :record_id, uniqueness: { scope: :provider }
-  validates :external_series_id, :external_episode_id, :local_season_number, :local_episode_number,
-            :external_season_number, :external_episode_number,
+  validates :external_series_id, :external_episode_id, :local_episode_number, :external_episode_number,
             numericality: { only_integer: true, greater_than: 0 }
+  validates :local_season_number, :external_season_number,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 end

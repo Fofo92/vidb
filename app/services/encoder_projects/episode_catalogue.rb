@@ -17,7 +17,8 @@ module EncoderProjects
       proposals.each do |item|
         item.merge!('series_id' => series.id, 'season' => numbers.season, 'episode' => numbers.episode)
       end
-      SynopsisPreference.call(proposals.uniq { |item| item.dig('source', 'url') })
+      distinct = proposals.uniq { |item| item.dig('source', 'url') }
+      SynopsisPreference.call(EpisodeTitles.enrich(distinct))
     end
 
     private
@@ -42,9 +43,9 @@ module EncoderProjects
     end
 
     def wikipedia_proposal(name, series, numbers)
-      base = name.sub(/\s*\(.*\)\z/, '')
-      page = @wikipedia.page("Saison #{numbers.season} de #{base}")
-      return unless page.fetch('title').parameterize == "Saison #{numbers.season} de #{base}".parameterize
+      expected = WikipediaSeasonTitle.call(name.sub(/\s*\(.*\)\z/, ''), numbers.season)
+      page = @wikipedia.page(expected)
+      return unless page.fetch('title').parameterize == expected.parameterize
 
       proposal = @parser.call(page, numbers.episode)
       return unless proposal
@@ -64,8 +65,8 @@ module EncoderProjects
       return resolved if resolved
 
       text = candidate.fetch('genres_text').downcase
-      Gender.all.select { |item| text.include?(item.name.downcase) }
-                .sort_by { |item| text.index(item.name.downcase) }.first(2).map(&:id)
+      matches = Gender.all.select { |item| text.include?(item.name.downcase) }
+      matches.sort_by { |item| text.index(item.name.downcase) }.first(2).map(&:id)
     end
 
     def tmdb_proposals(series, numbers)
@@ -76,9 +77,8 @@ module EncoderProjects
     end
 
     def searched_series_ids(series)
-      title = series.french_title.presence || series.original_title
-      rows = tmdb.search(title: title).fetch('results').select { |row| matching_series?(series, row) }
-      rows.first(3).map { |row| row.fetch('id') }
+      rows = tmdb.search(title: series.french_title.presence || series.original_title).fetch('results')
+      rows.select { |row| matching_series?(series, row) }.first(3).map { |row| row.fetch('id') }
     end
 
     def matching_series?(series, row)
@@ -95,7 +95,23 @@ module EncoderProjects
       episode = tmdb.get("tv/#{id}/season/#{numbers.season}").fetch('episodes').find do |row|
         row['episode_number'] == numbers.episode
       end
-      episode && tmdb_candidate(id, episode).merge(reference_ids(series, tmdb_references(series_data)))
+      return unless episode
+
+      original = original_episode_title(id, series_data, numbers, episode)
+      tmdb_candidate(id, episode).merge('original_title' => original)
+                                 .merge(reference_ids(series, tmdb_references(series_data)))
+    end
+
+    def original_episode_title(id, series_data, numbers, episode)
+      language = series_data['original_language']
+      return episode['name'] if language == 'fr'
+      return unless language.to_s.match?(/\A[a-z]{2}\z/) && episode['id'].is_a?(Integer)
+
+      collect('TMDB (titre original)') do
+        rows = tmdb.get("tv/#{id}/season/#{numbers.season}", language: language).fetch('episodes')
+        native = rows.find { |row| row['episode_number'] == numbers.episode && row['id'] == episode['id'] }
+        [native&.fetch('name', nil)]
+      end.first
     end
 
     def tmdb_candidate(id, episode)

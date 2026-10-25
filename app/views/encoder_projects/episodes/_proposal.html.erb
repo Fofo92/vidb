@@ -2,7 +2,7 @@
 <% language = proposal['language_version'].presence %>
 <% language = @scope.dig('project', 'language_hint').presence || 'IND' if language.blank? || language == 'IND' %>
 <% language = submitted['language_version'] if submitted['language_version'].present? %>
-<% values = proposal.merge((@submitted || {}).slice('title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
+<% values = proposal.merge((@submitted || {}).slice('title', 'original_title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
 <section class="card my-3"><div class="card-body">
 <% if proposal.dig('source', 'provider').present? %>
   <h2 class="h5">Proposition <%= index + 1 %> · <%= proposal.dig('source', 'provider') %></h2>
@@ -17,11 +17,27 @@
     <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: proposal) %>
   <% end %>
   <%= form.hidden_field :q, value: @query %>
+  <% if proposal['series_candidate'] %>
+    <% series = proposal.fetch('series_candidate') %>
+    <p><strong>Nouvelle série : <%= series['french_title'] %></strong>
+      <% if series['original_title'].present? %> (<%= series['original_title'] %>)<% end %>
+      · <%= series['year'] || 'année à compléter' %></p>
+    <p>Création complète : environ <%= series['episode_count'] %> épisodes dans <%= series['season_count'] %> saisons,
+      selon le catalogue qui sera actualisé à la confirmation. Aucune copie ne sera déclarée présente.</p>
+    <%= form.hidden_field :series_id, value: 'new' %>
+  <% else %>
   <%= form.label :series_id, 'Série (vérifie aussi son année)', for: "episode-series-#{index}" %>
   <%= form.select :series_id, @series.map { |record| ["#{record.complete_title} · #{record.year} · fiche #{record.id}", record.id] }, { selected: proposal['series_id'] || params[:series_id], prompt: 'Choisir la série' }, required: true, id: "episode-series-#{index}" %>
-  <%= form.label :title, 'Titre de l’épisode', for: "episode-title-#{index}" %>
+  <% end %>
+  <%= form.label :title, 'Titre français de l’épisode', for: "episode-title-#{index}" %>
   <%= form.text_field :title, value: values['title'].presence || @episode.title, maxlength: 300, id: "episode-title-#{index}" %>
   <% if values['title'].blank? && @episode.title.blank? %><p class="small text-warning">Titre : à compléter.</p><% end %>
+  <%= form.label :original_title, 'Titre original', for: "episode-original-title-#{index}" %>
+  <%= form.text_field :original_title, value: values['original_title'], maxlength: 300, placeholder: 'À compléter si connu', id: "episode-original-title-#{index}" %>
+  <% countries = Country.where(id: values.fetch('country_ids', [])).pluck(:long_name) %>
+  <% complete_title = EncoderProjects::EpisodeTitles.display(values['title'].presence || @episode.title, values['original_title'], countries: countries) %>
+  <p class="small">Nom proposé : <%= format('S%02d E%02d - %s', @episode.season, @episode.episode, complete_title) %></p>
+  <% if values['original_title'].blank? %><p class="small text-muted">Titre original non trouvé : tu peux le compléter ici.</p><% end %>
   <%= form.label :year, 'Année de première diffusion', for: "episode-year-#{index}" %>
   <%= form.number_field :year, value: values['year'], min: 1900, max: Date.current.year, placeholder: 'À compléter', id: "episode-year-#{index}" %>
   <% if values['year'].blank? %><p class="small text-warning">Année : à compléter.</p><% end %>
@@ -49,6 +65,6 @@
   <p class="small">Un champ vide conserve la proposition disponible. Les informations déjà renseignées sont préservées, sauf correction explicite de ta part.
     Pays et genres complètent la série lorsqu’ils y manquent ; l’épisode en hérite.
     Le support HD et la durée réelle seront établis à l’import de l’encodage terminé.</p>
-  <%= form.submit 'Confirmer et préparer l’épisode' %>
+  <%= form.submit(proposal['series_candidate'] ? 'Créer la série complète et préparer cet épisode' : 'Confirmer et préparer l’épisode') %>
 <% end %>
 </div></section>

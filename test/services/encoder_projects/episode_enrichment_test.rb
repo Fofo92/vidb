@@ -75,4 +75,11 @@ class EncoderProjects::EpisodeEnrichmentTest < ActiveSupport::TestCase
     assert @record.abstract.blank?
   end
 
+  test 'original title completes the record independently of the French title' do
+    candidate = @candidate.merge('original_title' => 'Departure', 'previous_original_title' => '')
+    enrichment({}, candidate).call(@record)
+    assert_equal 'Le départ', @record.reload.french_title
+    assert_equal 'Departure', @record.original_title
+  end
+
 end

@@ -1,16 +1,24 @@
 <h1>Préparer un épisode dans vidb</h1>
 <p>Saison <%= format('%02d', @episode.season) %> · épisode <%= format('%02d', @episode.episode) %></p>
-<p>Choisis la série existante. Les sources externes proposent les informations disponibles ; les champs inconnus restent modifiables.
-  La saison et l’épisode manquants seront créés après confirmation. Aucun fichier ne sera rattaché ici.</p>
+<p>Choisis une série existante ou confirme une proposition extérieure si elle manque dans vidb.
+  Pour une nouvelle série, ses saisons et tous les épisodes documentés seront créés après confirmation,
+  non enregistrés, non disponibles et non visionnés. Les champs inconnus restent modifiables.</p>
 <%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
   <%= form.hidden_field :request_token, value: params[:request_token] %>
   <%= form.label :q, 'Titre de la série' %>
   <%= form.text_field :q, value: @query %>
   <%= form.submit 'Rechercher la série' %>
+  <%= form.button 'Chercher aussi dans les sources externes', name: 'external_series', value: '1' %>
 <% end %>
 <% @warnings.each do |warning| %><p class="text-warning"><%= warning %></p><% end %>
+<% if @unqualified_series.present? %>
+  <p>Une fiche locale peut déjà correspondre à la série, avec un placement à qualifier :</p>
+  <ul><% @unqualified_series.each do |record| %>
+    <li><%= link_to "#{record.complete_title} · fiche #{record.id}", edit_record_path(record), target: '_blank', rel: 'noopener' %></li>
+  <% end %></ul>
+<% end %>
 <% if @series.empty? %>
-  <p>Aucune série qualifiée trouvée. Vérifie son placement dans vidb, puis relance la recherche.</p>
+  <p>Aucune série qualifiée locale trouvée. Les propositions ci-dessous permettent de préparer sa création.</p>
 <% else %>
   <%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
     <%= form.hidden_field :request_token, value: params[:request_token] %>
@@ -23,7 +31,7 @@
   <% if params[:enrich] == '1' && @proposals.empty? %>
     <p>Aucune proposition exploitable. Tu peux compléter les champs ci-dessous et préparer la fiche.</p>
   <% end %>
-  <% (@proposals.presence || [{}]).each_with_index do |proposal, index| %>
-    <%= render 'proposal', proposal: proposal, index: index %>
-  <% end %>
+<% end %>
+<% @proposals.each_with_index do |proposal, index| %>
+  <%= render 'proposal', proposal: proposal, index: index %>
 <% end %>

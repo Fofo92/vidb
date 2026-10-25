@@ -102,4 +102,40 @@ class EncoderProjects::EpisodeCatalogueTest < ActiveSupport::TestCase
     assert_equal ['wikipedia'], proposals.map { |row| row.dig('source', 'provider') }
   end
 
+  test 'reads original title in the original series language and shares it with the matching Wikipedia proposal' do
+    client = tmdb
+    calls = []
+    client.define_singleton_method(:get) do |path, language: nil|
+      calls << [path, language]
+      if path.include?('/season/')
+        { 'episodes' => [{ 'id' => 42, 'episode_number' => 1, 'name' => language == 'en' ? 'Departure' : 'Le départ',
+                          'air_date' => '2025-01-01' }] }
+      else
+        { 'original_language' => 'en', 'genres' => [], 'origin_country' => ['US'] }
+      end
+    end
+    catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: wikipedia, tmdb: client, links: Links.new([7]))
+    proposals = catalogue.call(series, Numbers.new(2, 1))
+    assert_equal ['Departure', 'Departure'], proposals.map { |row| row['original_title'] }
+    assert_equal 'Le départ', proposals.first['title']
+    assert_includes calls, ['tv/7/season/2', 'en']
+  end
+
+  test 'an unavailable original language leaves the French proposal usable' do
+    client = tmdb
+    client.define_singleton_method(:get) do |path, language: nil|
+      raise CatalogEnrichment::TmdbClient::Error, 'offline' if language
+      if path.include?('/season/')
+        { 'episodes' => [{ 'id' => 42, 'episode_number' => 1, 'name' => 'Le départ', 'air_date' => '2025-01-01' }] }
+      else
+        { 'original_language' => 'en', 'genres' => [], 'origin_country' => [] }
+      end
+    end
+    catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: wikipedia, tmdb: client, links: Links.new([7]))
+    proposals = catalogue.call(series, Numbers.new(2, 1))
+    assert_equal 2, proposals.size
+    assert_equal 'Le départ', proposals.last['title']
+    assert catalogue.warnings.any?
+  end
+
 end

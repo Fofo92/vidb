@@ -5,8 +5,9 @@ require 'time'
 module CatalogEnrichment
   # Separates translated metadata, original-language titles and reference dates.
   class TmdbSeriesSnapshot
-    def initialize(client:, series_id:)
+    def initialize(client:, series_id:, include_specials: false)
       @client = client
+      @include_specials = include_specials
       @series_id = Integer(series_id)
       raise ArgumentError, 'Series ID must be positive' unless @series_id.positive?
     end
@@ -15,7 +16,9 @@ module CatalogEnrichment
       series = @client.get("tv/#{@series_id}")
       raise ArgumentError, 'TMDB returned another series' unless series.fetch('id') == @series_id
 
-      episodes = series.fetch('seasons').reject { |season| season.fetch('season_number').zero? }.flat_map do |season|
+      seasons = series.fetch('seasons')
+      seasons = seasons.reject { |season| season.fetch('season_number').zero? } unless @include_specials
+      episodes = seasons.flat_map do |season|
         season_episodes(season.fetch('season_number'), series.fetch('original_language'))
       end
       snapshot(series, episodes)
