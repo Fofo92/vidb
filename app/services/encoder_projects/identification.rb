@@ -92,11 +92,9 @@ module EncoderProjects
     end
 
     def catalogue_url(request)
-      stem = File.basename(request.data.fetch('output_path'), '.mkv')
-      return "#{@url}/records" if VideoAssets::ReconciliationReport::EPISODE_PREFIX.match?(stem)
-
       token = CatalogueScope.issue(user: @user, project: request.data)
-      "#{@url}/encoder_projects/catalogue?#{URI.encode_www_form(request_token: token)}"
+      page = EpisodeRequest.match?(request.data) ? 'episode' : 'catalogue'
+      "#{@url}/encoder_projects/#{page}?#{URI.encode_www_form(request_token: token)}"
     end
   end
 end

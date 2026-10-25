@@ -1,0 +1,27 @@
+<h1>Préparer un épisode dans vidb</h1>
+<p>Saison <%= format('%02d', @episode.season) %> · épisode <%= format('%02d', @episode.episode) %></p>
+<p>Choisis la série existante. Vérifie le titre et l’année à partir de ta source extérieure.
+  La saison et l’épisode manquants seront créés après confirmation. Aucun fichier ne sera rattaché ici.</p>
+<%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
+  <%= form.hidden_field :request_token, value: params[:request_token] %>
+  <%= form.label :q, 'Titre de la série' %>
+  <%= form.text_field :q, value: @query %>
+  <%= form.submit 'Rechercher la série' %>
+<% end %>
+<% if @series.empty? %>
+  <p>Aucune série qualifiée trouvée. Vérifie son placement dans vidb, puis relance la recherche.</p>
+<% else %>
+  <%= form_with url: encoder_projects_episode_path, method: :post do |form| %>
+    <%= form.hidden_field :request_token, value: params[:request_token] %>
+    <%= form.hidden_field :q, value: @query %>
+    <%= form.label :series_id, 'Série (vérifie aussi son année)' %>
+    <%= form.select :series_id, @series.map { |record| ["#{record.complete_title} · #{record.year} · fiche #{record.id}", record.id] }, prompt: 'Choisir la série', required: true %>
+    <%= form.label :title, 'Titre de l’épisode' %>
+    <%= form.text_field :title, value: @episode.title, required: true, maxlength: 300 %>
+    <%= form.label :year, 'Année de première diffusion' %>
+    <%= form.number_field :year, min: 1900, max: Date.current.year %>
+    <%= form.label :source, 'Lien de référence (Wikipédia, SensCritique, TMDB…)' %>
+    <%= form.url_field :source %>
+    <%= form.submit 'Confirmer la série et préparer l’épisode' %>
+  <% end %>
+<% end %>

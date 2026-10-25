@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "encoder_projects/episode", to: "encoder_projects/episodes#show"
+  post "encoder_projects/episode", to: "encoder_projects/episodes#create"
   post "encoder_projects/identify", to: "encoder_projects/identifications#create"
   get "encoder_projects/catalogue", to: "encoder_projects/catalogue#show"
   post "encoder_projects/catalogue", to: "encoder_projects/catalogue#create"

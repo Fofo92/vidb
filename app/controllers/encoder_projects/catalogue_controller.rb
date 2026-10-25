@@ -1,6 +1,7 @@
 module EncoderProjects
   class CatalogueController < ApplicationController
     before_action :load_scope
+    before_action :route_episode, only: :show
 
     def show
       @query = params[:q].presence || File.basename(@scope.fetch('project').fetch('output_path'), '.mkv')
@@ -31,6 +32,12 @@ module EncoderProjects
     rescue ArgumentError, KeyError
       render plain: 'Lien expiré ou autre compte : relance l’identification depuis video_encoder.',
              status: :unprocessable_content
+    end
+
+    def route_episode
+      return unless EpisodeRequest.match?(@scope.fetch('project'))
+
+      redirect_to encoder_projects_episode_path(request_token: params[:request_token])
     end
 
     def selected_ids(name)
