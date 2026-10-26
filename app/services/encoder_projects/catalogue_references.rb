@@ -1,8 +1,9 @@
 module EncoderProjects
   class CatalogueReferences
     def self.genres(candidate)
-      text = candidate.fetch('genres_text').downcase
+      text = candidate.fetch('genres_text').downcase.gsub(/\b(?:crime|mystère|mystery)\b/, 'policier')
       names = Gender.all.select { |item| text.include?(item.name.downcase) }
+      names.sort_by! { |item| text.index(item.name.downcase) }
       names = Gender.where(name: ['Drame', 'Comédie']).to_a if text.include?('comédie dramatique')
       names.first(2).map(&:id) if names.size <= 2
     end
