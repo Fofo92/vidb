@@ -1,6 +1,6 @@
 module EncoderProjects
   class EpisodeEditionTitles
-    SUFFIX = /(?:\s*\((\d+)\)|\s*[-–—:]?\s+(?:part(?:ie)?|del)\s*(\d+))\s*\z/i
+    SUFFIX = /(?:\s*\((?:part(?:ie)?|del)?\s*(\d+)\)|\s*[-–—:]?\s+(?:part(?:ie)?|del)\s*(\d+))\s*\z/i
 
     def self.base(title)
       title.to_s.strip.sub(SUFFIX, '').strip

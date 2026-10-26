@@ -64,4 +64,58 @@ class EncoderProjects::EpisodeEditionMappingTest < ActiveSupport::TestCase
     untouched = rows
     assert_same untouched, EncoderProjects::EpisodeEditionMapping.new.call(untouched, {})
   end
+
+  def map_titles(french, native, titles)
+    source = french.each_with_index.map do |title, index|
+      { 'tmdb_episode_id' => 100 + index, 'episode_number' => index + 1,
+        'title_fr' => title, 'title_original' => native[index], 'reference_runtime_minutes' => 44 }
+    end
+    entries = titles.each_with_index.to_h { |title, index| [index + 1, { 'title' => title, 'source' => {} }] }
+    EncoderProjects::EpisodeEditionMapping.new.call(source, entries)
+  end
+
+  test 'season six accepts parenthesized part labels and original titles inside local titles' do
+    french = ["Le prix à payer (A l'ombre du pouvoir) part 1", "Le prix à payer (A l'ombre du pouvoir) part 2",
+              'Au nom de la vérité (part1)', 'Au nom de la vérité (part 2)',
+              'À la vie, à la mort (part 1)', 'À la vie, à la mort (part 2)',
+              'Un goût amer (part 1)', 'Un goût amer (part 2)']
+    native = ['I maktens skugga', 'I sanningens namn', 'I fel sällskap', 'I nöd och lust']
+             .flat_map { |title| ["#{title} (1)", "#{title} (2)"] }
+    titles = ['Le Prix à payer (I maktens skugga)', 'Au nom de la vérité (I sanningens namn)',
+              'À la vie, à la mort (I fel sällskap)', 'Un goût amer (I nöd och lust)']
+    result = map_titles(french, native, titles)
+    assert_equal [[1, 2], [3, 4], [5, 6], [7, 8]], result.map { |row| row['external_parts'].pluck('episode_number') }
+    assert_equal titles, result.pluck('title_fr')
+    assert_equal 'Au nom de la vérité', EncoderProjects::EpisodeEditionTitles.base(french[2])
+    assert_equal 1, EncoderProjects::EpisodeEditionTitles.part(french[2])
+  end
+
+  test 'season eight uses consistent original markers and retains divergent translated labels' do
+    french = ['Angelica (1)', 'Angelica (2)', 'Lili (1)', 'Lili (2)', 'Olivia (1)', 'Olivia (3)']
+    native = french.dup
+    native[5] = 'Olivia (2)'
+    result = map_titles(french, native, ['Angelica', 'Lili', 'Olivia'])
+    assert_equal [5, 6], result.last['external_parts'].pluck('episode_number')
+    assert_equal 'Olivia (3)', result.last['external_parts'].last['title']
+    assert_equal 'Olivia (2)', result.last['external_parts'].last['original_title']
+  end
+
+  test 'season eleven groups original titles despite generic translated second parts' do
+    french = ['Linnéa', 'Épisode 2', 'Rakel', 'Épisode 4', 'Amanda', 'Épisode 6']
+    native = ['Linnéa', 'Rakel', 'Amanda'].flat_map { |title| ["#{title} (1)", "#{title} (2)"] }
+    result = map_titles(french, native, ['Linnéa', 'Rakel', 'Amanda'])
+    assert_equal ['Linnéa', 'Rakel', 'Amanda'], result.pluck('title_fr')
+    assert_equal [[1, 2], [3, 4], [5, 6]], result.map { |row| row['external_parts'].pluck('episode_number') }
+  end
+
+  test 'inconsistent original parts still refuse grouping even with plausible translated titles' do
+    assert_raises(ArgumentError) do
+      map_titles(['Olivia (1)', 'Olivia (2)'], ['Olivia (1)', 'Olivia (3)'], ['Olivia'])
+    end
+  end
+
+  test 'translated part labels remain usable when original titles are absent' do
+    result = map_titles(['Enquête (part1)', 'Enquête (part 2)'], [nil, nil], ['Enquête'])
+    assert_equal [1, 2], result.sole['external_parts'].pluck('episode_number')
+  end
 end

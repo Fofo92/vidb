@@ -40,4 +40,11 @@ class EncoderProjects::WikipediaEditionSnapshotTest < ActiveSupport::TestCase
     data = snapshot
     assert_same data, service.call(data, { 'source' => { 'provider' => 'tmdb' } })
   end
+
+  test 'a conflict names the season that prevents complete preparation' do
+    data = snapshot
+    data['episodes'][3]['title_original'] = data['episodes'][3]['title_fr'] = 'Autre histoire (2)'
+    error = assert_raises(ArgumentError) { service.call(data, candidate) }
+    assert_includes error.message, 'Saison 10 :'
+  end
 end

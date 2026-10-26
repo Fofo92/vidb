@@ -23,8 +23,14 @@ module EncoderProjects
     def mapped_episodes(rows, page)
       rows.group_by { |row| row.fetch('season_number') }.flat_map do |season, episodes|
         local = WikipediaSeasonEpisode.new.entries(page, season)
-        EpisodeEditionMapping.new.call(episodes, local)
+        map_season(episodes, local, season)
       end
+    end
+
+    def map_season(episodes, local, season)
+      EpisodeEditionMapping.new.call(episodes, local)
+    rescue ArgumentError => e
+      raise ArgumentError, "Saison #{season} : #{e.message}"
     end
 
     def verify_selected!(data, candidate)

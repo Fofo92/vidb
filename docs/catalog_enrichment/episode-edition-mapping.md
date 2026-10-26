@@ -36,3 +36,12 @@ linguistique indéterminée et sans support ni durée mesurés.
 Cette première prise en charge concerne les listes de saison reconnues et les
 parties explicitement nommées. Elle ne résout pas automatiquement les éditions
 dont les titres, saisons ou frontières diffèrent sans preuve suffisante.
+
+Les titres originaux, lorsqu'ils sont renseignés, définissent les groupes et
+les numéros de parties. Cela évite qu'une traduction générique (« Épisode 2 »)
+ou une coquille dans un suffixe français désorganise une paire originale
+cohérente. Les libellés français divergents restent conservés dans evidence.
+Sans titre original, le titre français sert de référence. Les suffixes
+« (part1) », « (part 2) », « partie 2 » et « (2) » sont reconnus.
+Une incohérence des parties originales reste bloquante. Le message de refus
+précise désormais la saison concernée.

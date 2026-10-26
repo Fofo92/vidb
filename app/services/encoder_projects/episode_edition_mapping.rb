@@ -34,7 +34,7 @@ module EncoderProjects
     end
 
     def group_key(row)
-      EpisodeEditionTitles.keys([row['title_fr'].presence || row['title_original']]).first
+      EpisodeEditionTitles.keys([row['title_original'].presence || row['title_fr']]).first
     end
 
     def match_group(number, item, groups)
@@ -58,7 +58,7 @@ module EncoderProjects
     end
 
     def part_number(row)
-      EpisodeEditionTitles.part(row['title_fr']) || EpisodeEditionTitles.part(row['title_original'])
+      EpisodeEditionTitles.part(row['title_original']) || EpisodeEditionTitles.part(row['title_fr'])
     end
 
     def validate_parts!(parts, local_title:)
