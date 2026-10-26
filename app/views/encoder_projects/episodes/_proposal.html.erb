@@ -30,6 +30,15 @@
   <%= form.label :series_id, 'Série (vérifie aussi son année)', for: "episode-series-#{index}" %>
   <%= form.select :series_id, @series.map { |record| ["#{record.complete_title} · #{record.year} · fiche #{record.id}", record.id] }, { selected: proposal['series_id'] || params[:series_id], prompt: 'Choisir la série' }, required: true, id: "episode-series-#{index}" %>
   <% end %>
+  <% if proposal['catalogue_completion'] && !proposal['series_candidate'] %>
+    <% complete_catalogue = submitted.key?('complete_catalogue') ? submitted['complete_catalogue'] == '1' : true %>
+    <div class="my-3">
+      <%= form.check_box :complete_catalogue, { checked: complete_catalogue, id: "episode-complete-catalogue-#{index}" }, '1', '0' %>
+      <%= form.label :complete_catalogue, 'Compléter toutes les saisons et tous les épisodes documentés de cette série', for: "episode-complete-catalogue-#{index}" %>
+      <p class="small">Les fiches existantes et leurs états sont conservés. Les nouveaux épisodes seront non enregistrés,
+        non disponibles et non visionnés. Aucun fichier ne sera rattaché ici.</p>
+    </div>
+  <% end %>
   <%= form.label :title, 'Titre français de l’épisode', for: "episode-title-#{index}" %>
   <%= form.text_field :title, value: values['title'].presence || @episode.title, maxlength: 300, id: "episode-title-#{index}" %>
   <% if values['title'].blank? && @episode.title.blank? %><p class="small text-warning">Titre : à compléter.</p><% end %>

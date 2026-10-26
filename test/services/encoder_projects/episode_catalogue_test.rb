@@ -117,6 +117,8 @@ class EncoderProjects::EpisodeCatalogueTest < ActiveSupport::TestCase
     catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: wikipedia, tmdb: client, links: Links.new([7]))
     proposals = catalogue.call(series, Numbers.new(2, 1))
     assert_equal ['Departure', 'Departure'], proposals.map { |row| row['original_title'] }
+    assert_equal [{ 'record_id' => 123, 'tmdb_id' => 7 }] * 2,
+                 proposals.map { |row| row['catalogue_completion'] }
     assert_equal 'Le départ', proposals.first['title']
     assert_includes calls, ['tv/7/season/2', 'en']
   end

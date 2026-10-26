@@ -42,7 +42,7 @@ module EncoderProjects
     end
 
     def enrichment_parameters
-      params.permit(:title, :original_title, :year, :source, :abstract, :language_version,
+      params.permit(:title, :original_title, :year, :source, :abstract, :language_version, :complete_catalogue,
                     gender_ids: [], country_ids: []).to_h
     end
 

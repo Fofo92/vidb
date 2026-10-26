@@ -18,7 +18,7 @@ module EncoderProjects
         item.merge!('series_id' => series.id, 'season' => numbers.season, 'episode' => numbers.episode)
       end
       distinct = proposals.uniq { |item| item.dig('source', 'url') }
-      SynopsisPreference.call(EpisodeTitles.enrich(distinct))
+      CatalogueCompletionProposal.call(SynopsisPreference.call(EpisodeTitles.enrich(distinct)))
     end
 
     private
@@ -93,6 +93,7 @@ module EncoderProjects
       original = original_episode_title(id, series_data, numbers, episode)
       tmdb_candidate(id, episode).merge('original_title' => original)
                                  .merge(reference_ids(series, tmdb_references(series_data)))
+                                 .merge('catalogue_completion' => { 'tmdb_id' => id, 'record_id' => series.id })
     end
 
     def original_episode_title(id, series_data, numbers, episode)

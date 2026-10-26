@@ -116,4 +116,110 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  def existing_series_scope
+    project, candidate = missing_series_scope
+    candidate.delete('series_candidate')
+    candidate['series_id'] = @series.id
+    candidate['catalogue_completion'] = { 'record_id' => @series.id, 'tmdb_id' => 4057 }
+    [project, candidate]
+  end
+
+  test 'existing series completion is proposed checked and makes no writes on consultation' do
+    @series.update!(french_title: 'Esprits criminels')
+    project, candidate = existing_series_scope
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
+    catalogue = Object.new
+    catalogue.define_singleton_method(:call) { |_series, _numbers| [candidate] }
+    catalogue.define_singleton_method(:warnings) { [] }
+    assert_no_difference(['Record.count', 'VideoAsset.count']) do
+      EncoderProjects::EpisodeCatalogue.stub(:new, -> { catalogue }) do
+        get encoder_projects_episode_path, params: { request_token: token, series_id: @series.id, enrich: '1' }
+      end
+    end
+    assert_select 'input[type="checkbox"][name="complete_catalogue"][checked]', count: 1
+  end
+
+  test 'existing series completion reuses existing episode and preserves its states on replay' do
+    project, candidate = existing_series_scope
+    @series.update!(french_title: 'Esprits criminels')
+    season = @series.children.create!(french_title: 'Saison 06', rank: 6, record_kind: 'season',
+                                      language_version: @series.language_version)
+    episode = season.children.create!(french_title: 'Chambre noire', rank: 22, record_kind: 'episode',
+                                      language_version: @series.language_version, is_seen: true,
+                                      is_recorded: false, is_available: false)
+    before = episode.attributes.slice('is_seen', 'is_recorded', 'is_available', 'seen_state_confirmed_at')
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project, candidate: candidate)
+    snapshot = Object.new
+    result = complete_snapshot
+    snapshot.define_singleton_method(:call) { result }
+    parameters = { proposal_token: token, series_id: @series.id, title: 'Chambre noire', complete_catalogue: '1' }
+    CatalogEnrichment::TmdbSeriesSnapshot.stub(:new, ->(**_options) { snapshot }) do
+      assert_difference('Record.count', 3) do
+        assert_no_difference('VideoAsset.count') { post encoder_projects_episode_path, params: parameters }
+      end
+      assert_redirected_to record_path(episode)
+      assert_equal before, episode.reload.attributes.slice(*before.keys)
+      fresh = @series.descendants.where(record_kind: 'episode').where.not(id: episode.id)
+      assert_equal 2, fresh.count
+      fresh.each do |item|
+        assert_equal false, item.is_recorded
+        assert_equal false, item.is_available
+        assert_equal false, item.effective_state(:is_seen)
+        assert_empty item.video_assets
+      end
+      assert_no_difference(['Record.count', 'CatalogueEpisodeLink.count', 'VideoAsset.count']) do
+        post encoder_projects_episode_path, params: parameters
+      end
+    end
+  end
+
+  test 'completion cannot be redirected to another local series by changing the form selection' do
+    project, candidate = existing_series_scope
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project, candidate: candidate)
+    other = Record.create!(french_title: 'Autre série', record_kind: 'series',
+                           language_version: @series.language_version)
+    CatalogEnrichment::TmdbSeriesSnapshot.stub(:new, ->(**_options) { flunk 'No source call for another series' }) do
+      assert_no_difference(['Record.count', 'CatalogueEpisodeLink.count', 'VideoAsset.count']) do
+        post encoder_projects_episode_path, params: { proposal_token: token, series_id: other.id,
+                                                     title: 'Chambre noire', complete_catalogue: '1' }
+      end
+    end
+    assert_response :unprocessable_content
+  end
+
+  test 'unchecked completion prepares only the requested episode without loading all seasons' do
+    project, candidate = existing_series_scope
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project, candidate: candidate)
+    CatalogEnrichment::TmdbSeriesSnapshot.stub(:new, ->(**_options) { flunk 'Completion was declined' }) do
+      assert_difference('Record.count', 2) do
+        post encoder_projects_episode_path, params: { proposal_token: token, series_id: @series.id,
+                                                     title: 'Chambre noire', complete_catalogue: '0' }
+      end
+    end
+    assert_response :redirect
+    assert_equal 1, @series.descendants.where(record_kind: 'episode').count
+  end
+
+  test 'a conflict in another episode rolls back the whole existing series preparation' do
+    project, candidate = existing_series_scope
+    season = @series.children.create!(french_title: 'Saison 06', rank: 6, record_kind: 'season',
+                                      language_version: @series.language_version)
+    conflict = season.children.create!(french_title: 'Une autre œuvre', rank: 23, record_kind: 'episode',
+                                        language_version: @series.language_version, is_seen: true)
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project, candidate: candidate)
+    snapshot = Object.new
+    result = complete_snapshot
+    snapshot.define_singleton_method(:call) { result }
+    CatalogEnrichment::TmdbSeriesSnapshot.stub(:new, ->(**_options) { snapshot }) do
+      assert_no_difference(['Record.count', 'CatalogueEpisodeLink.count', 'VideoAsset.count']) do
+        post encoder_projects_episode_path, params: { proposal_token: token, series_id: @series.id,
+                                                     title: 'Chambre noire', complete_catalogue: '1' }
+      end
+    end
+    assert_response :unprocessable_content
+    assert_equal 'Une autre œuvre', conflict.reload.french_title
+    assert_equal true, conflict.is_seen
+    assert_empty @series.children.where(rank: 0)
+  end
+
 end

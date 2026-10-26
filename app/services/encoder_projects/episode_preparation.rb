@@ -6,7 +6,8 @@ module EncoderProjects
     end
 
     def call(scope:, parameters:, series_id:)
-      snapshot = complete_snapshot(scope.dig('candidate', 'series_candidate'))
+      data = completion_data(scope['candidate'], parameters, series_id)
+      snapshot = complete_snapshot(data)
       Record.transaction do
         lock_catalogue!
         candidate, root_id = creation_context(scope['candidate'], series_id)
@@ -16,12 +17,24 @@ module EncoderProjects
 
     private
 
+    def completion_data(candidate, parameters, series_id)
+      return candidate['series_candidate'] if candidate&.key?('series_candidate')
+      return unless parameters['complete_catalogue'] == '1'
+
+      data = candidate&.fetch('catalogue_completion', nil)
+      unless data && data.fetch('record_id').to_s == series_id.to_s
+        raise ArgumentError, 'Relance la recherche pour confirmer le catalogue de cette série.'
+      end
+
+      data
+    end
+
     def complete_snapshot(data)
       return unless data
 
       client = TmdbSeriesClient.new(cache_dir: Rails.root.join('tmp/catalogue-episodes'), refresh: true)
       CatalogEnrichment::TmdbSeriesSnapshot.new(client: client, series_id: data.fetch('tmdb_id'),
-                                                include_specials: true).call
+                                                include_specials: true).call.deep_stringify_keys
     end
 
     def lock_catalogue!
@@ -43,9 +56,19 @@ module EncoderProjects
       enrichment = EpisodeEnrichment.new(candidate: candidate, parameters: parameters, project: scope.fetch('project'))
       record = create_episode(scope, candidate, root_id, enrichment)
       enrichment.call(record)
-      SeriesCatalogueCompletion.new(root: record.parent.parent, snapshot: snapshot).call if snapshot
+      complete_series(record.parent.parent, snapshot) if snapshot
       EpisodeBinding.new(user: @user, url: @url).call(scope.fetch('project'), record)
       record
+    end
+
+    def complete_series(root, snapshot)
+      ids = CatalogueEpisodeLink.where(provider: 'tmdb', record_id: root.subtree.select(:id))
+                                .distinct.pluck(:external_series_id)
+      unless ids.all? { |id| id == snapshot.fetch('tmdb_series_id') }
+        raise ArgumentError, 'La série possède une autre identité TMDB : vérifie ses liens catalogue.'
+      end
+
+      SeriesCatalogueCompletion.new(root: root, snapshot: snapshot).call
     end
 
     def create_episode(scope, candidate, root_id, enrichment)
