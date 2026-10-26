@@ -1,15 +1,16 @@
 module EncoderProjects
   class EpisodeDefaults
     def self.call(series, numbers, candidate = {})
-      existing = existing_episode(series, numbers)
+      season = existing_season(series, numbers)
+      existing = season&.children&.find_by(record_kind: 'episode', rank: numbers.episode)
       values = candidate.merge('series_id' => series.id, 'season' => numbers.season, 'episode' => numbers.episode)
-      values.merge(editorial(existing, numbers, candidate)).merge(references(existing || series, candidate))
+      values.merge(editorial(existing, numbers, candidate)).merge(references(existing || season || series, candidate))
             .merge(summary(existing, candidate))
     end
 
-    def self.existing_episode(series, numbers)
+    def self.existing_season(series, numbers)
       seasons = series.children.where(record_kind: 'season', rank: numbers.season)
-      seasons.one? ? seasons.sole.children.find_by(record_kind: 'episode', rank: numbers.episode) : nil
+      seasons.sole if seasons.one?
     end
 
     def self.editorial(existing, numbers, candidate)
