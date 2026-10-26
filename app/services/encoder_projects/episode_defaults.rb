@@ -5,6 +5,7 @@ module EncoderProjects
       existing = season&.children&.find_by(record_kind: 'episode', rank: numbers.episode)
       values = candidate.merge('series_id' => series.id, 'season' => numbers.season, 'episode' => numbers.episode)
       values.merge(editorial(existing, numbers, candidate)).merge(references(existing || season || series, candidate))
+            .merge('gender_ids' => preferred_genres(series, season, existing, candidate))
             .merge(summary(existing, candidate))
     end
 
@@ -43,6 +44,13 @@ module EncoderProjects
     def self.references(series, candidate)
       { 'gender_ids' => series.effective_genders.map(&:id).presence || candidate.fetch('gender_ids', []),
         'country_ids' => series.effective_countries.map(&:id).presence || candidate.fetch('country_ids', []) }
+    end
+
+    def self.preferred_genres(series, season, existing, candidate)
+      return existing.genders.map(&:id) if existing&.genders&.any?
+      return series.genders.map(&:id) if series.genders.any?
+
+      references(season || series, candidate).fetch('gender_ids')
     end
   end
 end

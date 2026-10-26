@@ -38,12 +38,23 @@ module EncoderProjects
 
     def assign_reference(record, series, association, parameter, ids)
       current = record.public_send("effective_#{association}").map(&:id).sort
+      if use_series_genres?(record, series, association, ids, current)
+        return persist_reference(record, association, ids)
+      end
+
       explicit = explicit_ids?(parameter, ids)
       return if retain_reference?(current, ids, explicit)
 
       check_unchanged!(current, @candidate.fetch(parameter, []).sort) if explicit && current.any?
       target = series.public_send(association).empty? ? series : record
       persist_reference(target, association, ids)
+    end
+
+    def use_series_genres?(record, series, association, ids, current)
+      return false unless association == :genders && ids.any? && ids.sort != current
+      return false if record.genders.any?
+
+      series.genders.map(&:id).sort == ids.sort
     end
 
     def explicit_ids?(parameter, ids)

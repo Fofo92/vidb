@@ -14,9 +14,9 @@ class EncoderProjects::EpisodeSeasonDefaultsTest < ActiveSupport::TestCase
     @candidate = { 'gender_ids' => [@drama.id], 'country_ids' => [] }
   end
 
-  test 'a missing episode proposes the genre of its season before external or series genres' do
+  test 'a missing episode proposes the series genre before season or external genres' do
     result = EncoderProjects::EpisodeDefaults.call(@series, @numbers, @candidate)
-    assert_equal [@thriller.id], result['gender_ids']
+    assert_equal [@drama.id], result['gender_ids']
     assert_nil result['existing_record_id']
   end
 
@@ -35,14 +35,19 @@ class EncoderProjects::EpisodeSeasonDefaultsTest < ActiveSupport::TestCase
     assert_equal [@drama.id], result['gender_ids']
   end
 
-  test 'a new episode inherits the selected season genre without changing the series' do
+  test 'a new episode receives the series genre if the season differs' do
     proposal = EncoderProjects::EpisodeDefaults.call(@series, @numbers, @candidate)
     episode = @season.children.create!(french_title: 'Titre', rank: 2, record_kind: 'episode',
                                        language_version: @series.language_version)
     EncoderProjects::EpisodeReferenceEnrichment.new(proposal, {}).call(episode)
-    assert_equal [@thriller.id], episode.reload.effective_genders.map(&:id)
-    assert_empty episode.genders
+    assert_equal [@drama.id], episode.reload.effective_genders.map(&:id)
+    assert_equal [@drama.id], episode.genders.map(&:id)
     assert_equal [@thriller.id], @season.reload.genders.map(&:id)
     assert_equal [@drama.id], @series.reload.genders.map(&:id)
+  end
+
+  test 'without an explicit series genre a new episode uses the season' do
+    @series.with_reviewed_genre_assignment { @series.genders.clear }
+    assert_equal [@thriller.id], EncoderProjects::EpisodeDefaults.call(@series, @numbers, @candidate)['gender_ids']
   end
 end
