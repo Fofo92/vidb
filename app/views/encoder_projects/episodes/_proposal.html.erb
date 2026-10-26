@@ -23,8 +23,13 @@
     <p><strong>Nouvelle série : <%= series['french_title'] %></strong>
       <% if series['original_title'].present? %> (<%= series['original_title'] %>)<% end %>
       · <%= series['year'] || 'année à compléter' %></p>
-    <p>Création complète : environ <%= series['episode_count'] %> épisodes dans <%= series['season_count'] %> saisons,
-      selon le catalogue qui sera actualisé à la confirmation. Aucune copie ne sera déclarée présente.</p>
+    <% if proposal['edition_mapping'] %>
+      <p>Création complète suivant la numérotation Wikipédia. Les parties du catalogue seront regroupées
+        uniquement lorsque leur identité est établie ; leur nombre ne correspond pas au nombre de fiches locales.</p>
+    <% else %>
+      <p>Création complète : environ <%= series['episode_count'] %> épisodes dans <%= series['season_count'] %> saisons,
+        selon le catalogue qui sera actualisé à la confirmation. Aucune copie ne sera déclarée présente.</p>
+    <% end %>
     <%= form.hidden_field :series_id, value: 'new' %>
   <% else %>
   <%= form.label :series_id, 'Série (vérifie aussi son année)', for: "episode-series-#{index}" %>
@@ -38,6 +43,21 @@
       <p class="small">Les fiches existantes et leurs états sont conservés. Les nouveaux épisodes seront non enregistrés,
         non disponibles et non visionnés. Aucun fichier ne sera rattaché ici.</p>
     </div>
+  <% end %>
+  <% if proposal['edition_mapping'] %>
+    <p><strong>Découpages différents : vérifie la correspondance avant confirmation.</strong>
+      Les numéros locaux ci-dessous seront conservés.</p>
+    <table class="table table-sm">
+      <thead><tr><th>Épisode local</th><th>Titre</th><th>Épisode(s) TMDB</th><th>Durée de référence</th></tr></thead>
+      <tbody>
+      <% proposal['edition_mapping'].each do |row| %>
+        <tr><td><%= row['local_number'] %></td><td><%= row['title'] %></td>
+          <td><%= row['external_numbers'].join(' + ') %></td>
+          <td><%= row['reference_runtime_minutes'] ? "#{row['reference_runtime_minutes']} min" : 'Non renseignée' %></td></tr>
+      <% end %>
+      </tbody>
+    </table>
+    <p class="small">Cette correspondance sera conservée. Aucun découpage de fichier ni aucune durée mesurée ne sera modifié.</p>
   <% end %>
   <%= form.label :title, 'Titre français de l’épisode', for: "episode-title-#{index}" %>
   <%= form.text_field :title, value: values['title'].presence || @episode.title, maxlength: 300, id: "episode-title-#{index}" %>

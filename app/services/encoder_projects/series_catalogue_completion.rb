@@ -5,6 +5,7 @@ module EncoderProjects
       @snapshot = snapshot.deep_stringify_keys
       @language = LanguageVersion.where(short_name: 'IND').sole
       @metadata = CatalogueEpisodeMetadata.new(source_url: @snapshot.fetch('source_url'))
+      @attachment = CatalogueEpisodeAttachment.new(series_id: @snapshot.fetch('tmdb_series_id'), metadata: @metadata)
     end
 
     def call
@@ -21,7 +22,7 @@ module EncoderProjects
       season = season_for(row.fetch('season_number'))
       record = episode_for(season, row)
       @metadata.call(record, row)
-      attach_catalogue_link(record, row)
+      @attachment.call(record, row)
     end
 
     def season_for(number)
@@ -59,43 +60,22 @@ module EncoderProjects
       return record if catalogue_identity?(record, row)
 
       local = title_keys(record.attributes.values_at('french_title', 'original_title'))
-      external = title_keys(row.values_at('title_fr', 'title_original'))
+      external = title_keys(row.values_at('title_fr', 'title_original') + row.fetch('title_aliases', []))
       unless local.intersect?(external)
         raise ArgumentError,
-              "Numérotation ou titre à consolider pour la fiche #{record.id}"
+              "Titre ou découpage à consolider : saison #{record.parent.rank}, épisode #{record.rank}, " \
+              "« #{record.french_title} » ; catalogue « #{row['title_fr']} ». Aucune création conservée."
       end
 
       record
     end
 
     def catalogue_identity?(record, row)
-      CatalogueEpisodeLink.where(record: record, provider: 'tmdb', **link_values(row)).exists?
+      @attachment.identity?(record, row)
     end
 
     def title_keys(names)
       names.compact_blank.map { |name| name.parameterize.presence || name.unicode_normalize.downcase.squish }
-    end
-
-    def attach_catalogue_link(record, row)
-      values = link_values(row)
-      link = CatalogueEpisodeLink.find_or_initialize_by(record: record, provider: 'tmdb')
-      return validate_link!(link, values) if link.persisted?
-
-      evidence = @metadata.source(row).merge('reference_runtime_minutes' => row['reference_runtime_minutes'])
-      link.assign_attributes(values.merge(evidence: evidence))
-      link.save!
-    end
-
-    def link_values(row)
-      { external_series_id: @snapshot.fetch('tmdb_series_id'), external_episode_id: row.fetch('tmdb_episode_id'),
-        local_season_number: row.fetch('season_number'), external_season_number: row.fetch('season_number'),
-        local_episode_number: row.fetch('episode_number'), external_episode_number: row.fetch('episode_number') }
-    end
-
-    def validate_link!(link, values)
-      return if values.all? { |key, value| link[key] == value }
-
-      raise ArgumentError, 'Identité externe existante différente'
     end
   end
 end

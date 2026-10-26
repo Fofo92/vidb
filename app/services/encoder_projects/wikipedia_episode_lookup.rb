@@ -1,5 +1,7 @@
 module EncoderProjects
   class WikipediaEpisodeLookup
+    attr_reader :main_page
+
     def initialize(wikipedia:, parser:)
       @wikipedia = wikipedia
       @parser = parser
@@ -7,6 +9,7 @@ module EncoderProjects
 
     def call(name, season, episode)
       main = page(name)
+      @main_page = main
       expected = WikipediaSeasonTitle.call(name.sub(/\s*\(.*\)\z/, ''), season)
       dedicated = page(expected)
       raise ArgumentError, 'Pages Wikipédia indisponibles' unless main || dedicated

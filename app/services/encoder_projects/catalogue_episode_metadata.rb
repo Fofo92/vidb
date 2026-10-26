@@ -15,7 +15,8 @@ module EncoderProjects
     end
 
     def source(row)
-      path = "/season/#{row.fetch('season_number')}/episode/#{row.fetch('episode_number')}"
+      number = row.fetch('external_episode_number', row.fetch('episode_number'))
+      path = "/season/#{row.fetch('season_number')}/episode/#{number}"
       { 'provider' => 'tmdb', 'url' => "#{@source_url}#{path}",
         'episode_id' => row.fetch('tmdb_episode_id'), 'first_air_date' => row['first_air_date'] }
     end

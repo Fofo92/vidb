@@ -7,7 +7,7 @@ module EncoderProjects
 
     def call(scope:, parameters:, series_id:)
       data = completion_data(scope['candidate'], parameters, series_id)
-      snapshot = complete_snapshot(data)
+      snapshot = complete_snapshot(data, scope['candidate'])
       Record.transaction do
         lock_catalogue!
         candidate, root_id = creation_context(scope['candidate'], series_id)
@@ -29,12 +29,13 @@ module EncoderProjects
       data
     end
 
-    def complete_snapshot(data)
+    def complete_snapshot(data, candidate)
       return unless data
 
       client = TmdbSeriesClient.new(cache_dir: Rails.root.join('tmp/catalogue-episodes'), refresh: true)
-      CatalogEnrichment::TmdbSeriesSnapshot.new(client: client, series_id: data.fetch('tmdb_id'),
-                                                include_specials: true).call.deep_stringify_keys
+      snapshot = CatalogEnrichment::TmdbSeriesSnapshot.new(client: client, series_id: data.fetch('tmdb_id'),
+                                                           include_specials: true).call.deep_stringify_keys
+      WikipediaEditionSnapshot.new.call(snapshot, candidate)
     end
 
     def lock_catalogue!

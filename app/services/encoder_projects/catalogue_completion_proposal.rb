@@ -10,7 +10,8 @@ module EncoderProjects
         identities = matches.map { |item| item['catalogue_completion'] }.uniq
         next proposal unless identities.one?
 
-        proposal.merge('catalogue_completion' => identities.sole)
+        shared = matches.first.slice('catalogue_completion', 'edition_mapping', 'external_parts', 'numbering_source')
+        proposal.merge(shared)
       end
     end
   end

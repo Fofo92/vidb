@@ -12,6 +12,7 @@ module EncoderProjects
 
     def call(series, numbers)
       @warnings = []
+      @numbering_page = nil
       proposals = collect('Wikipédia') { wikipedia_proposals(series, numbers) }
       proposals += collect('TMDB') { tmdb_proposals(series, numbers) }
       proposals.each do |item|
@@ -45,6 +46,7 @@ module EncoderProjects
     def wikipedia_proposal(name, series, numbers)
       lookup = WikipediaEpisodeLookup.new(wikipedia: @wikipedia, parser: @parser)
       proposal, references = lookup.call(name, numbers.season, numbers.episode)
+      @numbering_page = lookup.main_page if proposal&.dig('source', 'numbering_basis') == 'season_ordered_list'
       proposal&.merge(reference_ids(series, references))
     end
 
@@ -84,35 +86,13 @@ module EncoderProjects
     end
 
     def tmdb_proposal(id, series, numbers)
-      series_data = tmdb.get("tv/#{id}")
-      episode = tmdb.get("tv/#{id}/season/#{numbers.season}").fetch('episodes').find do |row|
-        row['episode_number'] == numbers.episode
-      end
-      return unless episode
+      builder = TmdbEpisodeProposal.new(client: tmdb, wikipedia_page: @numbering_page, links: @links,
+                                        warnings: @warnings)
+      proposal = builder.call(id, series, numbers)
+      return unless proposal
 
-      original = original_episode_title(id, series_data, numbers, episode)
-      tmdb_candidate(id, episode).merge('original_title' => original)
-                                 .merge(reference_ids(series, tmdb_references(series_data)))
-                                 .merge('catalogue_completion' => { 'tmdb_id' => id, 'record_id' => series.id })
-    end
-
-    def original_episode_title(id, series_data, numbers, episode)
-      language = series_data['original_language']
-      return episode['name'] if language == 'fr'
-      return unless language.to_s.match?(/\A[a-z]{2}\z/) && episode['id'].is_a?(Integer)
-
-      collect('TMDB (titre original)') do
-        rows = tmdb.get("tv/#{id}/season/#{numbers.season}", language: language).fetch('episodes')
-        native = rows.find { |row| row['episode_number'] == numbers.episode && row['id'] == episode['id'] }
-        [native&.fetch('name', nil)]
-      end.first
-    end
-
-    def tmdb_candidate(id, episode)
-      date = episode['air_date'].to_s
-      { 'title' => episode['name'], 'year' => date[/\A\d{4}/]&.to_i, 'abstract' => episode['overview'].to_s,
-        'source' => { 'provider' => 'tmdb', 'url' => "https://www.themoviedb.org/tv/#{id}",
-                      'first_air_date' => date, 'episode_id' => episode['id'] } }
+      proposal.merge(reference_ids(series, tmdb_references(builder.series_data)))
+              .merge('catalogue_completion' => { 'tmdb_id' => id, 'record_id' => series.id })
     end
 
     def tmdb_references(series_data)
