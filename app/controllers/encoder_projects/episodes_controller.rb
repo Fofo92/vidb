@@ -14,7 +14,9 @@ module EncoderProjects
 
     def create
       record = create_and_bind
-      redirect_to record_path(record), notice: 'Épisode prêt. Reprends l’identification dans video_encoder.'
+      prepared = params[:encoder_window] == '1' ? 1 : nil
+      redirect_to record_path(record, encoder_prepared: prepared),
+                  notice: 'Épisode prêt. Reprends l’identification dans video_encoder.'
     rescue ArgumentError, KeyError, CatalogEnrichment::TmdbClient::Error, ActiveRecord::RecordInvalid,
            ActiveRecord::RecordNotFound, ActiveRecord::SoleRecordExceeded => e
       failed_submission(e)

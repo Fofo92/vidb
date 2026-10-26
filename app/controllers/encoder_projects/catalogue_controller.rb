@@ -18,7 +18,8 @@ module EncoderProjects
       record = CatalogueCreation.new(user: current_user, url: request.base_url).call(
         scope: @scope, gender_ids: selected_ids(:gender_ids), country_ids: selected_ids(:country_ids)
       )
-      redirect_to record_path(record),
+      prepared = params[:encoder_window] == '1' ? 1 : nil
+      redirect_to record_path(record, encoder_prepared: prepared),
                   notice: 'Fiche prête et associée au montage. Reprends l’identification dans video_encoder.'
     rescue ArgumentError, ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound,
            ActiveRecord::SoleRecordExceeded => e

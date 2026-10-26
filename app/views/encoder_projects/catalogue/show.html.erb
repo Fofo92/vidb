@@ -25,6 +25,7 @@
       <p><%= candidate['abstract'] %></p>
       <p><%= link_to candidate.fetch('source').fetch('url'), candidate.fetch('source').fetch('url'), target: '_blank', rel: 'noopener noreferrer' %></p>
       <%= form_with url: encoder_projects_catalogue_path, method: :post do |form| %>
+        <%= form.hidden_field :encoder_window, value: 1 %>
         <%= form.hidden_field :request_token, value: params[:request_token] %>
         <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: candidate) %>
         <div class="row g-3 mb-3">

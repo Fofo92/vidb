@@ -12,6 +12,7 @@
   <p><%= link_to 'Modifier ou effacer une information déjà renseignée', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %></p>
 <% end %>
 <%= form_with url: encoder_projects_episode_path, method: :post do |form| %>
+  <%= form.hidden_field :encoder_window, value: 1 %>
   <%= form.hidden_field :request_token, value: params[:request_token] %>
   <% if proposal.present? %>
     <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: proposal) %>

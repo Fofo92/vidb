@@ -43,16 +43,9 @@ module EncoderProjects
     end
 
     def wikipedia_proposal(name, series, numbers)
-      expected = WikipediaSeasonTitle.call(name.sub(/\s*\(.*\)\z/, ''), numbers.season)
-      page = @wikipedia.page(expected)
-      return unless page.fetch('title').parameterize == expected.parameterize
-
-      proposal = @parser.call(page, numbers.episode)
-      return unless proposal
-
-      references = collect('Wikipédia') { [@parser.references(@wikipedia.page(name))] }.first
-      references ||= @parser.references(page)
-      proposal.merge(reference_ids(series, references))
+      lookup = WikipediaEpisodeLookup.new(wikipedia: @wikipedia, parser: @parser)
+      proposal, references = lookup.call(name, numbers.season, numbers.episode)
+      proposal&.merge(reference_ids(series, references))
     end
 
     def reference_ids(series, candidate)

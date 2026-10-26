@@ -138,4 +138,18 @@ class EncoderProjects::EpisodeCatalogueTest < ActiveSupport::TestCase
     assert catalogue.warnings.any?
   end
 
+  test 'a missing season page falls back to the ordered list on the series article' do
+    client = wikipedia
+    client.define_singleton_method(:page) do |title|
+      raise ArgumentError, 'missing dedicated season page' if title.start_with?('Saison ')
+
+      { 'title' => title, 'text' => { '*' => '<h3>Saison 10 (2024)</h3><ol><li>Madeleine</li><li>Nikki et Evelina</li></ol>' } }
+    end
+    catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: client, tmdb: tmdb, links: Links.new([]))
+    result = catalogue.call(series, Numbers.new(10, 2))
+    assert_equal 'Nikki et Evelina', result.sole['title']
+    assert_equal 'wikipedia', result.sole.dig('source', 'provider')
+    assert_empty catalogue.warnings
+  end
+
 end
