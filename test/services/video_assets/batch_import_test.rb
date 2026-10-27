@@ -84,6 +84,26 @@ class BatchImportTest < ActiveSupport::TestCase
     assert_nil episode.video_assets.sole.language_version_id
   end
 
+  test 'a numbered prefix in an older observation does not block episode import' do
+    episode = prepare_episode
+    item = @evidence[:entries].sole
+    item[:path] = '/videos/Série batch/Saison 01/01 - S01 E01 - Premier.mkv'
+    item[:relative_path] = 'Série batch/Saison 01/01 - S01 E01 - Premier.mkv'
+    item[:stem] = '01 - S01 E01 - Premier'
+    assert_difference('VideoAsset.count', 1) { service.call(apply: true) }
+    assert_equal item[:path], episode.video_assets.sole.last_known_path
+  end
+
+  test 'a numbered prefix does not hide a changed episode title' do
+    episode = prepare_episode
+    item = @evidence[:entries].sole
+    item[:path] = '/videos/Série batch/Saison 01/01 - S01 E01 - Premier.mkv'
+    item[:relative_path] = 'Série batch/Saison 01/01 - S01 E01 - Premier.mkv'
+    item[:stem] = '01 - S01 E01 - Premier'
+    episode.update!(french_title: 'Titre changé')
+    assert_no_difference('VideoAsset.count') { assert_raises(ArgumentError) { service.call(apply: true) } }
+  end
+
   test 'a changed series context blocks an episode import' do
     episode = prepare_episode
     episode.root.update!(french_title: 'Série renommée')

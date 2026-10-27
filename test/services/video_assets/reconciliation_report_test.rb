@@ -36,6 +36,30 @@ module VideoAssets
       assert_equal [episode.id], candidate_ids(result)
     end
 
+    test 'a numeric prefix before the episode number remains identifiable when inventory metadata is absent' do
+      series = create_record('Meurtres à...', nil)
+      season = series.children.create!(french_title: 'Saison 01', rank: 1, language_version: @language_version)
+      episode = season.children.create!(french_title: 'Meurtres à Saint-Malo', rank: 1,
+                                        language_version: @language_version)
+      filename = 'Meurtres à.../vus/Saison 01/01 - S01 E01 - Meurtres à Saint-Malo.m4v'
+      result = report_for(filename)
+      assert_equal 'episode_candidate', result[:status]
+      assert_equal 'title_match', result[:title_evidence]
+      assert_equal [episode.id], candidate_ids(result)
+    end
+
+    test 'preserves episode metadata for subsequent verification' do
+      metadata = { season: 1, episode: 1 }
+      result = report_for('01 - S01 E01 - Pilote.m4v', episode: metadata)
+      assert_equal metadata, result[:episode]
+    end
+
+    test 'multiple episode numbers after a prefix remain ambiguous' do
+      result = report_for('01 - S01 E01 et S01 E02 - Pilote.m4v')
+      assert_equal 'deferred_episode', result[:status]
+      assert_equal 'episode_number_ambiguous', result[:reason]
+    end
+
     test 'matches an exact original title' do
       observation = report_for('Hacksaw Ridge.m4v')
 

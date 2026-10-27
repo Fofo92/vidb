@@ -1,5 +1,13 @@
 # Qualification des œuvres et rapprochement disque
 
+Un nom peut contenir un préfixe avant son numéro d’épisode, par exemple
+`01 - S01 E01 - Titre.m4v`. Le scan et la vérification avant import reconnaissent
+le numéro explicite de la même manière, y compris pour les propositions déjà
+enregistrées avant cette correction. Les données de numérotation présentes dans
+l’inventaire sont conservées dans le suivi. Les numéros multiples restent
+ambigus ; titres, placement, identité du fichier et copies concurrentes restent
+soumis aux contrôles habituels. Aucun fichier n’est renommé.
+
 Le chantier distingue deux résultats : une fiche documentée et une copie physique rattachée.
 L’écran **Outils → Qualification et rapprochement** possède un onglet pour chaque axe.
 Les compteurs ne confondent pas ces deux résultats. Une décision sur un axe n’approuve

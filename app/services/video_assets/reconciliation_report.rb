@@ -58,7 +58,8 @@ module VideoAssets
     end
 
     def episode_entry?(entry)
-      entry[:episode].present? || EPISODE_PREFIX.match?(ViewingConvention.strip_prefix(entry[:stem]))
+      stem = ViewingConvention.strip_prefix(entry[:stem])
+      entry[:episode].present? || EPISODE_PREFIX.match?(stem) || EpisodeNumber::EXPLICIT.match?(stem)
     end
 
     def multiple_file_candidates(observations)
@@ -75,7 +76,7 @@ module VideoAssets
     end
 
     def observation(entry)
-      entry.slice(:path, :relative_path, :extension, :stem, :size, :modified_at)
+      entry.slice(:path, :relative_path, :extension, :stem, :size, :modified_at, :episode)
     end
 
     def source_inventory
