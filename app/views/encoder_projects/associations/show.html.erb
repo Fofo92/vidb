@@ -3,6 +3,17 @@
 <p class="small text-break">Projet : <%= @scope.dig('project', 'project_id') %><br>
   Source : <%= @scope.dig('project', 'source_paths').join(' · ') %><br>
   Destination provisoire : <%= @scope.dig('project', 'output_path') %></p>
+<section class="card my-3"><div class="card-body">
+  <p>Un titre identique peut désigner une autre œuvre. Si les fiches ci-dessous ne conviennent pas, cherche dans les sources externes.</p>
+  <%= form_with url: encoder_projects_catalogue_path, method: :get do |form| %>
+    <%= form.hidden_field :request_token, value: params[:request_token] %>
+    <%= form.label :q, 'Titre de l’œuvre, lien Wikipédia, TMDB ou SensCritique', class: 'form-label' %>
+    <div class="d-flex flex-wrap gap-2">
+      <%= form.text_field :q, value: File.basename(@scope.fetch('project').fetch('output_path'), '.mkv'), maxlength: 300, required: true, class: 'form-control' %>
+      <%= form.submit 'Ce n’est pas cette œuvre : rechercher dans les sources externes', class: 'btn btn-outline-primary' %>
+    </div>
+  <% end %>
+</div></section>
 <% if @cases.empty? %>
   <p>Aucune proposition en attente pour ce projet. Relance l’identification pour actualiser son association.</p>
 <% end %>

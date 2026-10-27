@@ -34,6 +34,31 @@ class EncoderProjectAssociationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='case_id'][value='#{other.id}']", count: 0
   end
 
+  test 'a local homonym does not prevent external search for the same project' do
+    propose
+    assert_no_difference ['Record.count', 'VideoAsset.count'] do
+      get encoder_projects_association_path, params: { request_token: @token }
+    end
+    assert_response :success
+    assert_select "form[action='#{encoder_projects_catalogue_path}'][method='get']" do
+      assert_select 'input[name="request_token"]' do |inputs|
+        scope = EncoderProjects::CatalogueScope.read(inputs.sole['value'], user: @user)
+        assert_equal @project, scope.fetch('project')
+      end
+      assert_select 'input[name="q"][value="capture"]'
+      assert_select 'input[type="submit"]' do |inputs|
+        assert_match 'sources externes', inputs.sole['value']
+      end
+    end
+    assert_nil EncoderProjects::Binding.current(@project['project_id'])
+  end
+
+  test 'external search remains accessible when no local proposal is pending' do
+    get encoder_projects_association_path, params: { request_token: @token }
+    assert_response :success
+    assert_select "form[action='#{encoder_projects_catalogue_path}'][method='get']", count: 1
+  end
+
   test 'an explicit choice binds the project without a copy or metadata change' do
     item = propose
     before = @record.attributes
