@@ -1,5 +1,6 @@
 <h1>Préparer un épisode dans vidb</h1>
 <p>Saison <%= format('%02d', @episode.season) %> · épisode <%= format('%02d', @episode.episode) %></p>
+<% if @target_warning %><p class="text-warning"><%= @target_warning %></p><% end %>
 <p>Choisis une série existante ou confirme une proposition extérieure si elle manque dans vidb.
   Pour une nouvelle série, ses saisons et tous les épisodes documentés seront créés après confirmation,
   non enregistrés, non disponibles et non visionnés. Les champs inconnus restent modifiables.</p>
@@ -7,9 +8,15 @@
   <%= form.hidden_field :request_token, value: params[:request_token] %>
   <%= form.label :q, 'Titre de la série' %>
   <%= form.text_field :q, value: @query %>
+  <%= form.label :season_number, 'Saison à préparer' %>
+  <%= form.number_field :season_number, value: @episode.season, min: 0, max: 99, required: true %>
+  <%= form.label :episode_number, 'Épisode à préparer' %>
+  <%= form.number_field :episode_number, value: @episode.episode, min: 1, max: 999, required: true %>
   <%= form.submit 'Rechercher la série' %>
   <%= form.button 'Chercher aussi dans les sources externes', name: 'external_series', value: '1' %>
 <% end %>
+<p class="small">Pour une source contenant plusieurs épisodes, choisis le numéro de ce montage puis clique sur
+  « Rechercher la série ». La proposition sera rechargée pour cet épisode ; changer seulement le titre ne change pas son numéro.</p>
 <% @warnings.each do |warning| %><p class="text-warning"><%= warning %></p><% end %>
 <% if @unqualified_series.present? %>
   <p>Une fiche locale peut déjà correspondre à la série, avec un placement à qualifier :</p>

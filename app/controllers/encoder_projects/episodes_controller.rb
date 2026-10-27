@@ -3,6 +3,7 @@ module EncoderProjects
     before_action :load_scope
 
     def show
+      select_episode_target
       @episode = EpisodeRequest.new(@scope.fetch('project'))
       @query = params[:q].presence || @episode.series
       @series = Record.where(record_kind: 'series').where(
@@ -23,6 +24,19 @@ module EncoderProjects
     end
 
     private
+
+    def select_episode_target
+      return unless params.key?(:season_number) || params.key?(:episode_number)
+
+      target = { 'season' => Integer(params[:season_number], 10),
+                 'episode' => Integer(params[:episode_number], 10) }
+      project = @scope.fetch('project').merge('episode_target' => target)
+      EpisodeRequest.new(project)
+      @scope = @scope.merge('project' => project, 'candidate' => nil)
+      params[:request_token] = CatalogueScope.issue(user: current_user, project: project)
+    rescue ArgumentError, TypeError
+      @target_warning = 'Choisis une saison de 0 à 99 et un épisode de 1 à 999.'
+    end
 
     def create_and_bind
       EpisodePreparation.new(user: current_user, url: request.base_url).call(

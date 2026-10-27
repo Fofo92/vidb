@@ -14,7 +14,20 @@ module EncoderProjects
       @title = match[3].sub(/_vf\z/i, '').strip
       @series = File.basename(match_path).split(/\s*[-–—]\s*S\d/i).first
       raise ArgumentError, 'Numéro d’épisode invalide' unless @episode.positive?
+
+      apply_target(project['episode_target']) if project.key?('episode_target')
     end
+
+    def apply_target(target)
+      valid = target.is_a?(Hash) && target['season'].is_a?(Integer) && target['episode'].is_a?(Integer) &&
+              target['season'].between?(0, 99) && target['episode'].between?(1, 999)
+      raise ArgumentError, 'Saison ou numéro d’épisode invalide' unless valid
+
+      @title = '' if @season != target['season'] || @episode != target['episode']
+      @season = target['season']
+      @episode = target['episode']
+    end
+    private :apply_target
 
     def self.match?(project)
       new(project)
