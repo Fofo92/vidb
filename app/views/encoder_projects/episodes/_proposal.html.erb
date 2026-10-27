@@ -95,6 +95,7 @@
   <p class="small">Un champ vide conserve la proposition disponible. Les informations déjà renseignées sont préservées, sauf correction explicite de ta part.
     Pays et genres complètent la série lorsqu’ils y manquent ; l’épisode en hérite.
     Le support HD et la durée réelle seront établis à l’import de l’encodage terminé.</p>
-  <%= form.submit(proposal['series_candidate'] ? 'Créer la série complète et préparer cet épisode' : 'Confirmer et préparer l’épisode') %>
+  <% episode_label = format('S%02d E%02d', @episode.season, @episode.episode) %>
+  <%= form.submit(proposal['series_candidate'] ? "Créer la série complète et préparer #{episode_label}" : "Confirmer et préparer #{episode_label}") %>
 <% end %>
 </div></section>

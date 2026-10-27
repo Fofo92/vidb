@@ -46,12 +46,14 @@ module EncoderProjects
 
     def failed_submission(error)
       @episode = EpisodeRequest.new(@scope.fetch('project'))
+      params[:request_token] = CatalogueScope.issue(user: current_user, project: @scope.fetch('project'))
       @query = params[:q].presence || @episode.series
       @series = Record.where(record_kind: 'series', id: params[:series_id])
       @unqualified_series = unqualified_series
       @proposals = [@scope['candidate'] || {}]
       @submitted = enrichment_parameters
-      @warnings = [error.message]
+      number = format('S%<season>02d E%<episode>02d', season: @episode.season, episode: @episode.episode)
+      @warnings = ["Préparation de #{number} : #{error.message}"]
       render :show, status: :unprocessable_content
     end
 

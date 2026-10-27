@@ -1,22 +1,25 @@
 <h1>Préparer un épisode dans vidb</h1>
+<div data-controller="episode-preparation">
 <p>Saison <%= format('%02d', @episode.season) %> · épisode <%= format('%02d', @episode.episode) %></p>
 <% if @target_warning %><p class="text-warning"><%= @target_warning %></p><% end %>
 <p>Choisis une série existante ou confirme une proposition extérieure si elle manque dans vidb.
   Pour une nouvelle série, ses saisons et tous les épisodes documentés seront créés après confirmation,
   non enregistrés, non disponibles et non visionnés. Les champs inconnus restent modifiables.</p>
-<%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
+<%= form_with url: encoder_projects_episode_path, method: :get, data: { action: 'input->episode-preparation#changed change->episode-preparation#changed' } do |form| %>
   <%= form.hidden_field :request_token, value: params[:request_token] %>
   <%= form.label :q, 'Titre de la série' %>
-  <%= form.text_field :q, value: @query %>
+  <%= form.text_field :q, value: @query, data: { episode_preparation_target: 'selection' } %>
   <%= form.label :season_number, 'Saison à préparer' %>
-  <%= form.number_field :season_number, value: @episode.season, min: 0, max: 99, required: true %>
+  <%= form.number_field :season_number, value: @episode.season, min: 0, max: 99, required: true, data: { episode_preparation_target: 'selection' } %>
   <%= form.label :episode_number, 'Épisode à préparer' %>
-  <%= form.number_field :episode_number, value: @episode.episode, min: 1, max: 999, required: true %>
-  <%= form.submit 'Rechercher la série' %>
+  <%= form.number_field :episode_number, value: @episode.episode, min: 1, max: 999, required: true, data: { episode_preparation_target: 'selection' } %>
+  <%= form.submit 'Charger cet épisode' %>
   <%= form.button 'Chercher aussi dans les sources externes', name: 'external_series', value: '1' %>
 <% end %>
 <p class="small">Pour une source contenant plusieurs épisodes, choisis le numéro de ce montage puis clique sur
-  « Rechercher la série ». La proposition sera rechargée pour cet épisode ; changer seulement le titre ne change pas son numéro.</p>
+  « Charger cet épisode ». La proposition sera rechargée pour cet épisode ; changer seulement le titre ne change pas son numéro.</p>
+<p class="text-warning" role="status" data-episode-preparation-target="notice" hidden>Le choix a changé.
+  Clique sur « Charger cet épisode » avant de confirmer une proposition.</p>
 <% @warnings.each do |warning| %><p class="text-warning"><%= warning %></p><% end %>
 <% if @unqualified_series.present? %>
   <p>Une fiche locale peut déjà correspondre à la série, avec un placement à qualifier :</p>
@@ -40,5 +43,9 @@
   <% end %>
 <% end %>
 <% @proposals.each_with_index do |proposal, index| %>
+  <fieldset data-episode-preparation-target="proposal">
+  <legend class="h5">Préparation de <%= @query %> · <%= format('S%02d E%02d', @episode.season, @episode.episode) %></legend>
   <%= render 'proposal', proposal: proposal, index: index %>
+  </fieldset>
 <% end %>
+</div>

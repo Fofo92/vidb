@@ -90,7 +90,7 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :success
-    assert_select 'input[type="submit"][value="Créer la série complète et préparer cet épisode"]'
+    assert_select 'input[type="submit"][value="Créer la série complète et préparer S06 E22"]'
   end
 
   test 'confirmation creates the full catalogue then binds only the requested episode' do
