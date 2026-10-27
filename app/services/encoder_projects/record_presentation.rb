@@ -14,6 +14,8 @@ module EncoderProjects
       return {} unless series&.record_kind_series?
 
       { 'season_number' => record.parent.rank, 'episode_number' => record.rank,
+        'series_french_title' => series.french_title, 'series_original_title' => series.original_title,
+        'series_year' => series.year,
         'series_titles' => [series.french_title, series.original_title].compact_blank }
     end
   end
