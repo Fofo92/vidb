@@ -135,6 +135,33 @@ module VideoAssets
       assert_equal [@episode.id], result[:candidates].pluck(:record_id)
     end
 
+    test 'identifies the series when only directory punctuation differs' do
+      @series.update!(french_title: 'Les Experts : Manhattan', original_title: 'CSI: NY')
+      result = match('CSI-NY (IX)/Saison 01/S01 E01 - Pilote.mkv')
+
+      assert_equal 'episode_candidate', result[:status]
+      assert_equal 'title_match', result[:title_evidence]
+      assert_equal [@episode.id], result[:candidates].pluck(:record_id)
+    end
+
+    test 'keeps punctuation-equivalent series ambiguous' do
+      @series.update!(french_title: 'Les Experts : Manhattan', original_title: 'CSI: NY')
+      other = record('CSI NY')
+      record('Saison 01', parent: other, rank: 1)
+      result = match('CSI-NY (IX)/Saison 01/S01 E01 - Pilote.mkv')
+
+      assert_equal 'container_ambiguous', result[:reason]
+      assert_empty result[:candidates]
+    end
+
+    test 'punctuation matching of the series does not waive episode title checks' do
+      @series.update!(french_title: 'Les Experts : Manhattan', original_title: 'CSI: NY')
+      result = match('CSI-NY (IX)/Saison 01/S01 E01 - Autre titre.mkv')
+
+      assert_equal 'episode_title_conflict', result[:status]
+      assert_equal [@episode.id], result[:candidates].pluck(:record_id)
+    end
+
     private
 
     def record(title, parent: nil, rank: nil)

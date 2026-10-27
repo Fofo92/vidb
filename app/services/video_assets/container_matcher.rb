@@ -8,7 +8,9 @@ module VideoAssets
     def initialize(records)
       @by_id = records.index_by(&:id)
       @parent_ids = records.filter_map { |record| record.ancestry.to_s.split('/').last&.to_i }.uniq
-      @roots = TitleMatcher.new(records.select { |record| eligible?(record) })
+      roots = records.select { |record| eligible?(record) }
+      @roots = TitleMatcher.new(roots)
+      @punctuation_index = punctuation_index(roots)
       @all = TitleMatcher.new(records)
       @cache = {}
     end
@@ -29,6 +31,9 @@ module VideoAssets
       candidates = title_candidates(@roots, directory, title)
       return resolved(candidates) if candidates.any?
 
+      candidates = punctuation_candidates(title)
+      return resolved(candidates) if candidates.any?
+
       candidates = title_candidates(@all, directory, title)
       {
         roots: [], reason: candidates.empty? ? 'container_unmatched' : 'container_ineligible',
@@ -39,6 +44,23 @@ module VideoAssets
     def title_candidates(matcher, directory, title)
       exact = matcher.match(directory.strip)[:candidates]
       exact.any? ? exact : matcher.match(title)[:candidates]
+    end
+
+    def punctuation_index(records)
+      records.each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |record, index|
+        [record.french_title, record.original_title, record.complete_title].compact_blank.each do |name|
+          key = punctuation_key(name)
+          index[key] << record.id if key.present? && !index[key].include?(record.id)
+        end
+      end
+    end
+
+    def punctuation_candidates(title)
+      @punctuation_index.fetch(punctuation_key(title), []).map { |id| { record_id: id } }
+    end
+
+    def punctuation_key(value)
+      value.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:punct:]]+/, ' ').squish
     end
 
     def resolved(candidates)
