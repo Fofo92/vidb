@@ -27,6 +27,11 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'input[name="title"][value="Un nouvel espoir"]'
     assert_select 'input[name="original_title"]'
+    assert_select '.encoder-episode-form .encoder-field input[name="title"]'
+    assert_select '.encoder-episode-form .encoder-field input[name="original_title"]'
+    assert_select '.encoder-field-wide textarea[name="abstract"]'
+    assert_select '.encoder-field select[name="gender_ids[]"]'
+    assert_select '.encoder-field select[name="country_ids[]"]'
     assert_select 'select[name="series_id"] option', text: /Cat's Eyes/
   end
 

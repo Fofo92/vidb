@@ -1,0 +1,39 @@
+.encoder-proposal-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  margin-bottom: .6rem;
+}
+.encoder-proposal-heading h2 { margin: 0; }
+
+.encoder-episode-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem 1rem;
+  min-width: 0;
+}
+
+.encoder-episode-form > * { grid-column: 1 / -1; min-width: 0; }
+.encoder-episode-form > .encoder-field { grid-column: auto; }
+.encoder-episode-form > .encoder-field-wide { grid-column: 1 / -1; }
+.encoder-episode-form .encoder-field label { display: block; margin-bottom: .2rem; }
+.encoder-episode-form .encoder-field input,
+.encoder-episode-form .encoder-field textarea,
+.encoder-episode-form .encoder-field select {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: .3rem .45rem;
+}
+.encoder-episode-form .encoder-field textarea { min-height: 7rem; resize: vertical; }
+.encoder-episode-form .encoder-field select[multiple] { min-height: 7rem; }
+.encoder-episode-form p { margin: .2rem 0; }
+.encoder-episode-form input[type="submit"] { justify-self: start; max-width: 100%; white-space: normal; }
+.encoder-episode-form .encoder-field details { margin-bottom: .4rem; }
+
+@media (max-width: 640px) {
+  .encoder-episode-form { grid-template-columns: minmax(0, 1fr); }
+}
