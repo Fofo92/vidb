@@ -26,6 +26,14 @@ Les pays et genres manquants complètent la série ; des choix différents expli
 peuvent constituer une exception sur l’épisode. Les associations explicites existantes
 ne sont pas écrasées par une proposition externe non modifiée.
 
+Pour une nouvelle proposition, un genre explicite déjà renseigné sur l’épisode
+reste prioritaire. Sinon, les genres propres de la série sont proposés avant
+ceux de la saison ou des sources externes ; si la série n’en a pas, les valeurs
+effectives de la saison servent de repli. Le formulaire reste modifiable et
+limité à deux genres. Lorsqu’une saison porte un autre genre, la confirmation
+peut enregistrer le genre de la série sur l’épisode afin que ce choix soit effectif.
+Les fiches qui ne sont pas préparées ne sont pas modifiées par cette règle.
+
 Le lien « Compléter la fiche dans vidb » reste disponible depuis video_encoder même
 lorsque l’épisode est déjà associé au montage. Il ne crée pas une deuxième fiche.
 La réponse de présentation utilise les pays et genres effectifs (héritage compris).

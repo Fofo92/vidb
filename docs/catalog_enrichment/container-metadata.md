@@ -19,4 +19,7 @@ L’audit distingue vidéos, séries, saisons et fiches à qualifier. Il compte 
 
 Les filtres pays et genres utilisent les valeurs affichées, y compris héritées. Les autres filtres conservent leurs règles existantes. Les tableaux restent compacts ; les précisions de provenance restent dans le détail.
 
-La collection de films sera une entité distincte avec des membres ordonnés. Un film pourra appartenir à plusieurs collections sans changement de son placement. Cette étape ne crée pas encore cette entité.
+Les collections de films sont disponibles comme conteneurs ordonnés utilisant
+la hiérarchie existante. Un film conserve actuellement un seul parent ; son
+appartenance à plusieurs collections reste une évolution future. Voir
+[Collections de films](film-collections.md).

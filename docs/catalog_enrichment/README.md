@@ -1,5 +1,22 @@
 # Documentation de l’enrichissement du catalogue
 
+## Parcours courants
+
+- [Identifier un projet video_encoder](encoder-project-identification.md)
+- [Préparer un épisode](encoder-episode-creation.md) et
+  [compléter ses métadonnées](encoder-episode-enrichment.md)
+- [Créer une série absente](missing-series-preparation.md) ou
+  [compléter une série existante](existing-series-completion.md)
+- [Faire correspondre les découpages d’épisodes](episode-edition-mapping.md)
+- [Choisir les résumés](synopsis-preference.md) et les
+  [genres policiers](catalogue-police-genres.md)
+- [Séries et saisons](container-metadata.md) ; [collections de films](film-collections.md)
+- [Suivre la réconciliation](reconciliation-followup.md) et
+  [examiner les propositions](consolidation-review.md)
+- [Importer les exports terminés](video-encoder-completed-exports.md) ; [pochettes](posters.md)
+
+## Documents et données
+
 La base vidb fait référence pour les fiches, les copies et les correspondances externes. Les documents de ce dossier expliquent les mécanismes et les décisions utiles. Les descriptions de pilotes sont historiques ; leurs anciens plans ne doivent pas être rejoués.
 
 Les seules configurations réutilisables versionnées sont dans data/catalog_enrichment. Les instantanés, aperçus et résultats intermédiaires vont dans tmp/ ou /tmp, puis sont supprimés après vérification du résultat.

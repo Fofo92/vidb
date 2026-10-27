@@ -33,7 +33,7 @@ Démarrage du serveur de développement :
 bin/rails server
 ```
 
-L’application est alors accessible sur <http://localhost:3000\>.
+L’application est alors accessible sur <http://localhost:3000>.
 
 ## Contrôles qualité
 
@@ -49,7 +49,10 @@ Brakeman et la suite de tests.
 Apache termine TLS et transmet les requêtes à Puma, limité à l’interface
 locale.
 
-La procédure d’exploitation et de déploiement sera décrite dans
+La procédure d’exploitation et de déploiement est décrite dans
 [docs/production.md](docs/production.md).
+
+La documentation de la vidéothèque et de l’intégration video_encoder est
+accessible depuis [docs/catalog_enrichment/README.md](docs/catalog_enrichment/README.md).
 
 Les secrets ne sont pas stockés dans le dépôt.

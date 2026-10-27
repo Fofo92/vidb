@@ -1,6 +1,7 @@
 # Identifier les projets avant l’encodage
 
-Le premier raccordement associe les projets video_encoder aux fiches existantes.
+La passerelle associe les projets video_encoder aux fiches existantes ou préparées
+depuis la fenêtre d’identification.
 Une correspondance certaine utilise les mêmes règles que le rapprochement disque :
 titre unique pour une vidéo autonome, série/saison/numéro/titre concordants pour
 un épisode. Un épisode homonyme trouvé globalement n’est jamais accepté automatiquement.
@@ -40,9 +41,12 @@ visionnage ou de disponibilité.
 - Cas douteux : des propositions apparaissent dans la file de consolidation. Le
   bouton de video_encoder ouvre cette file filtrée sur l’UUID. Cocher une seule
   fiche puis valider ; les propositions concurrentes sont ensuite désactivées.
-- Fiche manquante ou non qualifiée : compléter le catalogue et le placement dans
-  vidb puis relancer l’identification depuis le menu Montage. Ce lot ne crée pas
-  encore automatiquement les fiches manquantes depuis des sources extérieures.
+- Fiche manquante : les formulaires permettent de consulter les sources et de
+  préparer un film ou un épisode après confirmation. Une série absente peut être
+  créée avec ses épisodes documentés ; une série existante peut être complétée.
+  Une fiche non qualifiée ou une identité ambiguë nécessite un examen préalable.
+  Voir [Préparer un épisode](encoder-episode-creation.md) et
+  [Créer une série absente](missing-series-preparation.md).
 - vidb indisponible : le projet reste enregistré et peut être encodé. La demande
   reste dans le document de projet pour une reprise ultérieure.
 
