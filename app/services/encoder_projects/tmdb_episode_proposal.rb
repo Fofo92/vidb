@@ -14,12 +14,38 @@ module EncoderProjects
       season = @client.get("tv/#{id}/season/#{numbers.season}")
       entries = @page ? WikipediaSeasonEpisode.new.entries(@page, numbers.season) : {}
       @stored_edition = StoredEpisodeEdition.new(local_links(series))
-      return raw_proposal(id, season, numbers) if entries.empty? && !@stored_edition.mapped?
+      if entries.empty? && !@stored_edition.mapped?
+        return original_synopsis(raw_proposal(id, season, numbers), id, numbers)
+      end
 
       mapped_proposal(id, season, series, entries, numbers)
     end
 
     private
+
+    def original_synopsis(proposal, id, numbers)
+      return proposal unless proposal && proposal['abstract'].blank?
+
+      language = @series_data['original_language'].to_s
+      return proposal unless language.match?(/\A[a-z]{2}\z/) && language != 'fr'
+
+      synopsis = native_synopsis(id, numbers, language, proposal.dig('source', 'episode_id'))
+      return proposal if synopsis.blank?
+
+      proposal.merge('abstract_original' => synopsis, 'abstract_original_language' => language)
+    rescue ArgumentError, KeyError, JSON::ParserError, CatalogEnrichment::TmdbClient::Error,
+           IOError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError
+      @warnings << 'Le résumé en langue originale n’a pas pu être consulté.'
+      proposal
+    end
+
+    def native_synopsis(id, numbers, language, episode_id)
+      season = @client.get("tv/#{id}/season/#{numbers.season}", language: language)
+      episode = season.fetch('episodes').find do |row|
+        row['id'] == episode_id && row['episode_number'] == numbers.episode
+      end
+      episode&.fetch('overview', nil)
+    end
 
     def raw_proposal(id, season, numbers)
       episode = season.fetch('episodes').find { |row| row['episode_number'] == numbers.episode }

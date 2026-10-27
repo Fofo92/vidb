@@ -77,6 +77,16 @@
     <p class="small">Synopsis : <%= link_to synopsis_label, proposal.dig('abstract_source', 'url'), target: '_blank', rel: 'noopener' %></p>
   <% end %>
   <%= form.label :abstract, 'Résumé', for: "episode-abstract-#{index}" %>
+  <% if proposal['abstract_original'].present? %>
+    <div class="my-2">
+      <p class="small text-warning">Résumé français non disponible sur TMDB.
+        Texte proposé dans la langue « <%= proposal['abstract_original_language'] %> » : tu peux le traduire ci-dessous.</p>
+      <details><summary>Consulter le résumé original</summary>
+        <p class="text-break"><%= proposal['abstract_original'] %></p>
+      </details>
+      <p class="small">Le texte original ne sera pas enregistré dans le résumé français.</p>
+    </div>
+  <% end %>
   <%= form.text_area :abstract, value: values['abstract'], maxlength: 12000, placeholder: 'À compléter', id: "episode-abstract-#{index}" %>
   <% if values['abstract'].blank? %><p class="small text-warning">Résumé : à compléter.</p><% end %>
   <%= form.label :gender_ids, 'Genres principaux (deux maximum)', for: "episode-genres-#{index}" %>
