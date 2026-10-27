@@ -4,14 +4,15 @@
   <p class="small text-break">Source : <%= @scope.fetch('project').fetch('source_paths').join(' · ') %></p>
   <%= form_with url: encoder_projects_catalogue_path, method: :get do |form| %>
     <%= form.hidden_field :request_token, value: params[:request_token] %>
-    <%= form.label :q, 'Titre de l’œuvre, lien Wikipédia ou TMDB', class: 'form-label' %>
+    <%= form.label :q, 'Titre de l’œuvre, lien Wikipédia, TMDB ou SensCritique', class: 'form-label' %>
     <div class="d-flex gap-2 mb-3">
       <%= form.text_field :q, value: @query, maxlength: 300, class: 'form-control', required: true %>
       <%= form.submit 'Rechercher', class: 'btn btn-primary' %>
     </div>
   <% end %>
+  <% Array(@source_warnings).uniq.each do |warning| %><p class="alert alert-warning"><%= warning %></p><% end %>
   <% if @search_error %><p class="alert alert-warning"><%= @search_error %></p><% end %>
-  <% if @candidates.empty? && Array(@series_candidates).empty? && !@search_error %><p>Aucune œuvre trouvée. Précise le titre ou colle son lien Wikipédia ou TMDB.</p><% end %>
+  <% if @candidates.empty? && Array(@series_candidates).empty? && !@search_error %><p>Aucune œuvre trouvée. Précise le titre ou colle son lien Wikipédia, TMDB ou SensCritique.</p><% end %>
   <% Array(@series_candidates).each do |candidate| %>
     <section class="card my-3"><div class="card-body">
       <h2 class="h4"><%= candidate['title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Série</h2>

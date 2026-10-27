@@ -6,7 +6,7 @@ module EncoderProjects
     def show
       @query = params[:q].presence || File.basename(@scope.fetch('project').fetch('output_path'), '.mkv')
       @series_candidates = SeriesCatalogueSearch.new.call(@query)
-      @candidates = FilmCatalogue.new.call(@query)
+      load_films
       @genders = Gender.order(:name)
       @countries = Country.order(:long_name)
     rescue ArgumentError, KeyError, JSON::ParserError, CatalogEnrichment::TmdbClient::Error,
@@ -28,6 +28,12 @@ module EncoderProjects
     end
 
     private
+
+    def load_films
+      catalogue = FilmCatalogue.new
+      @candidates = catalogue.call(@query)
+      @source_warnings = catalogue.warnings
+    end
 
     def load_scope
       @scope = CatalogueScope.read(params[:proposal_token].presence || params[:request_token], user: current_user)

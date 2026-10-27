@@ -12,7 +12,7 @@ module EncoderProjects
 
       id = text[%r{\Ahttps://(?:www\.)?themoviedb\.org/tv/([1-9]\d*)(?:[-/?#].*)?\z}, 1]
       return [candidate(client.get("tv/#{id}"))] if id
-      return [] if text.start_with?('https://www.themoviedb.org/', 'https://themoviedb.org/')
+      return [] if external_film_link?(text)
 
       title = wikipedia_title(text)
       client.search(title: title).fetch('results').first(5).map { |row| candidate(row) }
@@ -22,6 +22,11 @@ module EncoderProjects
     end
 
     private
+
+    def external_film_link?(text)
+      text.start_with?('https://www.themoviedb.org/', 'https://themoviedb.org/',
+                       'https://www.senscritique.com/', 'https://senscritique.com/')
+    end
 
     def wikipedia_title(text)
       prefix = 'https://fr.wikipedia.org/wiki/'

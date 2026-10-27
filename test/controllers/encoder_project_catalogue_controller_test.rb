@@ -29,6 +29,7 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     candidate = @candidate
     catalogue = Object.new
     catalogue.define_singleton_method(:call) { |_query| [candidate] }
+    catalogue.define_singleton_method(:warnings) { [] }
     assert_no_difference ['Record.count', 'VideoAsset.count'] do
       EncoderProjects::FilmCatalogue.stub(:new, -> { catalogue }) do
         get encoder_projects_catalogue_path, params: { request_token: @request_token }
@@ -64,6 +65,24 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference 'Record.count' do
       confirm
     end
+  end
+
+  test 'a confirmed SensCritique film uses the existing creation and binding transaction' do
+    candidate = @candidate.merge('french_title' => 'Impossible', 'year' => 2026, 'source' => {
+      'provider' => 'senscritique', 'url' => 'https://www.senscritique.com/film/impossible/139932052'
+    })
+    proposal = EncoderProjects::CatalogueScope.issue(user: @user, project: @project, candidate: candidate)
+    assert_difference 'Record.count', 1 do
+      assert_no_difference 'VideoAsset.count' do
+        confirm(proposal)
+      end
+    end
+    record = Record.find_by!(french_title: 'Impossible')
+    assert_equal 'senscritique', record.year_evidence['provider']
+    assert_equal false, record.is_recorded
+    assert_equal false, record.is_available
+    assert_equal false, record.is_seen
+    assert_equal record.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
   end
 
   test 'an already qualified concordant record is reused without rewriting its metadata' do

@@ -19,6 +19,7 @@ class EncoderUnifiedSearchControllerTest < ActionDispatch::IntegrationTest
     search.define_singleton_method(:call) { |_query| [series] }
     films = Object.new
     films.define_singleton_method(:call) { |_query| [] }
+    films.define_singleton_method(:warnings) { [] }
     assert_no_difference ['Record.count', 'VideoAsset.count'] do
       EncoderProjects::SeriesCatalogueSearch.stub(:new, -> { search }) do
         EncoderProjects::FilmCatalogue.stub(:new, -> { films }) do

@@ -2,23 +2,44 @@ require 'uri'
 
 module EncoderProjects
   class FilmCatalogue
-    def initialize(wikipedia: WikipediaClient.new, parser: WikipediaFilm.new, tmdb: nil)
+    def initialize(wikipedia: WikipediaClient.new, parser: WikipediaFilm.new, tmdb: nil, senscritique: nil)
       @wikipedia = wikipedia
       @parser = parser
       @tmdb = tmdb
+      @senscritique = senscritique
     end
 
+    attr_reader :warnings
+
     def call(query)
+      @warnings = []
       title = query.to_s.strip
       raise ArgumentError, 'Titre ou lien limité à 300 caractères' unless title.present? && title.bytesize <= 300
       return tmdb_id(title) ? SynopsisPreference.call([movie(tmdb_id(title))]) : [] if title.start_with?('https://www.themoviedb.org/')
 
+      return SynopsisPreference.call(senscritique_films(title)) if title.match?(%r{\Ahttps://(?:www\.)?senscritique\.com/}i)
+
       films = wikipedia_films(title)
       query = films.first&.fetch('french_title', nil).presence || title
-      SynopsisPreference.call(films + tmdb_synopses(query))
+      SynopsisPreference.call(films + other_films(query, title))
     end
 
     private
+
+    def other_films(query, title)
+      proposals = tmdb_synopses(query)
+      proposals.presence || senscritique_films(title)
+    end
+
+    def senscritique
+      @senscritique ||= SenscritiqueCatalogue.new
+    end
+
+    def senscritique_films(title)
+      proposals = senscritique.call(title)
+      @warnings.concat(senscritique.warnings)
+      proposals
+    end
 
     def wikipedia_films(title)
       prefix = 'https://fr.wikipedia.org/wiki/'
