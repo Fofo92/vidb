@@ -1,0 +1,49 @@
+<h1>Choisir la fiche de ce montage</h1>
+<p>Une seule association sera validée pour ce projet. Aucune vidéo n’est déclarée disponible ici.</p>
+<p class="small text-break">Projet : <%= @scope.dig('project', 'project_id') %><br>
+  Source : <%= @scope.dig('project', 'source_paths').join(' · ') %><br>
+  Destination provisoire : <%= @scope.dig('project', 'output_path') %></p>
+<% if @cases.empty? %>
+  <p>Aucune proposition en attente pour ce projet. Relance l’identification pour actualiser son association.</p>
+<% end %>
+<% @cases.each do |item| %>
+  <% record = Record.find_by(id: item.payload['record_id']) %>
+  <% next unless record %>
+  <section class="card my-3"><div class="card-body">
+    <h2 class="h5"><%= record.complete_title %> · fiche <%= record.id %> · <%= record.year || 'Année à compléter' %></h2>
+    <p><strong>Placement :</strong>
+      <% [*record.ancestors.to_a, record].each do |part| %>
+        <% kind = { 'series' => 'Série', 'season' => 'Saison', 'episode' => 'Épisode', 'standalone_video' => 'Film' }.fetch(part.record_kind, 'À qualifier') %>
+        <span class="me-2"><%= kind %><%= " #{format('%02d', part.rank)}" if part.rank && %w[season episode].include?(part.record_kind) %> : <%= part.complete_title %></span>
+      <% end %>
+    </p>
+    <% if EncoderProjects::Matcher.qualified?(record) %>
+      <%= form_with url: encoder_projects_association_path, method: :post do |form| %>
+        <%= form.hidden_field :request_token, value: params[:request_token] %>
+        <%= form.hidden_field :review_token, value: @review_token %>
+        <%= form.hidden_field :case_id, value: item.id %>
+        <%= form.submit 'Associer cette fiche et choisir la destination', class: 'btn btn-primary' %>
+      <% end %>
+    <% elsif record.record_kind_series? || (record.record_kind_season? && record.parent&.record_kind_series?) %>
+      <% series = record.record_kind_series? ? record : record.parent %>
+      <% season = record.record_kind_season? ? (record.rank || 1) : 1 %>
+      <% project = @scope.fetch('project').merge('episode_target' => { 'season' => season, 'episode' => 1 }) %>
+      <p>Cette fiche est un conteneur. Choisis l’épisode de ton montage :</p>
+      <%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
+        <%= form.hidden_field :request_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: project) %>
+        <%= form.hidden_field :q, value: series.french_title %>
+        <%= form.hidden_field :series_id, value: series.id %>
+        <%= form.hidden_field :enrich, value: '1' %>
+        <%= form.label :season_number, 'Saison' %>
+        <%= form.number_field :season_number, value: season, min: 0, max: 99, required: true %>
+        <%= form.label :episode_number, 'Épisode' %>
+        <%= form.number_field :episode_number, value: 1, min: 1, max: 999, required: true %>
+        <%= form.submit 'Préparer cet épisode' %>
+      <% end %>
+    <% else %>
+      <p>Nature ou placement à qualifier avant association.</p>
+      <%= link_to 'Corriger la nature ou le placement de cette fiche', edit_record_path(record), target: '_blank', rel: 'noopener' %>
+      <p class="small">Après correction, relance l’identification depuis video_encoder.</p>
+    <% end %>
+  </div></section>
+<% end %>

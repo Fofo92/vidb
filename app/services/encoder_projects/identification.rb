@@ -91,8 +91,9 @@ module EncoderProjects
     end
 
     def pending(request, records, observation)
-      query = URI.encode_www_form(axis: 'metadata', q: request.project_id)
-      review_url = "#{@url}/reconciliation_workbench/reviews?#{query}"
+      token = CatalogueScope.issue(user: @user, project: request.data)
+      query = URI.encode_www_form(request_token: token)
+      review_url = "#{@url}/encoder_projects/association?#{query}"
       review_url = catalogue_url(request) if records.empty?
       { status: records.empty? ? 'unmatched' : 'needs_review', review_url: review_url, reason: observation[:reason],
         candidates: records.map do |record|

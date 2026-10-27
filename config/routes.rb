@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "encoder_projects/association", to: "encoder_projects/associations#show"
+  post "encoder_projects/association", to: "encoder_projects/associations#create"
   get "encoder_projects/episode", to: "encoder_projects/episodes#show"
   post "encoder_projects/episode", to: "encoder_projects/episodes#create"
   post "encoder_projects/identify", to: "encoder_projects/identifications#create"
