@@ -5,6 +5,7 @@ module EncoderProjects
 
     def show
       @query = params[:q].presence || File.basename(@scope.fetch('project').fetch('output_path'), '.mkv')
+      @series_candidates = SeriesCatalogueSearch.new.call(@query)
       @candidates = FilmCatalogue.new.call(@query)
       @genders = Gender.order(:name)
       @countries = Country.order(:long_name)

@@ -4,16 +4,15 @@ module EncoderProjects
     attr_reader :season, :episode, :title, :series
 
     def initialize(project)
-      paths = Array(project['source_paths']) + [project['output_path']]
-      match_path = paths.find { |path| PATTERN.match?(File.basename(path.to_s)) }
-      match = PATTERN.match(File.basename(match_path.to_s, File.extname(match_path.to_s)))
+      match_path, match = source_match(project)
+      if !match && project.key?('episode_target')
+        explicit_request(project, Array(project['source_paths']))
+        return
+      end
+
       raise ArgumentError, 'Numéro de saison et épisode absent' unless match
 
-      @season = match[1].to_i
-      @episode = match[2].to_i
-      @title = match[3].sub(/_vf\z/i, '').strip
-      @series = File.basename(match_path).split(/\s*[-–—]\s*S\d/i).first
-      raise ArgumentError, 'Numéro d’épisode invalide' unless @episode.positive?
+      numbered_request(match_path, match)
 
       apply_target(project['episode_target']) if project.key?('episode_target')
     end
@@ -28,6 +27,29 @@ module EncoderProjects
       @episode = target['episode']
     end
     private :apply_target
+
+    def source_match(project)
+      paths = Array(project['source_paths']) + [project['output_path']]
+      path = paths.find { |value| PATTERN.match?(File.basename(value.to_s)) }
+      [path, PATTERN.match(File.basename(path.to_s, File.extname(path.to_s)))]
+    end
+    private :source_match
+
+    def numbered_request(path, match)
+      @season = match[1].to_i
+      @episode = match[2].to_i
+      @title = match[3].sub(/_vf\z/i, '').strip
+      @series = File.basename(path).split(/\s*[-–—]\s*S\d/i).first
+      raise ArgumentError, 'Numéro d’épisode invalide' unless @episode.positive?
+    end
+    private :numbered_request
+
+    def explicit_request(project, paths)
+      @series = File.basename(paths.first.to_s, File.extname(paths.first.to_s))
+      @title = ''
+      apply_target(project['episode_target'])
+    end
+    private :explicit_request
 
     def self.match?(project)
       new(project)

@@ -90,7 +90,11 @@ module EncoderProjects
 
     def prepare_missing_series
       catalogue = MissingSeriesCatalogue.new
-      @proposals = catalogue.call(@query, @episode)
+      @proposals = if params[:tmdb_series_id].present?
+                     catalogue.from_id(params[:tmdb_series_id], @episode)
+                   else
+                     catalogue.call(@query, @episode)
+                   end
       @warnings = catalogue.warnings
       @warnings << 'Aucune proposition exploitable : précise le titre de la série.' if @proposals.empty?
     end

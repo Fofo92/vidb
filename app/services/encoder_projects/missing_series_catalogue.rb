@@ -18,6 +18,17 @@ module EncoderProjects
       []
     end
 
+    def from_id(id, numbers)
+      @warnings = []
+      number = Integer(id.to_s, 10)
+      raise ArgumentError, 'Identifiant de série invalide' unless number.positive?
+
+      proposals(number, numbers)
+    rescue ArgumentError, KeyError, CatalogEnrichment::TmdbClient::Error
+      @warnings << 'Référence de série indisponible ou invalide : aucune fiche créée.'
+      []
+    end
+
     private
 
     def proposals(id, numbers)

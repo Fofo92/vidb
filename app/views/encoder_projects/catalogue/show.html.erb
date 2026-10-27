@@ -1,20 +1,41 @@
 <div class="container py-4">
-  <h1 class="h3">Identifier le film et préparer sa fiche vidb</h1>
+  <h1 class="h3">Identifier l’œuvre et préparer sa fiche vidb</h1>
   <p>Wikipédia reste prioritaire pour l’identité ; le synopsis TMDB est privilégié lorsqu’il concorde. Vérifie l’œuvre avant de confirmer.</p>
   <p class="small text-break">Source : <%= @scope.fetch('project').fetch('source_paths').join(' · ') %></p>
   <%= form_with url: encoder_projects_catalogue_path, method: :get do |form| %>
     <%= form.hidden_field :request_token, value: params[:request_token] %>
-    <%= form.label :q, 'Titre du film, lien Wikipédia ou lien TMDB', class: 'form-label' %>
+    <%= form.label :q, 'Titre de l’œuvre, lien Wikipédia ou TMDB', class: 'form-label' %>
     <div class="d-flex gap-2 mb-3">
       <%= form.text_field :q, value: @query, maxlength: 300, class: 'form-control', required: true %>
       <%= form.submit 'Rechercher', class: 'btn btn-primary' %>
     </div>
   <% end %>
   <% if @search_error %><p class="alert alert-warning"><%= @search_error %></p><% end %>
-  <% if @candidates.empty? && !@search_error %><p>Aucun film trouvé. Précise le titre ou colle son lien Wikipédia ou TMDB.</p><% end %>
+  <% if @candidates.empty? && Array(@series_candidates).empty? && !@search_error %><p>Aucune œuvre trouvée. Précise le titre ou colle son lien Wikipédia ou TMDB.</p><% end %>
+  <% Array(@series_candidates).each do |candidate| %>
+    <section class="card my-3"><div class="card-body">
+      <h2 class="h4"><%= candidate['title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Série</h2>
+      <% if candidate['original_title'].present? %><p>Titre original : <%= candidate['original_title'] %></p><% end %>
+      <p><%= link_to 'Consulter TMDB', "https://www.themoviedb.org/tv/#{candidate.fetch('tmdb_id')}", target: '_blank', rel: 'noopener' %></p>
+      <% project = @scope.fetch('project').merge('episode_target' => { 'season' => 1, 'episode' => 1 }) %>
+      <%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
+        <%= form.hidden_field :request_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: project) %>
+        <%= form.hidden_field :tmdb_series_id, value: candidate.fetch('tmdb_id') %>
+        <%= form.hidden_field :external_series, value: '1' %>
+        <%= form.hidden_field :q, value: candidate['title'] %>
+        <%= form.label :season_number, 'Saison' %>
+        <%= form.number_field :season_number, value: 1, min: 0, max: 99, required: true %>
+        <%= form.label :episode_number, 'Épisode' %>
+        <%= form.number_field :episode_number, value: 1, min: 1, max: 999, required: true %>
+        <%= form.submit 'C’est cette série : préparer l’épisode', class: 'btn btn-primary' %>
+      <% end %>
+      <p class="small">Vérifie le numéro de ton montage. Aucune fiche ni association n’est créée à cette étape.</p>
+    </div></section>
+  <% end %>
   <% @candidates.each do |candidate| %>
     <section class="card my-3"><div class="card-body">
-      <h2 class="h4"><%= candidate['french_title'] %> · <%= candidate['year'] || 'Année à compléter' %></h2>
+      <h2 class="h4"><%= candidate['french_title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Film</h2>
+      <% if candidate['original_title'].present? %><p>Titre original : <%= candidate['original_title'] %></p><% end %>
       <p><strong>Genres :</strong> <%= candidate['genres_text'] %> · <strong>Pays :</strong>
         <%= candidate['countries_text'].presence || candidate.fetch('country_codes', []).join(', ') %></p>
       <% if candidate['abstract_notice'].present? %><p class="small text-muted"><%= candidate['abstract_notice'] %></p><% end %>
