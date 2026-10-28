@@ -3,6 +3,8 @@ module EncoderProjects
     def self.call(record)
       record.attributes.slice('french_title', 'original_title', 'year', 'record_kind', 'abstract').merge(
         'language_version' => record.language_version.short_name,
+        'reference_runtime_minutes' => record.length_in_mn,
+        'original_language_evidence' => OriginalLanguage.call(record),
         'genres' => record.effective_genders.map(&:name), 'countries' => record.effective_countries.map(&:long_name)
       ).merge(episode_placement(record))
     end

@@ -17,7 +17,7 @@ module EncoderProjects
       Record.transaction do
         lock_projects!
         previous = Binding.current(scope.fetch('project').fetch('project_id'))
-        next CatalogueSummaryImport.call(Record.find(previous.fetch('record_id')), candidate) if previous
+        next complete_record(Record.find(previous.fetch('record_id')), candidate) if previous
 
         create_and_bind(scope, candidate, gender_ids, country_ids)
       end
@@ -42,12 +42,17 @@ module EncoderProjects
 
     def create_and_bind(scope, candidate, genders, countries)
       record = existing(candidate) || create_record(candidate, genders, countries)
-      CatalogueSummaryImport.call(record, candidate)
+      complete_record(record, candidate)
       result = Identification.new(user: @user, url: @url,
                                   matcher: SelectedFilm.new(record)).call(scope.fetch('project'))
       raise ArgumentError, 'Association à examiner dans la file de consolidation' unless result[:status] == 'identified'
 
       record
+    end
+
+    def complete_record(record, candidate)
+      CatalogueRuntime.import(record, candidate)
+      CatalogueSummaryImport.call(record, candidate)
     end
 
     def existing(candidate)

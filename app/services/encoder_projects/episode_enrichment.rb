@@ -18,6 +18,7 @@ module EncoderProjects
         fill_editorial(record)
         EpisodeReferenceEnrichment.new(@candidate, @parameters).call(record)
         fill_language(record)
+        CatalogueRuntime.import(record, @candidate)
         record
       end
     end

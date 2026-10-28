@@ -21,7 +21,7 @@ module EncoderProjects
 
       films = wikipedia_films(title)
       query = films.first&.fetch('french_title', nil).presence || title
-      SynopsisPreference.call(films + other_films(query, title))
+      SynopsisPreference.call(CatalogueRuntime.enrich(films + other_films(query, title)))
     end
 
     private
@@ -80,7 +80,7 @@ module EncoderProjects
       data = tmdb.movie(id: id)
       data = CatalogEnrichment::FilmReleaseReference.new.call(movie: data, release_dates: tmdb.release_dates(id: id))
       { 'french_title' => data.fetch('title'), 'original_title' => data['original_title'].to_s,
-        'year' => data['release_date']&.first(4)&.to_i,
+        'year' => data['release_date']&.first(4)&.to_i, 'reference_runtime_minutes' => data['runtime'],
         'genres_text' => data.fetch('genres', []).pluck('name').join(', '),
         'country_codes' => data.fetch('production_countries', []).map { |item| item['iso_3166_1'] },
         'abstract' => data['overview'].to_s, 'record_kind' => 'standalone_video', 'source' => tmdb_source(data) }

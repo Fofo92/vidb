@@ -125,6 +125,8 @@
     Pays et genres complètent la série lorsqu’ils y manquent ; l’épisode en hérite.
     Le support HD et la durée réelle seront établis à l’import de l’encodage terminé.</p>
   <% episode_label = format('S%02d E%02d', @episode.season, @episode.episode) %>
-  <%= form.submit(proposal['series_candidate'] ? "Créer la série complète et préparer #{episode_label}" : "Confirmer et préparer #{episode_label}") %>
+  <div class="encoder-confirmation-bar">
+    <%= form.submit(proposal['series_candidate'] ? "Créer la série complète et préparer #{episode_label}" : "Confirmer et préparer #{episode_label}") %>
+  </div>
 <% end %>
 </div></section>

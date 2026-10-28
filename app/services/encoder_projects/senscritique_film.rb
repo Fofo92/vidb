@@ -35,7 +35,8 @@ module EncoderProjects
       base(url).merge('french_title' => clean(movie['name']), 'original_title' => clean(movie['alternateName']),
                       'year' => movie['datePublished'].to_s[/\A(?:19|20)\d{2}/]&.to_i,
                       'genres_text' => names(movie['genre']), 'countries_text' => names(movie['countryOfOrigin']),
-                      'abstract' => clean(movie['description']))
+                      'abstract' => clean(movie['description']),
+                      'reference_runtime_minutes' => CatalogueRuntime.from_iso(movie['duration']))
     end
 
     def meta_attributes(document, url)

@@ -34,6 +34,7 @@ module EncoderProjects
       { 'french_title' => page.fetch('title').sub(/ \(film.*\)\z/i, ''),
         'original_title' => field(/Titre original/i), 'year' => field(/Sortie/i)[/\b(?:19|20)\d{2}\b/].to_i,
         'genres_text' => field(/Genre/i), 'countries_text' => field(/Pays.*production|Pays d.origine/i),
+        'reference_runtime_minutes' => CatalogueRuntime.from_text(field(/Durée/i)),
         'abstract' => synopsis, 'source' => source(page), 'record_kind' => 'standalone_video' }
     end
 
