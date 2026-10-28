@@ -43,9 +43,16 @@ module EncoderProjects
     end
 
     def route_episode
-      return unless EpisodeRequest.match?(@scope.fetch('project'))
+      original = @scope.fetch('project')
+      project = EpisodeRequest.with_query(original, params[:q])
+      return unless EpisodeRequest.match?(project)
 
-      redirect_to encoder_projects_episode_path(request_token: params[:request_token])
+      token = if project == original
+                params[:request_token]
+              else
+                CatalogueScope.issue(user: current_user, project: project)
+              end
+      redirect_to encoder_projects_episode_path(request_token: token)
     end
 
     def selected_ids(name)

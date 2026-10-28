@@ -1,6 +1,6 @@
 module EncoderProjects
   class EpisodeRequest
-    PATTERN = /S(\d{1,2})\s*E(\d{1,3})\s*[-–—]?\s*(.*)/i
+    PATTERN = /S(?:aison)?\s*(\d{1,2})\s*(?:[,;:–—-]\s*)?[EÉé](?:pisode)?\s*(\d{1,3})\s*[-–—:]?\s*(.*)/i
     attr_reader :season, :episode, :title, :series
 
     def initialize(project)
@@ -29,17 +29,20 @@ module EncoderProjects
     private :apply_target
 
     def source_match(project)
+      query = project['episode_search'].to_s
+      return [nil, PATTERN.match(query)] if PATTERN.match?(query)
+
       paths = Array(project['source_paths']) + [project['output_path']]
       path = paths.find { |value| PATTERN.match?(File.basename(value.to_s)) }
       [path, PATTERN.match(File.basename(path.to_s, File.extname(path.to_s)))]
     end
     private :source_match
 
-    def numbered_request(path, match)
+    def numbered_request(_path, match)
       @season = match[1].to_i
       @episode = match[2].to_i
       @title = match[3].sub(/_vf\z/i, '').strip
-      @series = File.basename(path).split(/\s*[-–—]\s*S\d/i).first
+      @series = match.pre_match.sub(/\s*[-–—]\s*\z/, '').strip
       raise ArgumentError, 'Numéro d’épisode invalide' unless @episode.positive?
     end
     private :numbered_request
@@ -56,6 +59,16 @@ module EncoderProjects
       true
     rescue ArgumentError
       false
+    end
+
+    def self.with_query(project, query)
+      return project unless PATTERN.match?(query.to_s)
+
+      selected = project.except('episode_target').merge('episode_search' => query.to_s.strip)
+      new(selected)
+      selected
+    rescue ArgumentError
+      project
     end
   end
 end

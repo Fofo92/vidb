@@ -1,6 +1,22 @@
 require 'test_helper'
 
 class EncoderProjects::WikipediaSeasonEpisodeTest < ActiveSupport::TestCase
+  test 'the natural La stagiaire source resolves season nine episode six to Errance' do
+    request = EncoderProjects::EpisodeRequest.new(
+      'source_paths' => ['/commun/to_be_cut/La stagiaire — Saison 9, épisode 6.m2t'],
+      'output_path' => '/videos/montage.mkv'
+    )
+    html = '<h3>Saison 9 (2024)</h3><ol><li>Le sauveur</li><li>Cabaret</li><li>Deuxième vie</li>' \
+           '<li>Impact</li><li>Les larmes du clown</li><li>Errance</li></ol>' \
+           '<h3>Saison 10 (2025)</h3><ol><li>Un avenir tout tracé</li></ol>'
+    source = { 'title' => 'La Stagiaire', 'text' => { '*' => html } }
+    result = EncoderProjects::WikipediaSeasonEpisode.new.call(source, request.season, request.episode)
+    assert_equal 'La stagiaire', request.series
+    assert_equal 'Errance', result['title']
+    assert_equal 2024, result['year']
+    assert_equal 'https://fr.wikipedia.org/wiki/La_Stagiaire', result.dig('source', 'url')
+  end
+
   def page(html)
     { 'title' => 'Meurtres à Sandhamn', 'text' => { '*' => html } }
   end

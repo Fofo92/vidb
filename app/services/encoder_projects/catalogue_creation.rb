@@ -59,6 +59,7 @@ module EncoderProjects
       title = Record.where('LOWER(french_title) = ?', candidate.fetch('french_title').downcase)
                     .to_a
       source = Record.where("year_evidence ->> 'url' = ?", candidate.fetch('source').fetch('url')).to_a
+      title.reject! { |record| distinct_hierarchical_work?(record, candidate) && !source.include?(record) }
       matches = (title + source).uniq(&:id)
       return if matches.empty?
       return matches.sole if matches.one? && compatible?(matches.sole, candidate, source)
@@ -68,7 +69,11 @@ module EncoderProjects
 
     def compatible?(record, candidate, sourced)
       same_year = record.year.nil? || candidate['year'].nil? || record.year == candidate['year']
-      Matcher.qualified?(record) && (same_year || sourced.include?(record))
+      record.record_kind_standalone_video? && Matcher.qualified?(record) && (same_year || sourced.include?(record))
+    end
+
+    def distinct_hierarchical_work?(record, candidate)
+      record.has_parent? && record.year.present? && candidate['year'].present? && record.year != candidate['year']
     end
 
     def create_record(candidate, genders, countries)

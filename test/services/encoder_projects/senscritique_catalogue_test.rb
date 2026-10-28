@@ -26,7 +26,7 @@ class EncoderProjects::SenscritiqueCatalogueTest < ActiveSupport::TestCase
         response("<a href='#{URL}'>Film</a><a href='#{URL}'>Film</a>" \
                  "<a href='https://evil.test/film/x/1'>Piège</a><a href='/serie/x/1'>Série</a>")
       else
-        response(movie_page)
+        response(movie_page(title: 'Impossible & ailleurs'))
       end
     end
     client = EncoderProjects::SenscritiqueClient.new(transport: transport)
@@ -63,15 +63,51 @@ class EncoderProjects::SenscritiqueCatalogueTest < ActiveSupport::TestCase
     assert_raises(EncoderProjects::SenscritiqueClient::Error) { client.page(URL) }
   end
 
+  test 'unrelated recommended films are not proposals for the requested episode' do
+    transport = lambda do |uri|
+      if uri.path == '/search'
+        response("<a href='/film/obsession/120733833'>Obsession</a>" \
+                 "<a href='/film/l_odyssee/123'>L’Odyssée</a>")
+      else
+        response(movie_page(title: uri.path.include?('obsession') ? 'Obsession' : 'L’Odyssée'))
+      end
+    end
+    source = EncoderProjects::SenscritiqueCatalogue.new(client: EncoderProjects::SenscritiqueClient.new(transport: transport))
+    assert_empty source.call('La stagiaire - S09 E06 - Errance')
+    assert_match 'sans concordance', source.warnings.sole
+  end
+
+  test 'a matching original title is accepted and a substring is not a match' do
+    client = Object.new
+    client.define_singleton_method(:film_url) { |_query| nil }
+    client.define_singleton_method(:search) { |_query| [URL] }
+    html = movie_page(title: 'Titre français', original_title: 'Impossible')
+    client.define_singleton_method(:page) { |_url| html }
+    source = EncoderProjects::SenscritiqueCatalogue.new(client: client)
+    assert_equal 'Titre français', source.call('Impossible').sole['french_title']
+    assert_empty source.call('Possible')
+  end
+
+  test 'an explicit requested year must agree with the film year' do
+    client = Object.new
+    client.define_singleton_method(:film_url) { |_query| nil }
+    client.define_singleton_method(:search) { |_query| [URL] }
+    html = movie_page
+    client.define_singleton_method(:page) { |_url| html }
+    source = EncoderProjects::SenscritiqueCatalogue.new(client: client)
+    assert_equal 'Impossible', source.call('Impossible (2026)').sole['french_title']
+    assert_empty source.call('Impossible (2025)')
+  end
+
   private
 
   def response(body, code = '200')
     Struct.new(:body, :code).new(body, code)
   end
 
-  def movie_page
+  def movie_page(title: 'Impossible', original_title: nil)
     data = { '@context' => 'https://schema.org', '@graph' => [
-      { '@type' => 'Movie', 'name' => 'Impossible', 'datePublished' => '2026-10-16',
+      { '@type' => 'Movie', 'name' => title, 'alternateName' => original_title, 'datePublished' => '2026-10-16',
         'genre' => ['Drame'], 'countryOfOrigin' => { '@type' => 'Country', 'name' => 'France' },
         'description' => 'Un synopsis de test.' }
     ] }

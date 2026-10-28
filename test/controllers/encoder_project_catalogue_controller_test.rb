@@ -106,6 +106,25 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to encoder_projects_catalogue_path(request_token: @request_token)
   end
 
+  test 'a hierarchical homonym from another year does not prevent creating a distinct film' do
+    language = LanguageVersion.find_by!(short_name: 'IND')
+    series = Record.create!(french_title: 'Mystery Road', record_kind: 'undetermined', language_version: language)
+    season = Record.create!(french_title: 'Saison 2', parent: series, record_kind: 'undetermined', language_version: language)
+    homonym = Record.create!(french_title: 'La route', original_title: 'The Road', year: 2020,
+                            parent: season, record_kind: 'undetermined', language_version: language)
+    previous = homonym.attributes
+    candidate = @candidate.merge('french_title' => 'La Route', 'year' => 2025, 'source' => {
+      'provider' => 'tmdb', 'url' => 'https://www.themoviedb.org/movie/1541932'
+    })
+    proposal = EncoderProjects::CatalogueScope.issue(user: @user, project: @project, candidate: candidate)
+    assert_difference('Record.count', 1) { assert_no_difference('VideoAsset.count') { confirm(proposal) } }
+    record = Record.find(EncoderProjects::Binding.current(@project['project_id']).fetch('record_id'))
+    assert_redirected_to record_path(record)
+    assert_equal ['standalone_video', 2025, nil], [record.record_kind, record.year, record.parent_id]
+    assert_equal previous, homonym.reload.attributes
+    assert_no_difference('Record.count') { confirm(proposal) }
+  end
+
   test 'a tampered proposal is rejected before creation' do
     assert_no_difference 'Record.count' do
       confirm("#{@proposal}invalid")

@@ -35,6 +35,63 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select[name="series_id"] option', text: /Cat's Eyes/
   end
 
+  test 'a natural French source name redirects before any film or unified title search' do
+    project = { 'project_id' => SecureRandom.uuid, 'project_path' => '/videos/montage.json',
+                'output_path' => '/videos/montage.mkv',
+                'source_paths' => ['/commun/to_be_cut/La stagiaire — Saison 9, épisode 6.m2t'] }
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
+    assert_no_difference(['Record.count', 'VideoAsset.count']) do
+      EncoderProjects::FilmCatalogue.stub(:new, -> { flunk 'No film search for an episode' }) do
+        EncoderProjects::SeriesCatalogueSearch.stub(:new, -> { flunk 'Episode routing must happen first' }) do
+          get encoder_projects_catalogue_path,
+              params: { request_token: token }
+        end
+      end
+    end
+    assert_redirected_to encoder_projects_episode_path(request_token: token)
+  end
+
+  test 'a typed episode routes a generic capture and preserves its target through the redirect' do
+    project = { 'project_id' => SecureRandom.uuid, 'project_path' => '/videos/montage.json',
+                'output_path' => '/videos/montage.mkv', 'source_paths' => ['/commun/capture.m2t'] }
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
+    series = Record.create!(french_title: 'La stagiaire', record_kind: 'series',
+                            language_version: @series.language_version)
+    catalogue = Object.new
+    catalogue.define_singleton_method(:warnings) { [] }
+    catalogue.define_singleton_method(:call) do |selected, numbers|
+      raise 'Wrong episode lookup' unless selected.id == series.id &&
+                                         [numbers.season, numbers.episode, numbers.title] == [9, 6, 'Errance']
+
+      []
+    end
+    assert_no_difference(['Record.count', 'VideoAsset.count']) do
+      EncoderProjects::FilmCatalogue.stub(:new, -> { flunk 'No film search for a typed episode' }) do
+        get encoder_projects_catalogue_path,
+            params: { request_token: token, q: 'La stagiaire - S09 E06 - Errance' }
+      end
+      assert_response :redirect
+      EncoderProjects::EpisodeCatalogue.stub(:new, -> { catalogue }) { follow_redirect! }
+    end
+    assert_response :success
+    assert_select 'input[name="title"][value="Errance"]'
+  end
+
+  test 'a full episode query on the episode form replaces the source target' do
+    catalogue = Object.new
+    catalogue.define_singleton_method(:warnings) { [] }
+    catalogue.define_singleton_method(:call) do |_series, numbers|
+      raise 'Old episode target was retained' unless [numbers.season, numbers.episode, numbers.title] == [3, 4, 'Suite']
+
+      []
+    end
+    EncoderProjects::EpisodeCatalogue.stub(:new, -> { catalogue }) do
+      get encoder_projects_episode_path, params: { request_token: @token, q: "Cat's Eyes - S03 E04 - Suite" }
+    end
+    assert_response :success
+    assert_select 'input[name="title"][value="Suite"]'
+  end
+
   test 'confirmation creates the hierarchy without a video file' do
     assert_difference('Record.count', 2) do
       assert_no_difference('VideoAsset.count') do

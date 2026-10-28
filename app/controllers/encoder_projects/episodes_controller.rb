@@ -3,6 +3,7 @@ module EncoderProjects
     before_action :load_scope
 
     def show
+      select_episode_query
       select_episode_target
       @episode = EpisodeRequest.new(@scope.fetch('project'))
       @query = params[:q].presence || @episode.series
@@ -24,6 +25,16 @@ module EncoderProjects
     end
 
     private
+
+    def select_episode_query
+      original = @scope.fetch('project')
+      project = EpisodeRequest.with_query(original, params[:q])
+      params[:q] = EpisodeRequest.new(project).series if project['episode_search'] == params[:q].to_s.strip
+      return if project == original
+
+      @scope = @scope.merge('project' => project, 'candidate' => nil)
+      params[:request_token] = CatalogueScope.issue(user: current_user, project: project)
+    end
 
     def select_episode_target
       return unless params.key?(:season_number) || params.key?(:episode_number)
