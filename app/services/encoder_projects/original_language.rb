@@ -4,16 +4,20 @@ require 'net/http'
 require 'timeout'
 
 module EncoderProjects
-  # Resolve an identified film, never a similarly named episode or a country.
+  # Resolve the identified film or the verified parent series, never a country.
   class OriginalLanguage
     UNKNOWN = { 'status' => 'unknown' }.freeze
 
     def self.call(record)
-      return UNKNOWN unless record.respond_to?(:record_kind) && record.record_kind == 'standalone_video' &&
-                            record.year.present?
+      return UNKNOWN unless record.respond_to?(:record_kind)
 
-      key = ['encoder-original-language-v1', record.id, record.french_title, record.original_title, record.year]
-      Rails.cache.fetch(key, expires_in: 10.minutes) { new.call(record) }
+      reference = record.record_kind == 'standalone_video' ? record : SeriesOriginalLanguage.reference(record)
+      return UNKNOWN unless reference
+      return UNKNOWN if reference.record_kind == 'standalone_video' && reference.year.blank?
+
+      key = ['encoder-original-language-v2', reference.record_kind, reference.id,
+             reference.french_title, reference.original_title, reference.year]
+      Rails.cache.fetch(key, expires_in: 10.minutes) { new.call(reference) }
     end
 
     def initialize(client: nil)
@@ -23,6 +27,8 @@ module EncoderProjects
     end
 
     def call(record)
+      return SeriesOriginalLanguage.new.call(record) if record.record_kind == 'series'
+
       movie = matching_movie(record)
       movie ? evidence(movie, record.year) : UNKNOWN
     rescue CatalogEnrichment::TmdbClient::Error, IOError, SystemCallError, Timeout::Error,
