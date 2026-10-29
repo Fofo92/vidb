@@ -5,8 +5,12 @@ manuelles liées à une ancienne programmation Kaffeine.
 
 ## Preuves affichées
 
-- **Déjà acquis — disponible** : une copie complète est déclarée présente
-  dans la vidéothèque vidb, y compris un export encodé dont la capture a disparu.
+- **Déjà encodé avec video_encoder** : une copie complète est déclarée présente
+  dans vidb et possède un projet video_encoder associé.
+- **Réencodage souhaité — ancienne copie** : une copie complète est présente,
+  mais aucun projet video_encoder associé n’a été trouvé.
+- **Copie disponible — projet à vérifier** : la lecture du projet est impossible
+  ou son identité contredit le compte rendu d’export ou la liaison vidb.
 - **Déjà acquis — indisponible** : une acquisition complète est conservée dans
   l’historique des copies, mais sa couverture présente est incomplète ou absente.
 - **Déjà enregistré — catalogue** : la fiche indique un enregistrement, sans
@@ -68,3 +72,32 @@ d’épisode ne déclenchent pas ces recherches.
 Aucune écriture en base, modification de fichier ou programmation Kaffeine
 n’est effectuée par la détection. La rediffusion reste programmable. La fiche
 vidb ou le chemin de la source est présenté dans le détail de l’indication.
+
+## Projet associé et réencodage
+
+Le nombre de pistes audio, les sous-titres et l’extension du conteneur ne
+participent pas à cette décision. Une œuvre française avec une piste audio
+unique est traitée exactement comme les autres selon la présence du projet.
+
+La recherche utilise le project_path d’un compte rendu video_encoder_export
+lorsqu’il désigne exactement cette sortie, puis le JSON voisin de même nom.
+Le document doit être un video_encoder.trim_project de version 1 ou 2 avec
+une timeline contenant un segment. Sa liaison vidb, si elle existe, doit
+correspondre à la fiche de la copie. L’identifiant de projet du compte rendu,
+s’il est fourni, doit également correspondre. Un compte rendu seul ne remplace
+pas un fichier de projet absent ; un JSON sans rapport ne constitue pas une preuve.
+Les sources du montage peuvent avoir été déplacées en quarantaine : leur
+présence n’est pas exigée par ce contrôle.
+
+Pour plusieurs copies, une seule copie complète avec projet suffit. Pour un
+épisode réparti en plusieurs fichiers, chaque partie doit être couverte par
+une copie avec projet. Des projets illisibles pouvant compléter la couverture
+conduisent à « projet à vérifier » plutôt qu’à une absence certaine.
+La lecture est bornée à 2 Mio par projet, sans chargement de vidéo ni ffprobe.
+Le fichier peut avoir été modifié depuis l’encodage : son hash n’est pas utilisé
+pour exclure un projet encore associé. Ce contrôle identifie un projet associé ;
+il ne certifie pas que les sources restent accessibles pour une nouvelle exportation.
+
+Les anciennes copies restent recensées comme acquisitions. L’indication de
+réencodage les rend visibles pour programmer une nouvelle capture ; elle ne
+modifie ni la file d’encodage ni les fichiers et ne bloque aucune reprogrammation.

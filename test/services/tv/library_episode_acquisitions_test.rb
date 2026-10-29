@@ -8,11 +8,13 @@ class Tv::LibraryEpisodeAcquisitionsTest < ActiveSupport::TestCase
   end
   Episode = Struct.new(:id, :video_assets, :broadcast_part_count, :is_recorded)
 
-  def evidence(assets, parts: 1, recorded: false)
+  def evidence(assets, parts: 1, recorded: false, project_state: :associated)
     record = Episode.new(42, assets, parts, recorded)
     candidates = Object.new
     candidates.define_singleton_method(:call) { |_| { 7 => record } }
-    Tv::LibraryEpisodeAcquisitions.new(candidates: candidates).call([])[7]
+    projects = Object.new
+    projects.define_singleton_method(:call) { |_| project_state }
+    Tv::LibraryEpisodeAcquisitions.new(candidates: candidates, projects: projects).call([])[7]
   end
 
   test 'a completed copy is acquired independently of capture history or source paths' do
@@ -43,4 +45,25 @@ class Tv::LibraryEpisodeAcquisitionsTest < ActiveSupport::TestCase
     assert_nil evidence([], recorded: false)
     assert_nil evidence([], recorded: nil)
   end
+  test 'available copies without projects are candidates for reencoding regardless of audio or subtitles' do
+    result = evidence([Asset.new('present', nil)], project_state: :absent)
+    assert_equal 'reencode', result.kind
+    assert_match 'Réencodage souhaité', result.label
+    assert_equal 'project_review', evidence([Asset.new('present', nil)], project_state: :unknown).kind
+  end
+
+  test 'all parts need project coverage before an episode is considered encoded with video_encoder' do
+    first = Asset.new('present', 1)
+    second = Asset.new('present', 2)
+    record = Episode.new(42, [first, second], 2, true)
+    candidates = Object.new
+    candidates.define_singleton_method(:call) { |_| { 7 => record } }
+    projects = Object.new
+    projects.define_singleton_method(:call) { |asset| asset.broadcast_part_number == 1 ? :associated : :absent }
+    detector = Tv::LibraryEpisodeAcquisitions.new(candidates: candidates, projects: projects)
+    assert_equal 'reencode', detector.call([]).fetch(7).kind
+    projects.define_singleton_method(:call) { |_| :associated }
+    assert_equal 'available', detector.call([]).fetch(7).kind
+  end
+
 end

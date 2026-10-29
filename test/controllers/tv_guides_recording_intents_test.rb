@@ -335,19 +335,35 @@ class TvGuidesRecordingIntentsTest <
     assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording]", count: 0
   end
 
-  test "finds an encoded episode without a confirmed capture or a remaining source" do
+  test "flags an available copy without a project for replacement even when its capture is gone" do
     episode = acquired_catalogue_episode
     episode.video_assets.create!(status: 'present', last_known_path: '/videos/acquired-episode.mkv', byte_size: 100,
                                   technical_details: { 'video_encoder_export' => { 'source_path' => '/absent/source.m2t' } })
     assert_no_difference(['Record.count', 'VideoAsset.count', 'Tv::RecordingIntent.count']) do
       get tv_guide_url, params: guide_params
     end
-    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='available']",
-                  text: /Déjà acquis.*disponible/
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='reencode']",
+                  text: /Réencodage souhaité/
     assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail] a[href='#{record_path(episode)}']"
     assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
     assert_equal 8, episode.reload.rank
     assert_equal 3, episode.parent.rank
+  end
+
+  test "recognizes an associated video_encoder project and keeps rerun scheduling available" do
+    episode = acquired_catalogue_episode
+    Dir.mktmpdir do |directory|
+      output = File.join(directory, 'episode.mkv')
+      project = { 'format' => 'video_encoder.trim_project', 'version' => 2,
+                  'sources' => [{ 'id' => 'source', 'path' => '/absent/source.m2t' }],
+                  'timeline' => [{ 'type' => 'segment', 'source_id' => 'source', 'start_frame' => 0, 'end_frame' => 100 }] }
+      File.write(File.join(directory, 'episode.json'), JSON.generate(project))
+      episode.video_assets.create!(status: 'present', last_known_path: output, byte_size: 100)
+      get tv_guide_url, params: guide_params
+      assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='available']",
+                    text: /Déjà encodé avec video_encoder/
+      assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
+    end
   end
 
   test "keeps a deleted copy as acquisition history without claiming it is available" do
