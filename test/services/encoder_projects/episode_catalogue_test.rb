@@ -168,4 +168,37 @@ class EncoderProjects::EpisodeCatalogueTest < ActiveSupport::TestCase
     assert_equal 123, rows.last['series_id']
   end
 
+  test 'reports a missing TMDB episode while keeping the Wikipedia proposal' do
+    client = tmdb
+    original_get = client.method(:get)
+    client.define_singleton_method(:get) do |path|
+      path.include?('/season/') ? { 'episodes' => [] } : original_get.call(path)
+    end
+    catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: wikipedia, tmdb: client, links: Links.new([7]))
+    proposals = catalogue.call(series, Numbers.new(2, 1))
+    assert_equal ['wikipedia'], proposals.map { |row| row.dig('source', 'provider') }
+    assert catalogue.warnings.any? { |message| message.include?('S02 E01') && message.include?('URL exacte') }
+  end
+
+  test 'an exact episode URL keeps the requested local numbering and does not propose full completion' do
+    client = tmdb
+    client.define_singleton_method(:get) do |path|
+      if path == 'tv/42083'
+        { 'id' => 42083, 'name' => 'Joséphine', 'original_language' => 'fr' }
+      elsif path == 'tv/42083/season/14/episode/2'
+        { 'id' => 987, 'season_number' => 14, 'episode_number' => 2, 'name' => 'Chasse aux fantômes' }
+      else
+        raise ArgumentError, 'Unexpected path'
+      end
+    end
+    catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: wikipedia(fail: true), tmdb: client, links: Links.new([]))
+    rows = catalogue.call(series, Numbers.new(12, 11), tmdb_series_id: 42083,
+                          tmdb_episode: { 'season' => 14, 'episode' => 2 })
+    proposal = rows.sole
+    assert_equal [12, 11], proposal.values_at('season', 'episode')
+    assert_equal [14, 2], proposal.fetch('tmdb_episode_reference').values_at('season', 'episode')
+    assert_equal 123, proposal['series_id']
+    refute proposal.key?('catalogue_completion')
+  end
+
 end

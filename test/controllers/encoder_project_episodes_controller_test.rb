@@ -144,7 +144,11 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
     project, candidate = missing_series_scope
     token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
     catalogue = Object.new
-    catalogue.define_singleton_method(:call) { |_query, _numbers| [candidate] }
+    calls = []
+    catalogue.define_singleton_method(:from_source) do |id, query, numbers, url|
+      calls << [id, query, numbers.season, numbers.episode, url]
+      [candidate]
+    end
     catalogue.define_singleton_method(:warnings) { [] }
     assert_no_difference(['Record.count', 'VideoAsset.count']) do
       EncoderProjects::MissingSeriesCatalogue.stub(:new, -> { catalogue }) do
@@ -152,6 +156,7 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :success
+    assert_equal [[nil, 'Esprits criminels', 6, 22, nil]], calls
     assert_select 'input[type="submit"][value="Créer la série complète et préparer S06 E22"]'
   end
 
@@ -308,13 +313,16 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
       get encoder_projects_episode_path, params: { request_token: @token, source_url: 'https://example.org/tv/42' }
     end
     assert_response :success
-    assert_match 'Saisis une URL de série TMDB', response.body
+    assert_match 'Saisis une URL TMDB', response.body
   end
 
   test 'an explicit URL also works when the local series is missing' do
     catalogue = Object.new
     calls = []
-    catalogue.define_singleton_method(:from_id) { |id, numbers| calls << [id, numbers.season, numbers.episode]; [] }
+    catalogue.define_singleton_method(:from_source) do |id, _query, numbers, _url|
+      calls << [id, numbers.season, numbers.episode]
+      []
+    end
     catalogue.define_singleton_method(:warnings) { [] }
     EncoderProjects::MissingSeriesCatalogue.stub(:new, -> { catalogue }) do
       get encoder_projects_episode_path, params: { request_token: @token, q: 'Une série absente',
@@ -322,6 +330,44 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_equal [[42083, 2, 1]], calls
+  end
+
+  test 'an episode URL shows external numbering and requires confirmation without writing records' do
+    reference = { 'series_id' => 42083, 'season' => 14, 'episode' => 2, 'episode_id' => 987 }
+    candidate = { 'title' => 'Chasse aux fantômes', 'tmdb_episode_reference' => reference }
+    catalogue = Object.new
+    calls = []
+    catalogue.define_singleton_method(:call) do |_series, numbers, **options|
+      calls << [numbers.season, numbers.episode, options]
+      [candidate]
+    end
+    catalogue.define_singleton_method(:warnings) { [] }
+    EncoderProjects::EpisodeCatalogue.stub(:new, -> { catalogue }) do
+      assert_no_difference(['Record.count', 'CatalogueEpisodeLink.count', 'VideoAsset.count']) do
+        get encoder_projects_episode_path, params: { request_token: @token, series_id: @series.id,
+             season_number: '12', episode_number: '11',
+             source_url: 'https://www.themoviedb.org/tv/42083/season/14/episode/2' }
+      end
+    end
+    assert_response :success
+    assert_equal [[12, 11, { tmdb_series_id: 42083, tmdb_episode: { 'season' => 14, 'episode' => 2 } }]], calls
+    assert_select 'input[type="checkbox"][name="confirm_tmdb_episode_mapping"][required]'
+    assert_select 'input[name="confirm_tmdb_episode_mapping"][checked]', count: 0
+    assert_select 'input[name="complete_catalogue"]', count: 0
+    assert_match 'S14 E02', response.body
+  end
+
+  test 'a direct POST cannot bypass correspondence confirmation' do
+    candidate = { 'series_id' => @series.id, 'season' => 2, 'episode' => 1, 'title' => 'Chasse aux fantômes',
+                  'tmdb_episode_reference' => { 'series_id' => 42083, 'season' => 14, 'episode' => 2, 'episode_id' => 987 } }
+    scope = EncoderProjects::CatalogueScope.read(@token, user: @user)
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: scope.fetch('project'), candidate: candidate)
+    assert_no_difference(['Record.count', 'CatalogueEpisodeLink.count', 'VideoAsset.count']) do
+      post encoder_projects_episode_path, params: { proposal_token: token, series_id: @series.id,
+                                                   title: 'Chasse aux fantômes', complete_catalogue: '1' }
+    end
+    assert_response :unprocessable_content
+    assert_match 'Confirme la correspondance', response.body
   end
 
 end

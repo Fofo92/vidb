@@ -10,10 +10,10 @@ module EncoderProjects
       @warnings = []
     end
 
-    def call(series, numbers, tmdb_series_id: nil)
+    def call(series, numbers, tmdb_series_id: nil, tmdb_episode: nil)
       @warnings = []
       @numbering_page = nil
-      @explicit_tmdb_id = tmdb_series_id
+      select_tmdb_source(tmdb_series_id, tmdb_episode)
       proposals = collect('Wikipédia') { wikipedia_proposals(series, numbers) }
       proposals += collect('TMDB') { tmdb_proposals(series, numbers) }
       proposals.each do |item|
@@ -24,6 +24,11 @@ module EncoderProjects
     end
 
     private
+
+    def select_tmdb_source(id, episode)
+      @explicit_tmdb_id = id
+      @explicit_episode = episode
+    end
 
     def collect(provider)
       yield
@@ -93,13 +98,10 @@ module EncoderProjects
     end
 
     def tmdb_proposal(id, series, numbers)
-      builder = TmdbEpisodeProposal.new(client: tmdb, wikipedia_page: @numbering_page, links: @links,
-                                        warnings: @warnings)
-      proposal = builder.call(id, series, numbers)
-      return unless proposal
-
-      proposal.merge(reference_ids(series, tmdb_references(builder.series_data)))
-              .merge('catalogue_completion' => { 'tmdb_id' => id, 'record_id' => series.id })
+      lookup = TmdbEpisodeLookup.new(client: tmdb, page: @numbering_page, links: @links, warnings: @warnings)
+      lookup.call(id, series, numbers, reference: @explicit_episode) do |proposal, data|
+        proposal.merge(reference_ids(series, tmdb_references(data)))
+      end
     end
 
     def tmdb_references(series_data)

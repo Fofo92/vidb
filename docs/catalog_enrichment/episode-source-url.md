@@ -1,10 +1,11 @@
 # URL explicite de série TMDB
 
-La préparation d’un épisode accepte une URL de série TMDB facultative.
+La préparation d’un épisode accepte une URL de série ou d’épisode TMDB facultative.
 L’identifiant extrait remplace la recherche TMDB par titre et les associations
 existantes pour cette consultation. Wikipédia reste consultée normalement.
-La saison et l’épisode restent ceux du formulaire ; une URL d’épisode est refusée
-pour éviter un conflit entre deux numérotations.
+Une URL de série utilise la saison et l’épisode du formulaire. Une URL d’épisode
+consulte ses coordonnées externes et demande une confirmation de correspondance ;
+les numéros locaux restent ceux du formulaire. Voir explicit-episode-correspondence.md.
 
 Pour une série locale, les propositions restent associées à cette série.
 Pour une série absente, le parcours existant de proposition de création est utilisé.

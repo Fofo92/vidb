@@ -18,12 +18,18 @@ module EncoderProjects
       []
     end
 
-    def from_id(id, numbers)
+    def from_source(id, query, numbers, url)
+      return call(query, numbers) if id.blank?
+
+      from_id(id, numbers, **TmdbSeriesUrl.options(url).except(:tmdb_series_id))
+    end
+
+    def from_id(id, numbers, **)
       @warnings = []
       number = Integer(id.to_s, 10)
       raise ArgumentError, 'Identifiant de série invalide' unless number.positive?
 
-      proposals(number, numbers)
+      proposals(number, numbers, **)
     rescue ArgumentError, KeyError, CatalogEnrichment::TmdbClient::Error
       @warnings << 'Référence de série indisponible ou invalide : aucune fiche créée.'
       []
@@ -31,11 +37,11 @@ module EncoderProjects
 
     private
 
-    def proposals(id, numbers)
+    def proposals(id, numbers, **)
       data = fetch_series_data(id)
       preview = SeriesPreview.new(data)
       catalogue = EpisodeCatalogue.new(wikipedia: @wikipedia, tmdb: tmdb, links: SeriesPreview::Links.new(id))
-      rows = catalogue.call(preview, numbers)
+      rows = catalogue.call(preview, numbers, **)
       @warnings.concat(catalogue.warnings)
       @warnings << "Épisode demandé non trouvé pour #{data.fetch('french_title')}." if rows.empty?
       rows.map { |row| row.merge('series_candidate' => data) }

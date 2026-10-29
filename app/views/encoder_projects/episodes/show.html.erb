@@ -15,14 +15,14 @@
   <%= form.label :episode_number, 'Épisode à préparer' %>
   <%= form.number_field :episode_number, value: @episode.episode, min: 1, max: 999, required: true, data: { episode_preparation_target: 'selection' } %>
   <div>
-    <%= form.label :source_url, 'URL de la série TMDB (facultative)' %>
+    <%= form.label :source_url, 'URL TMDB de la série ou de l’épisode (facultative)' %>
     <%= form.url_field :source_url, value: params[:source_url], placeholder: 'https://www.themoviedb.org/tv/42083', size: 60, data: { episode_preparation_target: 'selection' } %>
   </div>
   <%= form.hidden_field :series_id, value: params[:series_id] %>
   <%= form.submit 'Charger cet épisode' %>
   <%= form.button 'Chercher aussi dans les sources externes', name: 'external_series', value: '1' %>
 <% end %>
-<p class="small">Une URL TMDB impose cette série pour la recherche externe, avec la saison et l’épisode ci-dessus.
+<p class="small">Une URL de série utilise les numéros ci-dessus. Une URL d’épisode propose une correspondance explicite avec les numéros locaux, qui restent inchangés.
   Aucune fiche n’est modifiée avant confirmation.</p>
 <p class="small">Pour une source contenant plusieurs épisodes, choisis le numéro de ce montage puis clique sur
   « Charger cet épisode ». La proposition sera rechargée pour cet épisode ; changer seulement le titre ne change pas son numéro.</p>

@@ -23,7 +23,7 @@ module EncoderProjects
 
     def validate_path!(path, language)
       endpoint, query = path.split('?', 2)
-      valid = endpoint.match?(%r{\Atv/[1-9]\d*(?:/season/\d+)?\z}) && query.nil?
+      valid = endpoint.match?(%r{\Atv/[1-9]\d*(?:/season/\d+(?:/episode/[1-9]\d*)?)?\z}) && query.nil?
       valid ||= endpoint == 'search/tv' && valid_query?(query)
       return if valid && language.match?(/\A[a-z]{2}(?:-[A-Z]{2})?\z/)
 

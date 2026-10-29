@@ -69,7 +69,8 @@ module EncoderProjects
     end
 
     def enrichment_parameters
-      params.permit(:title, :original_title, :year, :source, :abstract, :language_version, :complete_catalogue,
+      params.permit(:title, :original_title, :year, :source, :abstract, :language_version,
+                    :complete_catalogue, :confirm_tmdb_episode_mapping,
                     gender_ids: [], country_ids: []).to_h
     end
 
@@ -105,7 +106,7 @@ module EncoderProjects
     def prepare_missing_series
       catalogue = MissingSeriesCatalogue.new
       id = @tmdb_source_id || params[:tmdb_series_id]
-      @proposals = id.present? ? catalogue.from_id(id, @episode) : catalogue.call(@query, @episode)
+      @proposals = catalogue.from_source(id, @query, @episode, params[:source_url])
       @warnings = catalogue.warnings
       @warnings << 'Aucune proposition exploitable : précise le titre de la série.' if @proposals.empty?
     end
@@ -116,7 +117,7 @@ module EncoderProjects
 
     def external_proposals(series)
       catalogue = EpisodeCatalogue.new
-      proposals = catalogue.call(series, @episode, **(@tmdb_source_id ? { tmdb_series_id: @tmdb_source_id } : {}))
+      proposals = catalogue.call(series, @episode, **TmdbSeriesUrl.options(params[:source_url]))
       @warnings = catalogue.warnings
       @warnings << 'Sources incomplètes : tu peux renseigner les champs signalés à compléter.' if proposals.empty?
       proposals

@@ -25,7 +25,9 @@
     <p><strong>Nouvelle série : <%= series['french_title'] %></strong>
       <% if series['original_title'].present? %> (<%= series['original_title'] %>)<% end %>
       · <%= series['year'] || 'année à compléter' %></p>
-    <% if proposal['edition_mapping'] %>
+    <% if proposal['tmdb_episode_reference'] %>
+      <p>Seuls la série et cet épisode seront préparés ; la numérotation des autres épisodes ne sera pas déduite.</p>
+    <% elsif proposal['edition_mapping'] %>
       <p>Création complète suivant la numérotation Wikipédia. Les parties du catalogue seront regroupées
         uniquement lorsque leur identité est établie ; leur nombre ne correspond pas au nombre de fiches locales.</p>
     <% else %>
@@ -45,6 +47,18 @@
       <%= form.label :complete_catalogue, 'Compléter toutes les saisons et tous les épisodes documentés de cette série', for: "episode-complete-catalogue-#{index}" %>
       <p class="small">Les fiches existantes et leurs états sont conservés. Les nouveaux épisodes seront non enregistrés,
         non disponibles et non visionnés. Aucun fichier ne sera rattaché ici.</p>
+    </div>
+  <% end %>
+  <% if proposal['tmdb_episode_reference'] %>
+    <% reference = proposal.fetch('tmdb_episode_reference') %>
+    <div class="encoder-field encoder-field-wide">
+      <p><strong>Correspondance à confirmer :</strong>
+        vidb <%= format('S%02d E%02d', @episode.season, @episode.episode) %>
+        ↔ TMDB <%= format('S%02d E%02d', reference.fetch('season'), reference.fetch('episode')) %>.
+        Série TMDB : <%= proposal['tmdb_series_title'] %> ; épisode : <%= proposal['tmdb_episode_title'] %>.
+        La numérotation locale sera conservée.</p>
+      <%= form.check_box :confirm_tmdb_episode_mapping, { required: true, checked: submitted['confirm_tmdb_episode_mapping'] == '1', id: "episode-mapping-#{index}" }, '1', '0' %>
+      <%= form.label :confirm_tmdb_episode_mapping, 'Je confirme qu’il s’agit du même épisode', for: "episode-mapping-#{index}" %>
     </div>
   <% end %>
   <% if proposal['edition_mapping'] %>
@@ -126,7 +140,7 @@
     Le support HD et la durée réelle seront établis à l’import de l’encodage terminé.</p>
   <% episode_label = format('S%02d E%02d', @episode.season, @episode.episode) %>
   <div class="encoder-confirmation-bar">
-    <%= form.submit(proposal['series_candidate'] ? "Créer la série complète et préparer #{episode_label}" : "Confirmer et préparer #{episode_label}") %>
+    <%= form.submit(proposal['series_candidate'] ? (proposal['tmdb_episode_reference'] ? "Créer la série et préparer #{episode_label}" : "Créer la série complète et préparer #{episode_label}") : "Confirmer et préparer #{episode_label}") %>
   </div>
 <% end %>
 </div></section>

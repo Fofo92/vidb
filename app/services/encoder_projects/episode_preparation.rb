@@ -6,6 +6,7 @@ module EncoderProjects
     end
 
     def call(scope:, parameters:, series_id:)
+      ReviewedEpisodeReference.validate!(scope['candidate'], parameters)
       data = completion_data(scope['candidate'], parameters, series_id)
       snapshot = complete_snapshot(data, scope['candidate'])
       Record.transaction do
@@ -18,6 +19,7 @@ module EncoderProjects
     private
 
     def completion_data(candidate, parameters, series_id)
+      return if candidate&.key?('tmdb_episode_reference')
       return candidate['series_candidate'] if candidate&.key?('series_candidate')
       return unless parameters['complete_catalogue'] == '1'
 
@@ -57,6 +59,7 @@ module EncoderProjects
       enrichment = EpisodeEnrichment.new(candidate: candidate, parameters: parameters, project: scope.fetch('project'))
       record = create_episode(scope, candidate, root_id, enrichment)
       enrichment.call(record)
+      ReviewedEpisodeReference.new.call(record, candidate)
       complete_series(record.parent.parent, snapshot) if snapshot
       EpisodeBinding.new(user: @user, url: @url).call(scope.fetch('project'), record)
       record
