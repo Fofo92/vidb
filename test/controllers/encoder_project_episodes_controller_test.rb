@@ -284,4 +284,44 @@ class EncoderProjectEpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_empty @series.children.where(rank: 0)
   end
 
+  test 'a direct TMDB URL enriches the selected local series without writing records' do
+    catalogue = Object.new
+    calls = []
+    catalogue.define_singleton_method(:call) do |series, numbers, tmdb_series_id:|
+      calls << [series.id, numbers.season, numbers.episode, tmdb_series_id]
+      []
+    end
+    catalogue.define_singleton_method(:warnings) { [] }
+    EncoderProjects::EpisodeCatalogue.stub(:new, -> { catalogue }) do
+      assert_no_difference(['Record.count', 'CatalogueEpisodeLink.count', 'VideoAsset.count']) do
+        get encoder_projects_episode_path, params: { request_token: @token, series_id: @series.id,
+             season_number: '12', episode_number: '11', source_url: 'https://www.themoviedb.org/tv/42083' }
+      end
+    end
+    assert_response :success
+    assert_equal [[@series.id, 12, 11, 42083]], calls
+    assert_select 'input[name="source_url"][value="https://www.themoviedb.org/tv/42083"]'
+  end
+
+  test 'an invalid source URL displays a warning without an automatic external search' do
+    EncoderProjects::EpisodeCatalogue.stub(:new, -> { flunk 'Invalid URL must not fall back to search' }) do
+      get encoder_projects_episode_path, params: { request_token: @token, source_url: 'https://example.org/tv/42' }
+    end
+    assert_response :success
+    assert_match 'Saisis une URL de série TMDB', response.body
+  end
+
+  test 'an explicit URL also works when the local series is missing' do
+    catalogue = Object.new
+    calls = []
+    catalogue.define_singleton_method(:from_id) { |id, numbers| calls << [id, numbers.season, numbers.episode]; [] }
+    catalogue.define_singleton_method(:warnings) { [] }
+    EncoderProjects::MissingSeriesCatalogue.stub(:new, -> { catalogue }) do
+      get encoder_projects_episode_path, params: { request_token: @token, q: 'Une série absente',
+           source_url: 'https://www.themoviedb.org/tv/42083' }
+    end
+    assert_response :success
+    assert_equal [[42083, 2, 1]], calls
+  end
+
 end

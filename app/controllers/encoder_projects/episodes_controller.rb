@@ -76,6 +76,7 @@ module EncoderProjects
     def prepare_proposals
       @proposals = []
       @warnings = []
+      @tmdb_source_id = TmdbSeriesUrl.id(params[:source_url]) if params[:source_url].present?
       return prepare_missing_series if missing_series_lookup?
 
       series = selected_series
@@ -83,6 +84,8 @@ module EncoderProjects
 
       candidates = consult_sources? ? external_proposals(series) : []
       @proposals = (candidates.presence || [{}]).map { |item| EpisodeDefaults.call(series, @episode, item) }
+    rescue ArgumentError => e
+      @warnings << e.message
     end
 
     def unqualified_series
@@ -101,22 +104,19 @@ module EncoderProjects
 
     def prepare_missing_series
       catalogue = MissingSeriesCatalogue.new
-      @proposals = if params[:tmdb_series_id].present?
-                     catalogue.from_id(params[:tmdb_series_id], @episode)
-                   else
-                     catalogue.call(@query, @episode)
-                   end
+      id = @tmdb_source_id || params[:tmdb_series_id]
+      @proposals = id.present? ? catalogue.from_id(id, @episode) : catalogue.call(@query, @episode)
       @warnings = catalogue.warnings
       @warnings << 'Aucune proposition exploitable : précise le titre de la série.' if @proposals.empty?
     end
 
     def consult_sources?
-      params[:enrich] == '1' || (@series.one? && params[:enrich] != '0')
+      @tmdb_source_id || params[:enrich] == '1' || (@series.one? && params[:enrich] != '0')
     end
 
     def external_proposals(series)
       catalogue = EpisodeCatalogue.new
-      proposals = catalogue.call(series, @episode)
+      proposals = catalogue.call(series, @episode, **(@tmdb_source_id ? { tmdb_series_id: @tmdb_source_id } : {}))
       @warnings = catalogue.warnings
       @warnings << 'Sources incomplètes : tu peux renseigner les champs signalés à compléter.' if proposals.empty?
       proposals

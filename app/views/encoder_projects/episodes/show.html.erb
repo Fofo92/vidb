@@ -14,9 +14,16 @@
   <%= form.number_field :season_number, value: @episode.season, min: 0, max: 99, required: true, data: { episode_preparation_target: 'selection' } %>
   <%= form.label :episode_number, 'Épisode à préparer' %>
   <%= form.number_field :episode_number, value: @episode.episode, min: 1, max: 999, required: true, data: { episode_preparation_target: 'selection' } %>
+  <div>
+    <%= form.label :source_url, 'URL de la série TMDB (facultative)' %>
+    <%= form.url_field :source_url, value: params[:source_url], placeholder: 'https://www.themoviedb.org/tv/42083', size: 60, data: { episode_preparation_target: 'selection' } %>
+  </div>
+  <%= form.hidden_field :series_id, value: params[:series_id] %>
   <%= form.submit 'Charger cet épisode' %>
   <%= form.button 'Chercher aussi dans les sources externes', name: 'external_series', value: '1' %>
 <% end %>
+<p class="small">Une URL TMDB impose cette série pour la recherche externe, avec la saison et l’épisode ci-dessus.
+  Aucune fiche n’est modifiée avant confirmation.</p>
 <p class="small">Pour une source contenant plusieurs épisodes, choisis le numéro de ce montage puis clique sur
   « Charger cet épisode ». La proposition sera rechargée pour cet épisode ; changer seulement le titre ne change pas son numéro.</p>
 <p class="text-warning" role="status" data-episode-preparation-target="notice" hidden>Le choix a changé.
@@ -35,6 +42,7 @@
     <%= form.hidden_field :request_token, value: params[:request_token] %>
     <%= form.hidden_field :q, value: @query %>
     <%= form.hidden_field :enrich, value: '1' %>
+    <%= form.hidden_field :source_url, value: params[:source_url] %>
     <%= form.label :series_id, 'Série à consulter dans les sources externes' %>
     <%= form.select :series_id, @series.map { |record| ["#{record.complete_title} · #{record.year} · fiche #{record.id}", record.id] }, selected: params[:series_id] %>
     <%= form.submit 'Préremplir depuis les sources externes' %>

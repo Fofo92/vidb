@@ -10,9 +10,10 @@ module EncoderProjects
       @warnings = []
     end
 
-    def call(series, numbers)
+    def call(series, numbers, tmdb_series_id: nil)
       @warnings = []
       @numbering_page = nil
+      @explicit_tmdb_id = tmdb_series_id
       proposals = collect('Wikipédia') { wikipedia_proposals(series, numbers) }
       proposals += collect('TMDB') { tmdb_proposals(series, numbers) }
       proposals.each do |item|
@@ -65,10 +66,16 @@ module EncoderProjects
     end
 
     def tmdb_proposals(series, numbers)
-      ids = @links.where(provider: 'tmdb', record_id: series.subtree.select(:id))
-                  .distinct.limit(3).pluck(:external_series_id)
+      ids = explicit_or_stored_ids(series)
       ids = searched_series_ids(series) if ids.empty?
       ids.flat_map { |id| collect('TMDB') { [tmdb_proposal(id, series, numbers)].compact } }
+    end
+
+    def explicit_or_stored_ids(series)
+      return [@explicit_tmdb_id] if @explicit_tmdb_id
+
+      @links.where(provider: 'tmdb', record_id: series.subtree.select(:id))
+            .distinct.limit(3).pluck(:external_series_id)
     end
 
     def searched_series_ids(series)

@@ -154,4 +154,18 @@ class EncoderProjects::EpisodeCatalogueTest < ActiveSupport::TestCase
     assert_empty catalogue.warnings
   end
 
+  test 'an explicit URL identifier bypasses both title search and a stored association' do
+    client = tmdb
+    calls = []
+    original_get = client.method(:get)
+    client.define_singleton_method(:get) { |path| calls << path; original_get.call(path) }
+    client.define_singleton_method(:search) { |**| flunk 'No title search for an explicit series' }
+    catalogue = EncoderProjects::EpisodeCatalogue.new(wikipedia: wikipedia, tmdb: client, links: Links.new([7]))
+    rows = catalogue.call(series, Numbers.new(2, 1), tmdb_series_id: 42083)
+    assert_includes calls, 'tv/42083/season/2'
+    refute_includes calls, 'tv/7'
+    assert_equal 42083, rows.last.dig('catalogue_completion', 'tmdb_id')
+    assert_equal 123, rows.last['series_id']
+  end
+
 end
