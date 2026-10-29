@@ -1,6 +1,6 @@
 # Couleurs de programmation dans le guide
 
-Une pastille de 8 px en bas à gauche de la plage exprime l’utilité d’une
+Une pastille de 11 px en bas à gauche de la plage exprime l’utilité d’une
 nouvelle capture. Les fonds, bordures et marques de sélection restent ceux du
 guide habituel. Une légende et un texte dans le panneau d’information accompagnent
 les couleurs ; les commandes de programmation restent inchangées.

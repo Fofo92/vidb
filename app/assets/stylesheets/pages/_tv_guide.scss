@@ -733,17 +733,17 @@
   font-size: 0.75rem;
 }
 
-[data-tv-guide-acquisition-tone="recommended"] { --tv-acquisition-color: #287d45; }
-[data-tv-guide-acquisition-tone="unnecessary"] { --tv-acquisition-color: #b5650d; }
+[data-tv-guide-acquisition-tone="recommended"] { --tv-acquisition-color: #65c67a; }
+[data-tv-guide-acquisition-tone="unnecessary"] { --tv-acquisition-color: #ffb347; }
 [data-tv-guide-acquisition-tone="review"] { --tv-acquisition-color: #64748b; }
 
 .tv-guide-acquisition-dot,
 .tv-guide-acquisition-legend span::before {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.6875rem;
+  height: 0.6875rem;
   border-radius: 50%;
   background: var(--tv-acquisition-color);
-  box-shadow: 0 0 0 1px rgba($white, 0.9);
+  box-shadow: 0 0 0 1px rgba($black, 0.2);
 }
 
 .tv-guide-acquisition-dot {
@@ -762,5 +762,5 @@
 }
 
 .tv-guide-programme--single-line {
-  padding-left: 1rem;
+  padding-left: 1.25rem;
 }
