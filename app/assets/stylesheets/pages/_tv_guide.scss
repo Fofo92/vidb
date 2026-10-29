@@ -723,42 +723,44 @@
   font-size: 0.75rem;
 }
 
-// Acquisition advice is separate from the Kaffeine number and capacity alerts.
+// A small dot expresses acquisition advice without recoloring programme slots.
 .tv-guide-acquisition-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.75rem;
   margin-bottom: 0.35rem;
+  color: $gray-700;
   font-size: 0.75rem;
 }
 
-.tv-guide-acquisition-legend span {
-  padding: 0.1rem 0.35rem;
-  border: 1px solid;
-  border-radius: 0.25rem;
+[data-tv-guide-acquisition-tone="recommended"] { --tv-acquisition-color: #287d45; }
+[data-tv-guide-acquisition-tone="unnecessary"] { --tv-acquisition-color: #b5650d; }
+[data-tv-guide-acquisition-tone="review"] { --tv-acquisition-color: #64748b; }
+
+.tv-guide-acquisition-dot,
+.tv-guide-acquisition-legend span::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--tv-acquisition-color);
+  box-shadow: 0 0 0 1px rgba($white, 0.9);
 }
 
-$tv-acquisition-tones: (
-  recommended: (#e4f3e8, #287d45, #183b24),
-  unnecessary: (#fff0db, #a85d0e, #59300a),
-  review: (#edf0f4, #64748b, #334155)
-);
+.tv-guide-acquisition-dot {
+  position: absolute;
+  left: 0.25rem;
+  bottom: 0.25rem;
+  z-index: 3;
+  pointer-events: none;
+}
 
-@each $tone, $colors in $tv-acquisition-tones {
-  .tv-guide-programme:not(.tv-guide-programme--past)[data-tv-guide-acquisition-tone="#{$tone}"],
-  .tv-guide-acquisition-legend [data-tv-guide-acquisition-tone="#{$tone}"] {
-    background: nth($colors, 1);
-    border-color: nth($colors, 2);
-    color: nth($colors, 3);
-  }
+.tv-guide-acquisition-legend span::before {
+  content: "";
+  display: inline-block;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
 
-  .tv-guide-programme[data-tv-guide-acquisition-tone="#{$tone}"] {
-    box-shadow: inset 0.25rem 0 0 nth($colors, 2);
-  }
-
-  [data-tv-guide-acquisition-tone="#{$tone}"] .tv-guide-previous-recording {
-    background: nth($colors, 1);
-    color: nth($colors, 3);
-    border: 1px solid nth($colors, 2);
-  }
+.tv-guide-programme--single-line {
+  padding-left: 1rem;
 }

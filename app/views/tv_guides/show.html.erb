@@ -323,22 +323,8 @@
                       <%= tv_programme_label(programme) %>
                     </strong>
 
-                    <% if acquired %>
-                      <span class="tv-guide-previous-recording" data-tv-guide-acquired-episode
-                            data-tv-guide-acquisition-kind="<%= acquired.kind %>">
-                        <%= acquired.label %>
-                      </span>
-                    <% elsif previous_intent %>
-                      <span class="tv-guide-previous-recording" data-tv-guide-previous-recording>
-                        Déjà enregistré (vérifié)
-                      </span>
-                    <% end %>
-
-                    <% if scheduled_duplicate %>
-                      <span class="tv-guide-previous-recording" data-tv-guide-scheduled-duplicate>
-                        Déjà programmé
-                      </span>
-                    <% end %>
+                    <span class="tv-guide-acquisition-dot" data-tv-guide-acquisition-dot
+                          role="img" aria-label="<%= tv_guide_acquisition_advice(acquisition_tone) %>"></span>
 
                     <% if recording_selected %>
                       <% recording_url =
@@ -451,6 +437,23 @@
 
                     <div data-tv-guide-secondary>
                       <div data-tv-guide-acquisition-advice><%= tv_guide_acquisition_advice(acquisition_tone) %></div>
+                    <% if acquired %>
+                      <span class="tv-guide-previous-recording" data-tv-guide-acquired-episode
+                            data-tv-guide-acquisition-kind="<%= acquired.kind %>">
+                        <%= acquired.label %>
+                      </span>
+                    <% elsif previous_intent %>
+                      <span class="tv-guide-previous-recording" data-tv-guide-previous-recording>
+                        Déjà enregistré (vérifié)
+                      </span>
+                    <% end %>
+
+                    <% if scheduled_duplicate %>
+                      <span class="tv-guide-previous-recording" data-tv-guide-scheduled-duplicate>
+                        Déjà programmé
+                      </span>
+                    <% end %>
+
                       <% unless recording_selected %>
                         <div data-tv-guide-capacity-detail="<%= programme.id %>" aria-live="polite">
                           Vérification de la capacité Kaffeine en cours…
