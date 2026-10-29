@@ -722,3 +722,43 @@
   color: #18783d;
   font-size: 0.75rem;
 }
+
+// Acquisition advice is separate from the Kaffeine number and capacity alerts.
+.tv-guide-acquisition-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.tv-guide-acquisition-legend span {
+  padding: 0.1rem 0.35rem;
+  border: 1px solid;
+  border-radius: 0.25rem;
+}
+
+$tv-acquisition-tones: (
+  recommended: (#e4f3e8, #287d45, #183b24),
+  unnecessary: (#fff0db, #a85d0e, #59300a),
+  review: (#edf0f4, #64748b, #334155)
+);
+
+@each $tone, $colors in $tv-acquisition-tones {
+  .tv-guide-programme:not(.tv-guide-programme--past)[data-tv-guide-acquisition-tone="#{$tone}"],
+  .tv-guide-acquisition-legend [data-tv-guide-acquisition-tone="#{$tone}"] {
+    background: nth($colors, 1);
+    border-color: nth($colors, 2);
+    color: nth($colors, 3);
+  }
+
+  .tv-guide-programme[data-tv-guide-acquisition-tone="#{$tone}"] {
+    box-shadow: inset 0.25rem 0 0 nth($colors, 2);
+  }
+
+  [data-tv-guide-acquisition-tone="#{$tone}"] .tv-guide-previous-recording {
+    background: nth($colors, 1);
+    color: nth($colors, 3);
+    border: 1px solid nth($colors, 2);
+  }
+}

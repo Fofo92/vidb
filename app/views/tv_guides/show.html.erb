@@ -108,6 +108,12 @@
     </div>
   <% end %>
 
+  <div class="tv-guide-acquisition-legend" aria-label="Couleurs de programmation">
+    <span data-tv-guide-acquisition-tone="recommended">Vert : nouvelle capture utile</span>
+    <span data-tv-guide-acquisition-tone="unnecessary">Orange : nouvelle capture non nécessaire</span>
+    <span data-tv-guide-acquisition-tone="review">Gris : acquisition à vérifier</span>
+  </div>
+
   <% if @last_guide_check_at && @last_guide_check_at < 36.hours.ago %>
     <p class="alert alert-warning" data-tv-guide-stale>
       Le guide n’a pas été actualisé depuis plus de 36 heures. Vérifiez l’actualisation quotidienne.
@@ -262,6 +268,11 @@
                   <% recording_intent = @selection_alerts.linked_intents_by_programme[programme.id] ||
                                         programme.recording_intent %>
                   <% recording_selected = recording_intent&.status_selected? %>
+                  <% previous_intent = @previous_recordings[programme.id] %>
+                  <% acquired = @acquired_episodes[programme.id] %>
+                  <% scheduled_duplicate = @scheduled_duplicates[programme.id] %>
+                  <% acquisition_tone = tv_guide_acquisition_tone(acquired: acquired, previous: previous_intent,
+                                                               scheduled: scheduled_duplicate, selected: recording_selected) %>
                   <% top_pixels =
                       @timeline_projection.position_for(item.start_minute) %>
                   <% height_pixels =
@@ -279,6 +290,7 @@
                       <%= "tv-guide-programme--recording-selected" if recording_selected %>
                     "
                     data-tv-guide-programme="<%= programme.id %>"
+                    data-tv-guide-acquisition-tone="<%= acquisition_tone %>"
                     data-tv-guide-ends-at="<%= programme.ends_at.iso8601 %>"
                     data-tv-guide-recording-status="<%= recording_selected ? "selected" : "unselected" %>"
                     tabindex="0"
@@ -311,8 +323,6 @@
                       <%= tv_programme_label(programme) %>
                     </strong>
 
-                    <% previous_intent = @previous_recordings[programme.id] %>
-                    <% acquired = @acquired_episodes[programme.id] %>
                     <% if acquired %>
                       <span class="tv-guide-previous-recording" data-tv-guide-acquired-episode
                             data-tv-guide-acquisition-kind="<%= acquired.kind %>">
@@ -324,7 +334,7 @@
                       </span>
                     <% end %>
 
-                    <% if (scheduled_duplicate = @scheduled_duplicates[programme.id]) %>
+                    <% if scheduled_duplicate %>
                       <span class="tv-guide-previous-recording" data-tv-guide-scheduled-duplicate>
                         Déjà programmé
                       </span>
@@ -440,6 +450,7 @@
                     ) %>
 
                     <div data-tv-guide-secondary>
+                      <div data-tv-guide-acquisition-advice><%= tv_guide_acquisition_advice(acquisition_tone) %></div>
                       <% unless recording_selected %>
                         <div data-tv-guide-capacity-detail="<%= programme.id %>" aria-live="polite">
                           Vérification de la capacité Kaffeine en cours…

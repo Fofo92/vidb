@@ -23,6 +23,8 @@ class TvGuidesRecordingIntentsTest <
 
     assert_response :success
     assert_scroll_restoration_hook
+    assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='recommended']"
+    assert_select '.tv-guide-acquisition-legend', text: /Vert.*Orange/m
 
     assert_select programme_selector("unselected") do
       assert_select(
@@ -152,6 +154,7 @@ class TvGuidesRecordingIntentsTest <
 
     assert_response :success
     assert_selected_programme(intent)
+    assert_select "#{programme_selector('selected')}[data-tv-guide-acquisition-tone='unnecessary']"
   end
 
   test "offers Kaffeine scheduling from the guide when the channel is linked" do
@@ -344,6 +347,7 @@ class TvGuidesRecordingIntentsTest <
     end
     assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='reencode']",
                   text: /Réencodage souhaité/
+    assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='recommended']"
     assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail] a[href='#{record_path(episode)}']"
     assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
     assert_equal 8, episode.reload.rank
@@ -362,6 +366,7 @@ class TvGuidesRecordingIntentsTest <
       get tv_guide_url, params: guide_params
       assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='available']",
                     text: /Déjà encodé avec video_encoder/
+      assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='unnecessary']"
       assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
     end
   end
@@ -394,6 +399,7 @@ class TvGuidesRecordingIntentsTest <
       end
       assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='quarantine']",
                     text: /Source en quarantaine/
+      assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='unnecessary']"
       assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail]", text: /ne garantit/
       assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
     end
