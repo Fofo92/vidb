@@ -162,6 +162,64 @@ class CompletedExportImportTest < ActiveSupport::TestCase
     end
   end
 
+  def move_completed_export
+    previous = @path
+    @path = File.join(@directory, 'Panique : nouvelle copie & titre.mkv')
+    File.rename(previous, @path)
+    @receipt = @receipt.deep_dup
+    @receipt.merge!('previous_output_path' => previous, 'output_path' => @path,
+                    'project_path' => @path.sub('.mkv', '.json'))
+    @receipt['probe']['format']['filename'] = @path
+    stat = File.stat(@path)
+    @observation = @observation.merge(path: @path)
+    @export = { receipt: @receipt, details: @receipt['probe'], seconds: 2400,
+                signature: [stat.size, stat.mtime, stat.ino] }
+    previous
+  end
+
+  test 'renaming a completed export updates its existing copy and repeated scans are idempotent' do
+    initial = VideoAssets::CompletedExportImport.new(@observation, @export).call
+    asset = VideoAsset.find(initial.fetch(:video_asset_id))
+    asset.update!(status: 'missing', technical_details: asset.technical_details.merge('manual_note' => 'Conserver'))
+    metadata_fields = %w[french_title original_title ancestry rank year abstract is_seen length_in_mn]
+    old_record = @record.reload.attributes.slice(*metadata_fields)
+    copy_fields = %w[medium_id language_version_id duration_minutes byte_size]
+    old_copy = asset.attributes.slice(*copy_fields)
+    previous = move_completed_export
+    assert_no_difference ['Record.count', 'VideoAsset.count'] do
+      result = VideoAssets::CompletedExportImport.new(@observation, @export).call
+      assert_equal 'relocated', result[:status]
+      assert_equal asset.id, result[:video_asset_id]
+      assert_equal 'already_imported', VideoAssets::CompletedExportImport.new(@observation, @export).call[:status]
+    end
+    assert_equal @path, asset.reload.last_known_path
+    assert_equal 'present', asset.status
+    assert_equal 'Conserver', asset.technical_details['manual_note']
+    assert_equal previous, asset.technical_details['relocation_history'].sole['from']
+    assert_equal old_copy, asset.attributes.slice(*copy_fields)
+    assert_equal old_record, @record.reload.attributes.slice(*metadata_fields)
+  end
+
+  test 'an old file still present is imported as a second real copy' do
+    initial = VideoAssets::CompletedExportImport.new(@observation, @export).call
+    previous = move_completed_export
+    File.write(previous, 'video')
+    assert_difference('VideoAsset.count', 1) do
+      assert_equal 'imported', VideoAssets::CompletedExportImport.new(@observation, @export).call[:status]
+    end
+    assert_equal previous, VideoAsset.find(initial.fetch(:video_asset_id)).last_known_path
+  end
+
+  test 'a changed renamed file cannot alter the old copy or create a duplicate' do
+    initial = VideoAssets::CompletedExportImport.new(@observation, @export).call
+    previous = move_completed_export
+    File.write(@path, 'replacement')
+    assert_no_difference('VideoAsset.count') do
+      assert_raises(ArgumentError) { VideoAssets::CompletedExportImport.new(@observation, @export).call }
+    end
+    assert_equal previous, VideoAsset.find(initial.fetch(:video_asset_id)).last_known_path
+  end
+
   test 'missing receipt never imports a matching video' do
     assert_no_difference 'VideoAsset.count' do
       assert_empty VideoAssets::CompletedExports.new.call(observations: [@observation])

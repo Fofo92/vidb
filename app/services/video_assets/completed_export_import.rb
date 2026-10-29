@@ -18,7 +18,7 @@ module VideoAssets
         existing = VideoAsset.find_by(last_known_path: @observation.fetch(:path))
         return existing_result(existing, record) if existing
 
-        attach!(record)
+        CompletedExportRelocation.new(record, @observation, @export).call || attach!(record)
       end
     end
 
