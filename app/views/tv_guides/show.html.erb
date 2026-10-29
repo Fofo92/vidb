@@ -109,7 +109,7 @@
   <% end %>
 
   <div class="tv-guide-acquisition-legend" aria-label="Couleurs de programmation">
-    <span data-tv-guide-acquisition-tone="recommended">Vert : nouvelle capture utile</span>
+    <span data-tv-guide-acquisition-tone="recommended">Vert : ancienne copie à remplacer</span>
     <span data-tv-guide-acquisition-tone="unnecessary">Orange : nouvelle capture non nécessaire</span>
     <span data-tv-guide-acquisition-tone="review">Gris : acquisition à vérifier</span>
   </div>
@@ -323,8 +323,10 @@
                       <%= tv_programme_label(programme) %>
                     </strong>
 
-                    <span class="tv-guide-acquisition-dot" data-tv-guide-acquisition-dot
-                          role="img" aria-label="<%= tv_guide_acquisition_advice(acquisition_tone) %>"></span>
+                    <% if acquisition_tone %>
+                      <span class="tv-guide-acquisition-dot" data-tv-guide-acquisition-dot
+                            role="img" aria-label="<%= tv_guide_acquisition_advice(acquisition_tone) %>"></span>
+                    <% end %>
 
                     <% if recording_selected %>
                       <% recording_url =
@@ -436,7 +438,9 @@
                     ) %>
 
                     <div data-tv-guide-secondary>
-                      <div data-tv-guide-acquisition-advice><%= tv_guide_acquisition_advice(acquisition_tone) %></div>
+                      <% if acquisition_tone %>
+                        <div data-tv-guide-acquisition-advice><%= tv_guide_acquisition_advice(acquisition_tone) %></div>
+                      <% end %>
                     <% if acquired %>
                       <span class="tv-guide-previous-recording" data-tv-guide-acquired-episode
                             data-tv-guide-acquisition-kind="<%= acquired.kind %>">

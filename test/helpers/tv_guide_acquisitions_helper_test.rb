@@ -8,9 +8,10 @@ class TvGuideAcquisitionsHelperTest < ActiveSupport::TestCase
     tv_guide_acquisition_tone(acquired: acquired, previous: previous, scheduled: scheduled, selected: selected)
   end
 
-  test 'green covers new acquisitions old copies and unavailable copies' do
-    assert_equal 'recommended', tone
-    %w[reencode history recorded].each { |kind| assert_equal 'recommended', tone(kind) }
+  test 'green is reserved for an available old copy explicitly eligible for replacement' do
+    assert_equal 'recommended', tone('reencode')
+    assert_nil tone
+    %w[history recorded].each { |kind| assert_equal 'review', tone(kind) }
   end
 
   test 'orange covers encoded copies and existing sources including quarantine' do

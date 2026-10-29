@@ -5,11 +5,13 @@ nouvelle capture. Les fonds, bordures et marques de sélection restent ceux du
 guide habituel. Une légende et un texte dans le panneau d’information accompagnent
 les couleurs ; les commandes de programmation restent inchangées.
 
-- Vert : acquisition sans preuve existante, ancienne copie à réencoder,
-  copie indisponible ou enregistrement de catalogue sans copie disponible.
+- Vert : ancienne copie disponible sans projet video_encoder associé, donc
+  explicitement éligible au remplacement. Un programme inconnu ne reçoit
+  aucune pastille : l’absence de copie ne suffit pas à déduire un souhait.
 - Orange : copie complète avec projet video_encoder, source présente ou en
   quarantaine, ancienne capture vérifiée, ou épisode déjà programmé.
-- Gris bleuté : projet illisible ou liaison à vérifier, sans programmation existante.
+- Gris bleuté : projet illisible, liaison à vérifier ou acquisition historique
+  sans copie disponible. Ce seul historique ne constitue pas un souhait de réacquisition.
 
 Une programmation déjà sélectionnée ou un doublon programmé est orange même
 si l’ancienne copie doit être remplacée : une autre capture est déjà prévue.

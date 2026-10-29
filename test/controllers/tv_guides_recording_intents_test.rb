@@ -23,10 +23,10 @@ class TvGuidesRecordingIntentsTest <
 
     assert_response :success
     assert_scroll_restoration_hook
-    assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='recommended']"
+    assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='recommended']", count: 0
     assert_select '.tv-guide-acquisition-legend', text: /Vert.*Orange/m
-    assert_select "#{programme_selector('unselected')} > [data-tv-guide-acquisition-dot]" \
-                  "[role='img'][aria-label='Nouvelle capture utile']", count: 1
+    assert_select "#{programme_selector('unselected')} > [data-tv-guide-acquisition-dot]", count: 0
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-advice]", count: 0
 
     assert_select programme_selector("unselected") do
       assert_select(

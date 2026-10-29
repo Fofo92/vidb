@@ -7,9 +7,9 @@ module TvGuideAcquisitionsHelper
 
   def tv_guide_acquisition_tone(acquired:, previous:, scheduled:, selected:)
     return 'unnecessary' if selected || scheduled
-    return previous ? 'unnecessary' : 'recommended' unless acquired
+    return previous ? 'unnecessary' : nil unless acquired
     return 'unnecessary' if %w[available capture quarantine].include?(acquired.kind)
-    return 'recommended' if %w[reencode history recorded].include?(acquired.kind)
+    return 'recommended' if acquired.kind == 'reencode'
 
     'review'
   end
