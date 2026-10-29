@@ -22,7 +22,10 @@ manuelles liées à une ancienne programmation Kaffeine.
   enregistrement est conservée même sans programmation Kaffeine restante.
   Retirer explicitement cette confirmation retire cette preuve.
 
-Une copie de la vidéothèque est prioritaire sur une source brute. Le guide
+Une copie complète avec projet video_encoder associé est prioritaire sur une
+source brute. Sinon, une source présente ou en quarantaine est prioritaire sur
+une ancienne copie à réencoder, une acquisition historique ou un projet à
+vérifier. La preuve du catalogue et le lien vers la fiche restent dans le détail. Le guide
 utilise l’état des copies connu de vidb, sans vérifier de nouveau les volumes
 ni lancer ffprobe. La synchronisation habituelle des copies reste nécessaire.
 Les parties sont évaluées avec VideoAssets::PartCoverage ; les doublons d’une

@@ -10,8 +10,16 @@ module Tv
       return {} if programmes.empty?
 
       library = @library.call(programmes)
-      captures = @captures.call(programmes.reject { |programme| library.key?(programme.id) })
-      captures.merge(library)
+      captures = @captures.call(programmes.reject { |programme| library[programme.id]&.kind == 'available' })
+      library.merge(captures) { |_, copy, source| source_with_copy(source, copy) }
+    end
+
+    private
+
+    def source_with_copy(source, copy)
+      EpisodeAcquisition.new(kind: source.kind, label: source.label,
+                             description: "#{source.description} #{copy.label} : #{copy.description}",
+                             record_id: copy.record_id, paths: source.paths)
     end
   end
 end
