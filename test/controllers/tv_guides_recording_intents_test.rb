@@ -1,4 +1,6 @@
 require "test_helper"
+require "minitest/mock"
+require "tmpdir"
 
 class TvGuidesRecordingIntentsTest <
     ActionDispatch::IntegrationTest
@@ -315,6 +317,80 @@ class TvGuidesRecordingIntentsTest <
     assert_select "[data-tv-guide-programme='#{current.id}'][data-tv-guide-recording-status='unselected']"
     assert_equal "selected", intent.reload.status
     assert_equal 123, intent.kaffeine_schedule_link.kaffeine_key
+  end
+
+  test "retains a verified recording after its Kaffeine link is no longer needed" do
+    @programme.update!(episode_numbers: [{ 'system' => 'xmltv_ns', 'value' => '2.7.' }])
+    previous = @programme.guide_channel.broadcast_observations.create!(
+      fingerprint: 'f' * 64, starts_at: Time.utc(2026, 9, 25, 18), ends_at: Time.utc(2026, 9, 25, 19),
+      titles: [{ 'value' => 'Film du soir - Saison 3', 'language' => 'fr' }],
+      episode_numbers: @programme.episode_numbers
+    )
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: previous).call
+    intent.update!(status: 'cancelled', recording_verified_at: Time.utc(2026, 9, 26, 12))
+    get tv_guide_url, params: guide_params
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording]", text: /Déjà enregistré/
+    intent.update!(recording_verified_at: nil)
+    get tv_guide_url, params: guide_params
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-previous-recording]", count: 0
+  end
+
+  test "finds an encoded episode without a confirmed capture or a remaining source" do
+    episode = acquired_catalogue_episode
+    episode.video_assets.create!(status: 'present', last_known_path: '/videos/acquired-episode.mkv', byte_size: 100,
+                                  technical_details: { 'video_encoder_export' => { 'source_path' => '/absent/source.m2t' } })
+    assert_no_difference(['Record.count', 'VideoAsset.count', 'Tv::RecordingIntent.count']) do
+      get tv_guide_url, params: guide_params
+    end
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='available']",
+                  text: /Déjà acquis.*disponible/
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail] a[href='#{record_path(episode)}']"
+    assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
+    assert_equal 8, episode.reload.rank
+    assert_equal 3, episode.parent.rank
+  end
+
+  test "keeps a deleted copy as acquisition history without claiming it is available" do
+    episode = acquired_catalogue_episode
+    episode.video_assets.create!(status: 'deleted', last_known_path: '/videos/old-episode.m4v', byte_size: 100)
+    get tv_guide_url, params: guide_params
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='history']",
+                  text: /indisponible/
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='available']", count: 0
+  end
+
+  test "an ancestor recording flag cannot mark an unacquired episode" do
+    episode = acquired_catalogue_episode
+    episode.parent.parent.update!(is_recorded: true)
+    get tv_guide_url, params: guide_params
+    assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode]", count: 0
+  end
+
+  test "shows a quarantined source separately from a completed encoded episode" do
+    @programme.update!(episode_numbers: [{ 'system' => 'xmltv_ns', 'value' => '2.7.' }],
+                       subtitles: [{ 'value' => 'Épisode acquis', 'language' => 'fr' }])
+    Dir.mktmpdir do |directory|
+      File.write(File.join(directory, 'Film du soir - S03 E08 - Épisode acquis.m2t'), 'capture')
+      index = Tv::CaptureEpisodeIndex.new(capture_roots: [], quarantine_roots: [directory],
+                                         cache: ActiveSupport::Cache::MemoryStore.new)
+      Tv::CaptureEpisodeIndex.stub(:new, -> { index }) do
+        get tv_guide_url, params: guide_params
+      end
+      assert_select "#{programme_selector('unselected')} [data-tv-guide-acquisition-kind='quarantine']",
+                    text: /Source en quarantaine/
+      assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail]", text: /ne garantit/
+      assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
+    end
+  end
+
+  def acquired_catalogue_episode
+    @programme.update!(episode_numbers: [{ 'system' => 'xmltv_ns', 'value' => '2.7.' }],
+                       subtitles: [{ 'value' => 'Épisode acquis', 'language' => 'fr' }])
+    language = LanguageVersion.find_or_create_by!(short_name: 'IND') { |item| item.long_name = 'Indéterminée' }
+    root = Record.create!(french_title: 'Film du soir', record_kind: 'series', language_version: language)
+    season = root.children.create!(french_title: 'Saison 03', record_kind: 'season', rank: 3, language_version: language)
+    season.children.create!(french_title: 'Épisode acquis', record_kind: 'episode', rank: 8,
+                            language_version: language, is_recorded: false, is_available: false)
   end
 
   private

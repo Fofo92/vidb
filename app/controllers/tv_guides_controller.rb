@@ -33,6 +33,7 @@ class TvGuidesController < ApplicationController
     @previous_recordings = Tv::PreviouslyRecordedEpisodes.new.call(
       @programmes_by_channel.values.flatten
     )
+    @acquired_episodes = Tv::AcquiredEpisodes.new.call(@programmes_by_channel.values.flatten)
     @scheduled_duplicates = Tv::ScheduledEpisodeDuplicates.new.call(
       @programmes_by_channel.values.flatten
     )

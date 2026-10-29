@@ -311,7 +311,14 @@
                       <%= tv_programme_label(programme) %>
                     </strong>
 
-                    <% if (previous_intent = @previous_recordings[programme.id]) %>
+                    <% previous_intent = @previous_recordings[programme.id] %>
+                    <% acquired = @acquired_episodes[programme.id] %>
+                    <% if acquired %>
+                      <span class="tv-guide-previous-recording" data-tv-guide-acquired-episode
+                            data-tv-guide-acquisition-kind="<%= acquired.kind %>">
+                        <%= acquired.label %>
+                      </span>
+                    <% elsif previous_intent %>
                       <span class="tv-guide-previous-recording" data-tv-guide-previous-recording>
                         Déjà enregistré (vérifié)
                       </span>
@@ -447,7 +454,15 @@
                           (Kaffeine n° <%= scheduled_duplicate.kaffeine_schedule_link.kaffeine_key %>).
                         </div>
                       <% end %>
-                      <% if previous_intent %>
+                      <% if acquired %>
+                        <div data-tv-guide-acquired-episode-detail>
+                          <%= acquired.description %>
+                          <% if acquired.record_id %>
+                            <%= link_to 'Consulter la fiche vidb', record_path(acquired.record_id) %>.
+                          <% end %>
+                          Tu peux programmer cette rediffusion si tu le souhaites.
+                        </div>
+                      <% elsif previous_intent %>
                         <div data-tv-guide-previous-recording-detail>
                           Fichier d’un précédent enregistrement vérifié dans vidb
                           (<%= previous_intent.programme_starts_at
