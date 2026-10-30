@@ -6,15 +6,19 @@ module Tv
     end
 
     def call(programmes)
-      programmes = programmes.select { |programme| AcquiredEpisodeIdentity.key(programme) }
+      programmes = programmes.select { |programme| ProgrammeDisplayName.title(programme).present? }
       return {} if programmes.empty?
 
       library = @library.call(programmes)
-      captures = @captures.call(programmes.reject { |programme| library[programme.id]&.kind == 'available' })
+      captures = @captures.call(capture_programmes(programmes, library))
       library.merge(captures) { |_, copy, source| source_with_copy(source, copy) }
     end
 
     private
+
+    def capture_programmes(programmes, library)
+      programmes.reject { |programme| library[programme.id]&.kind == 'available' }
+    end
 
     def source_with_copy(source, copy)
       EpisodeAcquisition.new(kind: source.kind, label: source.label,

@@ -9,14 +9,22 @@ module Tv
 
       by_episode = @index.call.group_by { |entry| entry.fetch(:key) }
       programmes.to_h do |programme|
-        rows = by_episode.fetch(AcquiredEpisodeIdentity.key(programme), []).select do |entry|
-          AcquiredEpisodeIdentity.concordant?(programme, [entry.fetch(:title)])
+        rows = by_episode.fetch(programme_key(programme), []).select do |entry|
+          !entry[:key].is_a?(Array) || AcquiredEpisodeIdentity.concordant?(programme, [entry.fetch(:title)])
         end
         [programme.id, evidence(rows)]
       end.compact
     end
 
     private
+
+    def programme_key(programme)
+      numbered = AcquiredEpisodeIdentity.key(programme)
+      return numbered if numbered
+      return unless programme.episode_numbers.empty?
+
+      AcquiredEpisodeIdentity.normalize(ProgrammeDisplayName.title(programme))
+    end
 
     def evidence(rows)
       return if rows.empty?

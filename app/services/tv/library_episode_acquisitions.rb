@@ -1,6 +1,6 @@
 module Tv
   class LibraryEpisodeAcquisitions
-    def initialize(candidates: LibraryEpisodeCandidates.new, projects: VideoEncoderProjectEvidence.new)
+    def initialize(candidates: LibraryAcquisitionCandidates.new, projects: VideoEncoderProjectEvidence.new)
       @candidates = candidates
       @projects = projects
     end

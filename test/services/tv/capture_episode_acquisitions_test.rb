@@ -59,4 +59,29 @@ class Tv::CaptureEpisodeAcquisitionsTest < ActiveSupport::TestCase
       assert_equal 'capture', Tv::CaptureEpisodeAcquisitions.new(index: index).call([programme]).fetch(7).kind
     end
   end
+  test 'recognizes a non numbered documentary source regardless of its descriptive subtitle' do
+    Dir.mktmpdir do |root|
+      name = 'États-Unis - La fuite des cerveaux vers l’Europe'
+      File.write(File.join(root, "#{name}.m2t"), 'capture')
+      item = Programme.new(9, [{ 'value' => name, 'language' => 'fr' }], [], [{ 'value' => 'Documentaire' }])
+      index = Tv::CaptureEpisodeIndex.new(capture_roots: [], quarantine_roots: [root],
+                                         cache: ActiveSupport::Cache::MemoryStore.new)
+      result = Tv::CaptureEpisodeAcquisitions.new(index: index).call([item]).fetch(9)
+      assert_equal 'quarantine', result.kind
+      assert_equal [File.join(root, "#{name}.m2t")], result.paths
+      item.titles = [{ 'value' => 'Un autre documentaire' }]
+      assert_empty Tv::CaptureEpisodeAcquisitions.new(index: index).call([item])
+    end
+  end
+
+  test 'a project alone is not a completed output or a captured source' do
+    Dir.mktmpdir do |root|
+      File.write(File.join(root, 'Documentaire.json'), '{}')
+      item = Programme.new(9, [{ 'value' => 'Documentaire' }], [], [])
+      index = Tv::CaptureEpisodeIndex.new(capture_roots: [root], quarantine_roots: [],
+                                         cache: ActiveSupport::Cache::MemoryStore.new)
+      assert_empty Tv::CaptureEpisodeAcquisitions.new(index: index).call([item])
+    end
+  end
+
 end

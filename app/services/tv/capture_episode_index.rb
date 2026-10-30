@@ -11,7 +11,7 @@ module Tv
     end
 
     def call
-      key = ['tv-capture-episode-index-v1', @capture_roots, @quarantine_roots]
+      key = ['tv-capture-work-index-v2', @capture_roots, @quarantine_roots]
       @cache.fetch(key, expires_in: 1.minute) do
         scan(@capture_roots, 'capture') + scan(@quarantine_roots, 'quarantine')
       end
@@ -34,17 +34,32 @@ module Tv
     def entry(path, kind)
       return unless EXTENSIONS.include?(File.extname(path).downcase)
 
-      match = NUMBER.match(File.basename(path, File.extname(path)))
-      return unless match && match[3].to_i.positive?
-      return if match[4].to_s.match?(/\b(?:S\d+\s*)?E\d+\b/i)
+      identity = file_identity(File.basename(path, File.extname(path)))
+      return unless identity
 
       stat = File.lstat(path)
       return unless stat.file? && stat.size.positive?
 
-      { key: [AcquiredEpisodeIdentity.normalize(match[1]), match[2].to_i, match[3].to_i],
-        title: AcquiredEpisodeIdentity.normalize(match[4]), path: path, kind: kind }
+      identity.merge(path: path, kind: kind)
     rescue SystemCallError
       nil
+    end
+
+    def file_identity(stem)
+      match = NUMBER.match(stem)
+      return episode_identity(match) if match
+      return if stem.match?(/\bS(?:aison)?\s*\d|\b[EÉé]pisode\s*\d/i)
+
+      title = AcquiredEpisodeIdentity.normalize(stem)
+      { key: title, title: title } if title.present?
+    end
+
+    def episode_identity(match)
+      return unless match[3].to_i.positive?
+      return if match[4].to_s.match?(/\b(?:S\d+\s*)?E\d+\b/i)
+
+      { key: [AcquiredEpisodeIdentity.normalize(match[1]), match[2].to_i, match[3].to_i],
+        title: AcquiredEpisodeIdentity.normalize(match[4]) }
     end
   end
 end

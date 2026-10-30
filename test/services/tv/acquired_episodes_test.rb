@@ -61,4 +61,17 @@ class Tv::AcquiredEpisodesTest < ActiveSupport::TestCase
     result, = detect({ 7 => old_copy }, {})
     assert_equal old_copy, result.fetch(7)
   end
+  test 'a complete unnumbered work with a project does not require another source lookup' do
+    film = Programme.new(9, [{ 'value' => "Harry Potter et le Prisonnier d’Azkaban" }], [], [])
+    library = Object.new
+    copy = acquisition('available', record_id: 42)
+    observed = nil
+    library.define_singleton_method(:call) { |items| observed = items.map(&:id); { 9 => copy } }
+    captures = Object.new
+    captures.define_singleton_method(:call) { |items| raise 'Unexpected capture scan' unless items.empty?; {} }
+    result = Tv::AcquiredEpisodes.new(library: library, captures: captures).call([film])
+    assert_equal [9], observed
+    assert_equal copy, result.fetch(9)
+  end
+
 end

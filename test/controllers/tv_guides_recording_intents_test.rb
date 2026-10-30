@@ -414,6 +414,59 @@ class TvGuidesRecordingIntentsTest <
     end
   end
 
+
+  test "Harry Potter with a project inside a collection gets an orange acquisition dot" do
+    title = "Harry Potter et le Prisonnier d'Azkaban"
+    @programme.update!(titles: [{ 'value' => title, 'language' => 'fr' }], episode_numbers: [], subtitles: [])
+    language = LanguageVersion.find_or_create_by!(short_name: 'IND') { |item| item.long_name = 'Indéterminée' }
+    collection = Record.create!(french_title: 'Harry Potter', record_kind: 'collection', language_version: language)
+    film = collection.children.create!(french_title: title, original_title: 'Harry Potter and the Prisoner of Azkaban',
+                                       record_kind: 'standalone_video', language_version: language)
+    without_local_capture_sources do
+      Dir.mktmpdir do |directory|
+        stem = File.join(directory, "03 - #{title} (Harry Potter and the Prisoner of Azkaban) ")
+        project = { 'format' => 'video_encoder.trim_project', 'version' => 2,
+                    'sources' => [{ 'id' => 'source', 'path' => '/absent/source.m2t' }],
+                    'timeline' => [{ 'type' => 'segment', 'source_id' => 'source', 'start_frame' => 0, 'end_frame' => 100 }] }
+        File.write("#{stem}.json", JSON.generate(project))
+        film.video_assets.create!(status: 'present', last_known_path: "#{stem}.mkv", byte_size: 100)
+        assert_no_difference(['Record.count', 'VideoAsset.count', 'Tv::RecordingIntent.count']) do
+          get tv_guide_url, params: guide_params
+        end
+        assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='unnecessary']"
+        assert_select "#{programme_selector('unselected')} > [data-tv-guide-acquisition-dot]", count: 1
+        assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail] a[href='#{record_path(film)}']"
+        File.delete("#{stem}.json")
+        get tv_guide_url, params: guide_params
+        assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='recommended']"
+      end
+    end
+  end
+
+
+  test "an individual documentary with an undetermined kind and a project is acquired" do
+    title = 'Documentaire français inédit'
+    @programme.update!(titles: [{ 'value' => title, 'language' => 'fr' }], episode_numbers: [], subtitles: [])
+    language = LanguageVersion.find_or_create_by!(short_name: 'IND') { |item| item.long_name = 'Indéterminée' }
+    work = Record.create!(french_title: title, record_kind: 'undetermined', language_version: language)
+    without_local_capture_sources do
+      Dir.mktmpdir do |directory|
+        stem = File.join(directory, title)
+        project = { 'format' => 'video_encoder.trim_project', 'version' => 2,
+                    'sources' => [{ 'id' => 'source', 'path' => '/absent/source.m2t' }],
+                    'timeline' => [{ 'type' => 'segment', 'source_id' => 'source', 'start_frame' => 0, 'end_frame' => 100 }] }
+        File.write("#{stem}.json", JSON.generate(project))
+        work.video_assets.create!(status: 'present', last_known_path: "#{stem}.mkv", byte_size: 100)
+        get tv_guide_url, params: guide_params
+        assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='unnecessary']"
+        assert_select "#{programme_selector('unselected')} [data-tv-guide-acquired-episode-detail] a[href='#{record_path(work)}']"
+        File.delete("#{stem}.json")
+        get tv_guide_url, params: guide_params
+        assert_select "#{programme_selector('unselected')}[data-tv-guide-acquisition-tone='recommended']"
+      end
+    end
+  end
+
   def acquired_catalogue_episode
     @programme.update!(episode_numbers: [{ 'system' => 'xmltv_ns', 'value' => '2.7.' }],
                        subtitles: [{ 'value' => 'Épisode acquis', 'language' => 'fr' }])
@@ -425,6 +478,12 @@ class TvGuidesRecordingIntentsTest <
   end
 
   private
+
+  def without_local_capture_sources
+    index = Tv::CaptureEpisodeIndex.new(capture_roots: [], quarantine_roots: [],
+                                       cache: ActiveSupport::Cache::MemoryStore.new)
+    Tv::CaptureEpisodeIndex.stub(:new, -> { index }) { yield }
+  end
 
   def link_for(intent, name: "Film du soir")
     schedule = Tv::KaffeineSchedule.new(

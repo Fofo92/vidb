@@ -1,4 +1,4 @@
-# Épisodes déjà acquis dans le guide
+# Œuvres déjà acquises dans le guide
 
 La consultation du guide ne dépend plus exclusivement de confirmations
 manuelles liées à une ancienne programmation Kaffeine.
@@ -43,8 +43,8 @@ Un sous-titre d’épisode fourni par le guide doit correspondre au titre franç
 ou original de la fiche ou au titre explicite du fichier source.
 
 La première version utilise la numérotation locale ; elle n’infère pas une
-équivalence entre des numérotations différentes. Un fichier sans numérotation
-explicite, vide, symbolique ou portant plusieurs numéros n’est pas confirmé.
+équivalence entre des numérotations différentes. Un fichier vide, symbolique ou portant plusieurs numéros contradictoires
+n’est pas confirmé. Un titre seul est accepté pour les œuvres non numérotées.
 Les enregistrements vérifiés conservent leur mécanisme historique distinct.
 
 ## Sources et coût de consultation
@@ -67,8 +67,7 @@ Un répertoire absent ou inaccessible ne constitue pas une preuve d’acquisitio
 L’inventaire léger est mis en cache une minute : un déplacement de source peut
 donc apparaître avec ce délai. Aucun fichier vidéo n’est ouvert ni analysé.
 Les requêtes de catalogue et les fichiers sont regroupés par page, sans
-recherche par fichier pour chaque programme. Les programmes sans numéro
-d’épisode ne déclenchent pas ces recherches.
+recherche par fichier pour chaque programme. Les programmes sans titre exploitable ne déclenchent pas ces recherches.
 
 ## Effets
 
@@ -104,3 +103,26 @@ il ne certifie pas que les sources restent accessibles pour une nouvelle exporta
 Les anciennes copies restent recensées comme acquisitions. L’indication de
 réencodage les rend visibles pour programmer une nouvelle capture ; elle ne
 modifie ni la file d’encodage ni les fichiers et ne bloque aucune reprogrammation.
+
+## Films et documentaires autonomes
+
+Les programmes sans numérotation d’épisode sont rapprochés de toutes les
+fiches d’œuvres individuelles, même de nature indéterminée, y compris
+lorsqu’elles appartiennent à une collection comme Harry Potter. Les conteneurs
+qualifiés et les fiches ayant des enfants sont exclus. Le titre français ou original doit
+correspondre exactement après normalisation. Les homonymes et une collision
+entre titre de film et titre de série empêchent une association automatique.
+Une numérotation présente mais non reconnue n’est pas réinterprétée en film.
+
+Les copies confirmées de ces fiches suivent la même règle que les épisodes :
+projet associé à une copie complète présente → orange ; copie complète sans
+projet → verte ; historique ou projet illisible → à vérifier. Le fait qu’un
+programme soit sélectionné dans Kaffeine n’intervient pas dans cette décision.
+
+Cette extension utilise les copies rapprochées dans vidb. Elle ne lance pas
+un scan récursif de /videos pendant le chargement du guide. Un fichier encore
+non rapproché de sa fiche ne déclenche donc pas de pastille à lui seul.
+La recherche des captures brutes accepte aussi les œuvres non numérotées,
+par correspondance exacte du titre normalisé avec le nom du fichier. Un
+sous-titre descriptif du guide n’est pas utilisé comme titre d’épisode dans
+ce cas. Une numérotation mal formée ne devient pas un titre d’œuvre autonome.
