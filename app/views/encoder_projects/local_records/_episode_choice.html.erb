@@ -1,0 +1,19 @@
+<p>Cette fiche désigne une série ou une saison. Choisis l’épisode précis de ce montage :</p>
+<%= form_with url: encoder_projects_episode_path, method: :get do |form| %>
+  <%= form.hidden_field :request_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: choice.fetch(:project)) %>
+  <%= form.hidden_field :q, value: choice.fetch(:series).french_title %>
+  <%= form.hidden_field :series_id, value: choice.fetch(:series).id %>
+  <%= form.hidden_field :enrich, value: '0' %>
+  <div class="d-flex flex-wrap align-items-end gap-2">
+    <div>
+      <%= form.label :season_number, 'Saison', class: 'form-label' %>
+      <%= form.number_field :season_number, value: choice.fetch(:season), min: 0, max: 99, required: true, class: 'form-control' %>
+    </div>
+    <div>
+      <%= form.label :episode_number, 'Épisode', class: 'form-label' %>
+      <%= form.number_field :episode_number, value: choice.fetch(:episode), min: 1, max: 999, required: true, class: 'form-control' %>
+    </div>
+    <%= form.submit 'Choisir un épisode de cette série', class: 'btn btn-primary' %>
+  </div>
+<% end %>
+<p class="small mt-2">Vérifie les numéros proposés. La fiche locale de l’épisode sera reprise si elle existe ; sinon, sa préparation sera proposée. Aucune association n’est créée avant confirmation.</p>

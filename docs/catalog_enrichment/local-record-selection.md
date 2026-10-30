@@ -27,3 +27,18 @@ confirmations, pour que video_encoder reprenne la préparation du montage.
 Après une création ou une correction dans un autre onglet, « Rechercher /
 Actualiser » recharge les données locales avec le même contexte. La durée de
 validité du contexte signé reste celle déjà définie par CatalogueScope.
+
+
+## Séries et saisons
+
+Une fiche de série ou de saison propose « Choisir un épisode de cette série ».
+La saison et l'épisode sont préremplis depuis le contexte explicite du montage
+ou son nom de source ; la saison sélectionnée prend priorité, y compris la
+saison 0. À défaut de numérotation, les champs proposent 1/1 et restent à vérifier.
+Le contexte signé conserve le même projet, ses sources et sa destination.
+
+Ce formulaire ouvre le parcours existant de préparation d'épisode, avec la
+série choisie explicitement et sans recherche externe automatique (`enrich=0`).
+Il reprend la fiche de l'épisode si elle existe ; sinon il propose sa préparation.
+La consultation ne crée ni fiche ni association. La validation finale reste celle
+du parcours épisode, jamais une association directe au conteneur série/saison.

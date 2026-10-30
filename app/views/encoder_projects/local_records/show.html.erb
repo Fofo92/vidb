@@ -24,6 +24,8 @@
           <%= form.hidden_field :record_id, value: record.id %>
           <%= form.submit 'Associer cette fiche et poursuivre le montage', class: 'btn btn-primary' %>
         <% end %>
+      <% elsif (choice = EncoderProjects::LocalEpisodeChoice.call(record, @scope.fetch('project'))) %>
+        <%= render 'encoder_projects/local_records/episode_choice', choice: choice %>
       <% else %>
         <p>Nature ou placement à qualifier avant association. Corrige la fiche puis actualise la recherche.</p>
       <% end %>
@@ -34,3 +36,4 @@
   <% end %>
   <%= link_to 'Revenir aux sources externes', encoder_projects_catalogue_path(request_token: params[:request_token]), class: 'btn btn-outline-secondary' %>
 </div>
+

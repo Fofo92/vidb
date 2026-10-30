@@ -84,4 +84,56 @@ class EncoderProjectLocalRecordsControllerTest < ActionDispatch::IntegrationTest
     choose(second)
     assert_equal first.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
   end
+
+  test 'a local series offers an episode choice with the same signed montage identity' do
+    series = create_record(kind: 'series')
+    @project['source_paths'] = ['/commun/to_be_cut/Serie - S06 E15 - Episode.m2t']
+    @token = EncoderProjects::CatalogueScope.issue(user: @user, project: @project)
+    assert_no_difference ['Record.count', 'VideoAsset.count', 'ReconciliationCase.count'] do
+      search(series.id.to_s)
+    end
+    assert_select "form[action='#{encoder_projects_episode_path}'][method='get']" do
+      assert_select "input[name='series_id'][value='#{series.id}']"
+      assert_select "input[name='season_number'][value='6']"
+      assert_select "input[name='episode_number'][value='15']"
+      assert_select "input[name='enrich'][value='0']"
+      assert_select 'input[name="request_token"]' do |inputs|
+        project = EncoderProjects::CatalogueScope.read(inputs.sole['value'], user: @user).fetch('project')
+        assert_equal @project, project.except('episode_target')
+        assert_equal({ 'season' => 6, 'episode' => 15 }, project['episode_target'])
+      end
+    end
+    assert_select "form[action='#{encoder_projects_local_records_path}'][method='post']", count: 0
+  end
+
+  test 'a local season opens the episode choice for its parent series including season zero' do
+    series = create_record(kind: 'series')
+    season = series.children.create!(french_title: 'Saison 00', record_kind: 'season', rank: 0,
+                                     language_version: @language)
+    search(season.id.to_s)
+    assert_select "form[action='#{encoder_projects_episode_path}']" do
+      assert_select "input[name='series_id'][value='#{series.id}']"
+      assert_select "input[name='season_number'][value='0']"
+      assert_select "input[name='episode_number'][value='1']"
+    end
+  end
+
+  test 'opening the selected episode reuses local defaults without creating anything' do
+    series = create_record(kind: 'series')
+    season = series.children.create!(french_title: 'Saison 02', record_kind: 'season', rank: 2,
+                                     language_version: @language)
+    episode = season.children.create!(french_title: 'Épisode déjà créé', record_kind: 'episode', rank: 3,
+                                      language_version: @language)
+    project = @project.merge('episode_target' => { 'season' => 2, 'episode' => 3 })
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
+    assert_no_difference ['Record.count', 'VideoAsset.count', 'ReconciliationCase.count'] do
+      get encoder_projects_episode_path, params: { request_token: token, series_id: series.id.to_s,
+                                                  q: series.french_title, season_number: '2', episode_number: '3', enrich: '0' }
+    end
+    assert_response :success
+    assert_includes response.body, episode.french_title
+    assert_nil EncoderProjects::Binding.current(@project['project_id'])
+  end
+
 end
+
