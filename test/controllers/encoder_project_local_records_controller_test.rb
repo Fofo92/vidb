@@ -135,5 +135,66 @@ class EncoderProjectLocalRecordsControllerTest < ActionDispatch::IntegrationTest
     assert_nil EncoderProjects::Binding.current(@project['project_id'])
   end
 
+
+  def revision_token
+    result = EncoderProjects::Identification.new(user: @user, url: 'https://www.example.com').call(@project)
+    uri = URI(result.fetch(:selection_url))
+    URI.decode_www_form(uri.query).to_h.fetch('request_token')
+  end
+
+  test 'confirmed revision replaces the binding while preserving its applied history and old signed receipts' do
+    first = create_record
+    choose(first)
+    previous = EncoderProjects::Binding.current(@project['project_id'])
+    token = revision_token
+    second = create_record
+    assert_no_difference ['Record.count', 'VideoAsset.count'] do
+      post encoder_projects_local_records_path, params: {
+        request_token: token, record_id: second.id, confirm_replacement: '1'
+      }
+    end
+    assert_redirected_to record_path(second, encoder_prepared: 1)
+    assert_equal second.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
+    assert_equal first.id, EncoderProjects::Binding.verify(previous, @project['project_id'])['record_id']
+    assert ReconciliationCase.where(status: 'applied', active: false)
+                             .where("payload ->> 'project_id' = ?", @project['project_id']).exists?
+  end
+
+  test 'revision is not applied without explicit confirmation' do
+    first = create_record
+    choose(first)
+    token = revision_token
+    second = create_record
+    post encoder_projects_local_records_path, params: { request_token: token, record_id: second.id }
+    assert_equal first.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
+  end
+
+  test 'a failed revision rolls back the previous association' do
+    first = create_record
+    choose(first)
+    token = revision_token
+    invalid = create_record(kind: 'undetermined')
+    post encoder_projects_local_records_path, params: {
+      request_token: token, record_id: invalid.id, confirm_replacement: '1'
+    }
+    assert_equal first.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
+  end
+
+  test 'a stale revision cannot overwrite a newer choice' do
+    first = create_record
+    choose(first)
+    stale = revision_token
+    second = create_record
+    post encoder_projects_local_records_path, params: {
+      request_token: stale, record_id: second.id, confirm_replacement: '1'
+    }
+    third = create_record
+    post encoder_projects_local_records_path, params: {
+      request_token: stale, record_id: third.id, confirm_replacement: '1'
+    }
+    assert_equal second.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
+  end
+
 end
+
 

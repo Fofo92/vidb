@@ -11,8 +11,10 @@ module EncoderProjects
       snapshot = complete_snapshot(data, scope['candidate'])
       Record.transaction do
         lock_catalogue!
-        candidate, root_id = creation_context(scope['candidate'], series_id)
-        write(scope, parameters, candidate, root_id, snapshot)
+        AssociationRevision.call(scope.fetch('project'), confirmed: parameters['confirm_replacement'] == '1') do
+          candidate, root_id = creation_context(scope['candidate'], series_id)
+          write(scope, parameters, candidate, root_id, snapshot)
+        end
       end
     end
 

@@ -11,15 +11,17 @@ module EncoderProjects
       @url = url
     end
 
-    def call(scope:, gender_ids:, country_ids:)
+    def call(scope:, gender_ids:, country_ids:, confirmed: false)
       candidate = scope.fetch('candidate')
       validate!(candidate, gender_ids, country_ids)
       Record.transaction do
         lock_projects!
-        previous = Binding.current(scope.fetch('project').fetch('project_id'))
-        next complete_record(Record.find(previous.fetch('record_id')), candidate) if previous
+        AssociationRevision.call(scope.fetch('project'), confirmed: confirmed) do
+          previous = Binding.current(scope.fetch('project').fetch('project_id'))
+          next complete_record(Record.find(previous.fetch('record_id')), candidate) if previous
 
-        create_and_bind(scope, candidate, gender_ids, country_ids)
+          create_and_bind(scope, candidate, gender_ids, country_ids)
+        end
       end
     end
 

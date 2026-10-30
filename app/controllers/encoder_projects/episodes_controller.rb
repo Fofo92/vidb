@@ -70,7 +70,7 @@ module EncoderProjects
 
     def enrichment_parameters
       params.permit(:title, :original_title, :year, :source, :abstract, :language_version,
-                    :complete_catalogue, :confirm_tmdb_episode_mapping,
+                    :complete_catalogue, :confirm_tmdb_episode_mapping, :confirm_replacement,
                     gender_ids: [], country_ids: []).to_h
     end
 

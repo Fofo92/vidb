@@ -1,0 +1,10 @@
+<% previous = @scope.dig('project', 'replace_binding') %>
+<% if previous %>
+  <div class="alert alert-warning my-3">
+    <p>Ce montage est actuellement associé à la fiche <%= link_to previous.fetch('record_id'), record_path(previous.fetch('record_id')), target: '_blank', rel: 'noopener' %>.
+      Ce choix ne sera révisé qu’après confirmation. L’historique et les copies déjà encodées seront conservés.</p>
+    <% check_id = "revision-confirmation-#{form.object_id}" %>
+    <%= form.check_box :confirm_replacement, { required: true, id: check_id }, '1', '0' %>
+    <%= form.label :confirm_replacement, 'Je confirme la révision du choix de fiche pour ce montage', for: check_id %>
+  </div>
+<% end %>

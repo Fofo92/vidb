@@ -22,6 +22,7 @@
           <%= form.hidden_field :request_token, value: params[:request_token] %>
           <%= form.hidden_field :q, value: @query %>
           <%= form.hidden_field :record_id, value: record.id %>
+          <%= render 'encoder_projects/revision_confirmation', form: form %>
           <%= form.submit 'Associer cette fiche et poursuivre le montage', class: 'btn btn-primary' %>
         <% end %>
       <% elsif (choice = EncoderProjects::LocalEpisodeChoice.call(record, @scope.fetch('project'))) %>
@@ -36,4 +37,5 @@
   <% end %>
   <%= link_to 'Revenir aux sources externes', encoder_projects_catalogue_path(request_token: params[:request_token]), class: 'btn btn-outline-secondary' %>
 </div>
+
 

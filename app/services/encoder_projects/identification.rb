@@ -10,6 +10,7 @@ module EncoderProjects
 
     def call(data)
       request = ProjectRequest.new(data)
+      @project_data = request.data
       result = ReconciliationCase.transaction do
         lock_projects!
         previous = Binding.current(request.project_id)
@@ -87,7 +88,15 @@ module EncoderProjects
     def identified(binding)
       record = Record.find(binding.fetch('record_id'))
       { status: 'identified', binding: binding,
-        record_title: record.complete_title_with_parents, metadata: RecordPresentation.call(record) }
+        record_title: record.complete_title_with_parents, metadata: RecordPresentation.call(record),
+        selection_url: selection_url(binding) }
+    end
+
+    def selection_url(binding)
+      project = @project_data.merge('replace_binding' => binding.slice('project_id', 'record_id', 'binding_token'))
+      token = CatalogueScope.issue(user: @user, project: project)
+      "#{@url}/encoder_projects/local_records?#{URI.encode_www_form(request_token: token,
+                                                                    q: binding.fetch('record_id'))}"
     end
 
     def pending(request, records, observation)

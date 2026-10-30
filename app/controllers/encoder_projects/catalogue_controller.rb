@@ -17,7 +17,8 @@ module EncoderProjects
 
     def create
       record = CatalogueCreation.new(user: current_user, url: request.base_url).call(
-        scope: @scope, gender_ids: selected_ids(:gender_ids), country_ids: selected_ids(:country_ids)
+        scope: @scope, gender_ids: selected_ids(:gender_ids), country_ids: selected_ids(:country_ids),
+        confirmed: params[:confirm_replacement] == '1'
       )
       prepared = params[:encoder_window] == '1' ? 1 : nil
       redirect_to record_path(record, encoder_prepared: prepared),

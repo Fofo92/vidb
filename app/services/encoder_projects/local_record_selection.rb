@@ -8,7 +8,13 @@ module EncoderProjects
       end
     end
 
-    def self.call(user:, url:, project:, record:)
+    def self.call(user:, url:, project:, record:, confirmed: false)
+      AssociationRevision.call(project, confirmed: confirmed) do
+        select_record(user: user, url: url, project: project, record: record)
+      end
+    end
+
+    def self.select_record(user:, url:, project:, record:)
       raise ArgumentError, 'Qualifie la nature et le placement de cette fiche avant association.' unless
         Matcher.qualified?(record)
 
@@ -21,6 +27,8 @@ module EncoderProjects
       token = ReconciliationWorkbench::ReviewScope.issue([item], axis: 'metadata')
       CandidateAssociation.call(user: user, item: item, token: token)
     end
+
+    private_class_method :select_record
 
     def self.bound_record(result, record)
       raise ArgumentError, 'Ce montage est déjà associé à une autre fiche.' unless
