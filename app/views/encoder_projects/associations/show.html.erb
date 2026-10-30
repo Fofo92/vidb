@@ -3,6 +3,9 @@
 <p class="small text-break">Projet : <%= @scope.dig('project', 'project_id') %><br>
   Source : <%= @scope.dig('project', 'source_paths').join(' · ') %><br>
   Destination provisoire : <%= @scope.dig('project', 'output_path') %></p>
+<p><%= link_to 'Choisir une autre fiche vidb existante / Actualiser',
+               encoder_projects_local_records_path(request_token: params[:request_token]),
+               class: 'btn btn-outline-primary' %></p>
 <section class="card my-3"><div class="card-body">
   <p>Un titre identique peut désigner une autre œuvre. Si les fiches ci-dessous ne conviennent pas, cherche dans les sources externes.</p>
   <%= form_with url: encoder_projects_catalogue_path, method: :get do |form| %>
@@ -58,3 +61,4 @@
     <% end %>
   </div></section>
 <% end %>
+

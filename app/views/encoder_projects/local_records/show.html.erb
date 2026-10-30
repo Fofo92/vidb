@@ -1,0 +1,36 @@
+<div class="container py-4">
+  <h1 class="h3">Choisir une fiche vidb existante</h1>
+  <p>Retrouve une fiche déjà créée, puis confirme son association à ce montage. Aucune vidéo n’est déclarée disponible ici.</p>
+  <p class="small text-break">Source : <%= @scope.fetch('project').fetch('source_paths').join(' · ') %></p>
+  <%= form_with url: encoder_projects_local_records_path, method: :get do |form| %>
+    <%= form.hidden_field :request_token, value: params[:request_token] %>
+    <%= form.label :q, 'Titre, numéro ou lien de fiche vidb', class: 'form-label' %>
+    <div class="d-flex gap-2 mb-3">
+      <%= form.text_field :q, value: @query, maxlength: 300, required: true, class: 'form-control' %>
+      <%= form.submit 'Rechercher / Actualiser', class: 'btn btn-primary' %>
+    </div>
+  <% end %>
+  <p class="small">Si tu viens de créer ou corriger une fiche, actualise cette recherche. Une fiche non qualifiée doit être corrigée avant association.</p>
+  <% if @records.empty? %><p>Aucune fiche locale trouvée. Essaie un titre plus court ou colle le lien de la fiche.</p><% end %>
+  <% @records.each do |record| %>
+    <section class="card my-3"><div class="card-body">
+      <h2 class="h5"><%= record.complete_title_with_parents %> · fiche <%= record.id %> · <%= record.year || 'Année à compléter' %></h2>
+      <p><%= link_to 'Consulter la fiche', record_path(record), target: '_blank', rel: 'noopener' %>
+        · <%= link_to 'Corriger la fiche', edit_record_path(record), target: '_blank', rel: 'noopener' %></p>
+      <% if EncoderProjects::Matcher.qualified?(record) %>
+        <%= form_with url: encoder_projects_local_records_path, method: :post do |form| %>
+          <%= form.hidden_field :request_token, value: params[:request_token] %>
+          <%= form.hidden_field :q, value: @query %>
+          <%= form.hidden_field :record_id, value: record.id %>
+          <%= form.submit 'Associer cette fiche et poursuivre le montage', class: 'btn btn-primary' %>
+        <% end %>
+      <% else %>
+        <p>Nature ou placement à qualifier avant association. Corrige la fiche puis actualise la recherche.</p>
+      <% end %>
+    </div></section>
+  <% end %>
+  <% if @records.size == EncoderProjects::LocalRecordSearch::LIMIT %>
+    <p>Les 50 premières correspondances sont affichées. Précise le titre ou utilise le numéro de fiche.</p>
+  <% end %>
+  <%= link_to 'Revenir aux sources externes', encoder_projects_catalogue_path(request_token: params[:request_token]), class: 'btn btn-outline-secondary' %>
+</div>
