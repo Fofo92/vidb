@@ -5,9 +5,8 @@ module TvGuideAcquisitionsHelper
     'review' => 'Acquisition à vérifier'
   }.freeze
 
-  def tv_guide_acquisition_tone(acquired:, previous:, scheduled:, selected:)
-    return 'unnecessary' if selected || scheduled
-    return previous ? 'unnecessary' : nil unless acquired
+  def tv_guide_acquisition_tone(acquired:, previous:)
+    return previous ? 'review' : nil unless acquired
     return 'unnecessary' if %w[available capture quarantine].include?(acquired.kind)
     return 'recommended' if acquired.kind == 'reencode'
 

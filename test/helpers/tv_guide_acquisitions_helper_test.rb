@@ -3,9 +3,9 @@ require 'test_helper'
 class TvGuideAcquisitionsHelperTest < ActiveSupport::TestCase
   include TvGuideAcquisitionsHelper
 
-  def tone(kind = nil, previous: nil, scheduled: nil, selected: false)
+  def tone(kind = nil, previous: nil)
     acquired = Struct.new(:kind).new(kind) if kind
-    tv_guide_acquisition_tone(acquired: acquired, previous: previous, scheduled: scheduled, selected: selected)
+    tv_guide_acquisition_tone(acquired: acquired, previous: previous)
   end
 
   test 'green is reserved for an available old copy explicitly eligible for replacement' do
@@ -16,13 +16,7 @@ class TvGuideAcquisitionsHelperTest < ActiveSupport::TestCase
 
   test 'orange covers encoded copies and existing sources including quarantine' do
     %w[available capture quarantine].each { |kind| assert_equal 'unnecessary', tone(kind) }
-    assert_equal 'unnecessary', tone(previous: Object.new)
-  end
-
-  test 'an existing schedule makes a second capture unnecessary even for an old copy' do
-    assert_equal 'unnecessary', tone('reencode', scheduled: Object.new)
-    assert_equal 'unnecessary', tone('reencode', selected: true)
-    assert_equal 'unnecessary', tone('project_review', scheduled: Object.new)
+    assert_equal 'review', tone(previous: Object.new)
   end
 
   test 'uncertain project evidence stays neutral and all colors have textual advice' do

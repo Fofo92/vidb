@@ -132,6 +132,7 @@ class TvGuidesRecordingIntentsTest <
                     text: /Déjà programmé/
       assert_select "#{programme_selector('unselected')} [data-tv-guide-scheduled-duplicate-detail]",
                     text: /Kaffeine n° 999/
+      assert_select "#{programme_selector('unselected')} > [data-tv-guide-acquisition-dot]", count: 0
     end
   end
 
@@ -156,7 +157,7 @@ class TvGuidesRecordingIntentsTest <
 
     assert_response :success
     assert_selected_programme(intent)
-    assert_select "#{programme_selector('selected')}[data-tv-guide-acquisition-tone='unnecessary']"
+    assert_select "#{programme_selector('selected')} > [data-tv-guide-acquisition-dot]", count: 0
   end
 
   test "offers Kaffeine scheduling from the guide when the channel is linked" do
@@ -195,6 +196,7 @@ class TvGuidesRecordingIntentsTest <
     assert_select "#{programme_selector('selected')} [data-tv-guide-schedule]" \
                   "[aria-label*='numéro 986']", text: /986/
     assert_equal "986", css_select("[data-tv-guide-schedule]").first.text.strip
+    assert_select "#{programme_selector('selected')} > [data-tv-guide-acquisition-dot]", count: 0
   end
 
   test "shows an episode numbering alert on the replacement programme" do
@@ -354,6 +356,11 @@ class TvGuidesRecordingIntentsTest <
     assert_select "#{programme_selector('unselected')} form[action='#{tv_recording_intents_path}']"
     assert_equal 8, episode.reload.rank
     assert_equal 3, episode.parent.rank
+    intent = Tv::RecordingIntentSelector.new(broadcast_observation: @programme).call
+    link_for(intent)
+    get tv_guide_url, params: guide_params
+    assert_select "#{programme_selector('selected')}[data-tv-guide-acquisition-tone='recommended']"
+    assert_select "#{programme_selector('selected')} [data-tv-guide-schedule]"
   end
 
   test "recognizes an associated video_encoder project and keeps rerun scheduling available" do

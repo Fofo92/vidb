@@ -9,13 +9,16 @@ les couleurs ; les commandes de programmation restent inchangées.
   explicitement éligible au remplacement. Un programme inconnu ne reçoit
   aucune pastille : l’absence de copie ne suffit pas à déduire un souhait.
 - Orange : copie complète avec projet video_encoder, source présente ou en
-  quarantaine, ancienne capture vérifiée, ou épisode déjà programmé.
+  quarantaine. Une programmation seule ne constitue pas une preuve d’acquisition.
 - Gris bleuté : projet illisible, liaison à vérifier ou acquisition historique
-  sans copie disponible. Ce seul historique ne constitue pas un souhait de réacquisition.
+  sans copie disponible, y compris une ancienne confirmation manuelle. Ce seul
+  historique ne constitue pas une preuve de présence actuelle ni un souhait de réacquisition.
 
-Une programmation déjà sélectionnée ou un doublon programmé est orange même
-si l’ancienne copie doit être remplacée : une autre capture est déjà prévue.
-Le numéro Kaffeine conserve sa présentation pour identifier cette sélection.
+La pastille est indépendante des sélections et doublons programmés. Sans
+acquisition connue, un programme ne reçoit aucune pastille, même s’il possède
+un numéro Kaffeine. Une ancienne copie à remplacer reste verte après
+programmation. Le numéro Kaffeine et « Déjà programmé » décrivent séparément
+la programmation et permettent toujours de l’identifier.
 Les programmes terminés conservent leur fond gris de programme passé.
 Les libellés d’acquisition et leurs preuves restent dans le panneau
 d’information ; seule la pastille est affichée dans la plage.

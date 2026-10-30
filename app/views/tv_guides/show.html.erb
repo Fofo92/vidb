@@ -271,8 +271,7 @@
                   <% previous_intent = @previous_recordings[programme.id] %>
                   <% acquired = @acquired_episodes[programme.id] %>
                   <% scheduled_duplicate = @scheduled_duplicates[programme.id] %>
-                  <% acquisition_tone = tv_guide_acquisition_tone(acquired: acquired, previous: previous_intent,
-                                                               scheduled: scheduled_duplicate, selected: recording_selected) %>
+                  <% acquisition_tone = tv_guide_acquisition_tone(acquired: acquired, previous: previous_intent) %>
                   <% top_pixels =
                       @timeline_projection.position_for(item.start_minute) %>
                   <% height_pixels =
