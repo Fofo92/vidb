@@ -29,7 +29,7 @@ module RecordPosters
     def own_ids(value)
       explicit = value.values_at(*TYPES.fetch(@type)).filter_map { |id| positive_id(id) }
       urls = value.values_at('url', 'source', 'source_url').filter_map do |url|
-        match = url.to_s.match(%r{\Ahttps://www\.themoviedb\.org/#{@type}/([1-9]\d*)(?:[/?].*)?\z})
+        match = url.to_s.match(%r{\Ahttps://www\.themoviedb\.org/#{@type}/([1-9]\d*)(?:-[^/?#\s]+)?(?:[/?#][^\s]*)?\z})
         match[1].to_i if match
       end
       explicit + urls
