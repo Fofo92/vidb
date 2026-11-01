@@ -17,13 +17,19 @@ module EncoderProjects
         verify!(record)
         fill_editorial(record)
         EpisodeReferenceEnrichment.new(@candidate, @parameters).call(record)
-        fill_language(record)
-        CatalogueRuntime.import(record, @candidate)
+        fill_complements(record)
         record
       end
     end
 
     private
+
+    def fill_complements(record)
+      fill_language(record)
+      CatalogueRuntime.import(record, @candidate)
+      unchanged_source = @parameters['source'].blank? || @parameters['source'] == @candidate.dig('source', 'url')
+      PosterIdentityImport.call(record, @candidate) if unchanged_source
+    end
 
     def lock_records(record)
       record.parent.parent.lock!

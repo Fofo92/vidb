@@ -21,7 +21,7 @@ module EncoderProjects
 
       films = wikipedia_films(title)
       query = films.first&.fetch('french_title', nil).presence || title
-      SynopsisPreference.call(CatalogueRuntime.enrich(films + other_films(query, title)))
+      FilmProposalGrouping.call(SynopsisPreference.call(CatalogueRuntime.enrich(films + other_films(query, title))))
     end
 
     private
@@ -73,7 +73,8 @@ module EncoderProjects
     end
 
     def tmdb_films(title)
-      tmdb.search(title: title).fetch('results').first(3).map { |entry| movie(entry.fetch('id')) }
+      rows = tmdb.search(title: title).fetch('results').uniq { |entry| entry.fetch('id').to_s }
+      rows.first(3).map { |entry| movie(entry.fetch('id')) }
     end
 
     def movie(id)
@@ -83,7 +84,8 @@ module EncoderProjects
         'year' => data['release_date']&.first(4)&.to_i, 'reference_runtime_minutes' => data['runtime'],
         'genres_text' => data.fetch('genres', []).pluck('name').join(', '),
         'country_codes' => data.fetch('production_countries', []).map { |item| item['iso_3166_1'] },
-        'abstract' => data['overview'].to_s, 'record_kind' => 'standalone_video', 'source' => tmdb_source(data) }
+        'poster_path' => data['poster_path'], 'abstract' => data['overview'].to_s,
+        'record_kind' => 'standalone_video', 'source' => tmdb_source(data) }
     end
 
     def tmdb_source(data)

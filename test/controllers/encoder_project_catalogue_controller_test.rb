@@ -125,6 +125,25 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference('Record.count') { confirm(proposal) }
   end
 
+  test 'confirming an existing film queues its poster without rewriting the record or fetching an image' do
+    record = Record.create!(french_title: 'Adieu Philippine', year: 1962, record_kind: 'standalone_video',
+                            language_version: LanguageVersion.find_by!(short_name: 'IND'), abstract: 'Résumé manuel')
+    before = record.attributes
+    candidate = @candidate.merge('poster_path' => '/poster.jpg', 'source' => {
+      'provider' => 'tmdb', 'tmdb_movie_id' => 7, 'url' => 'https://www.themoviedb.org/movie/7'
+    })
+    proposal = EncoderProjects::CatalogueScope.issue(user: @user, project: @project, candidate: candidate)
+    RecordPosters::Fetch.stub(:new, -> { raise 'Unexpected download during confirmation' }) do
+      assert_difference('RecordPoster.count', 1) do
+        assert_no_difference(['Record.count', 'VideoAsset.count']) { confirm(proposal) }
+      end
+    end
+    assert_redirected_to record_path(record)
+    assert_equal before, record.reload.attributes
+    assert_equal 7, record.record_poster.source.dig('encoder_pending', 'tmdb_movie_id')
+    assert_not record.record_poster.image.attached?
+  end
+
   test 'a tampered proposal is rejected before creation' do
     assert_no_difference 'Record.count' do
       confirm("#{@proposal}invalid")
@@ -164,5 +183,44 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
       confirm
     end
     assert_response :unprocessable_content
+  end
+
+  test 'compact candidate forms retain selected references and show an optional TMDB poster' do
+    candidate = @candidate.merge('poster_path' => '/poster.jpg', 'additional_sources' => [
+      { 'provider' => 'tmdb', 'url' => 'https://www.themoviedb.org/movie/7' }
+    ])
+    display_candidates([candidate])
+    assert_response :success
+    assert_select 'select[name="gender_ids[]"][multiple][size="3"][data-controller="encoder-choices"]', count: 1
+    assert_select 'select[name="country_ids[]"][multiple][size="3"][data-controller="encoder-choices"]', count: 1
+    assert_select 'select[name="gender_ids[]"] option[selected][value=?]', @genre.id.to_s, count: 1
+    assert_select 'select[name="country_ids[]"] option[selected][value=?]', @country.id.to_s, count: 1
+    assert_select 'img[src="https://image.tmdb.org/t/p/w185/poster.jpg"][loading="lazy"]', count: 1
+    assert_select 'a[href="https://www.themoviedb.org/movie/7"]', count: 1
+    assert_select 'input[name="proposal_token"]', count: 1
+  end
+
+  test 'multiple cards have unique field IDs and no blank poster placeholder' do
+    display_candidates([@candidate, @candidate.merge('french_title' => 'Autre film')])
+    assert_response :success
+    assert_select 'select[id="film-genres-0"]', count: 1
+    assert_select 'select[id="film-genres-1"]', count: 1
+    assert_select 'label[for="film-genres-1"]', count: 1
+    assert_select 'figure.encoder-proposal-artwork', count: 0
+  end
+
+  def display_candidates(candidates)
+    catalogue = Object.new
+    catalogue.define_singleton_method(:call) { |_query| candidates }
+    catalogue.define_singleton_method(:warnings) { [] }
+    series = Object.new
+    series.define_singleton_method(:call) { |_query| [] }
+    assert_no_difference ['Record.count', 'VideoAsset.count'] do
+      EncoderProjects::FilmCatalogue.stub(:new, -> { catalogue }) do
+        EncoderProjects::SeriesCatalogueSearch.stub(:new, -> { series }) do
+          get encoder_projects_catalogue_path, params: { request_token: @request_token }
+        end
+      end
+    end
   end
 end

@@ -1,0 +1,8 @@
+<% if (artwork_url = EncoderProjects::ProposalArtwork.url(proposal)) %>
+  <figure class="encoder-proposal-artwork" data-controller="encoder-artwork">
+    <%= image_tag artwork_url, alt: "Affiche — #{proposal['french_title'].presence || proposal['title']}",
+                  width: 92, height: 138, loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer',
+                  data: { action: 'error->encoder-artwork#hide' } %>
+    <figcaption>Affiche TMDB</figcaption>
+  </figure>
+<% end %>

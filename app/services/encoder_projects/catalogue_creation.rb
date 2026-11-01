@@ -54,7 +54,9 @@ module EncoderProjects
 
     def complete_record(record, candidate)
       CatalogueRuntime.import(record, candidate)
-      CatalogueSummaryImport.call(record, candidate)
+      completed = CatalogueSummaryImport.call(record, candidate)
+      PosterIdentityImport.call(record, candidate)
+      completed
     end
 
     def existing(candidate)

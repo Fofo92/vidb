@@ -38,7 +38,7 @@
   padding: .3rem .45rem;
 }
 .encoder-episode-form .encoder-field textarea { min-height: 7rem; resize: vertical; }
-.encoder-episode-form .encoder-field select[multiple] { min-height: 7rem; }
+.encoder-episode-form .encoder-field select[multiple] { min-height: 0; }
 .encoder-episode-form p { margin: .2rem 0; }
 .encoder-episode-form input[type="submit"] { justify-self: start; max-width: 100%; white-space: normal; }
 .encoder-episode-form .encoder-field details { margin-bottom: .4rem; }
@@ -46,3 +46,19 @@
 @media (max-width: 640px) {
   .encoder-episode-form { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Compact identification cards; all choices remain available by scrolling. */
+.encoder-proposal-card .card-body { padding: .65rem .8rem; }
+.encoder-proposal-card p { margin-bottom: .4rem; }
+.encoder-proposal-card h2 { margin-bottom: .35rem; }
+.encoder-proposal-card .form-label { margin-bottom: .2rem; }
+.encoder-proposal-card .encoder-episode-form { gap: .4rem .8rem; }
+.encoder-proposal-card .encoder-reference-choices { min-height: 0; padding: .2rem .4rem; }
+.encoder-reference-row { clear: both; }
+.encoder-proposal-sources { display: flex; flex-wrap: wrap; gap: .35rem .8rem; }
+.encoder-proposal-artwork { float: right; width: 92px; margin: 0 0 .4rem .8rem; }
+.encoder-proposal-artwork img { display: block; width: 92px; height: 138px; object-fit: contain; }
+.encoder-proposal-artwork figcaption { font-size: .7rem; text-align: center; color: #666; }
+.encoder-proposal-artwork[hidden] { display: none; }
+.encoder-proposal-card .encoder-confirmation-bar { padding: .35rem 0; }
+.encoder-identification > .alert { padding: .55rem .75rem; margin-bottom: .65rem; }

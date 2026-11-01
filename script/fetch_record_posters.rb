@@ -13,7 +13,7 @@ File.open(Rails.root.join('tmp/poster-import.lock'), File::RDWR | File::CREAT, 0
 
   scope.find_each do |record|
     poster = record.record_poster
-    if poster && (poster.image.attached? || poster.source['kind'] == 'manual')
+    if RecordPosters::Fetch.preserved?(poster)
       counts[:preserved] += 1
       next
     end

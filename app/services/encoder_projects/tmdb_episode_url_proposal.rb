@@ -33,6 +33,7 @@ module EncoderProjects
       source = { 'provider' => 'tmdb', 'url' => "https://www.themoviedb.org/#{path}",
                  'episode_id' => episode.fetch('id'), 'first_air_date' => episode['air_date'].to_s }
       { 'title' => episode['name'], 'original_title' => original_title(path, episode),
+        'poster_path' => @series_data['poster_path'],
         'year' => episode['air_date'].to_s[/\A\d{4}/]&.to_i, 'abstract' => episode['overview'].to_s,
         'source' => source, 'reference_runtime_minutes' => episode['runtime'],
         'tmdb_series_title' => @series_data['name'], 'tmdb_episode_title' => episode['name'],

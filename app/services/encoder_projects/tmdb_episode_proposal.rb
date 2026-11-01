@@ -54,6 +54,7 @@ module EncoderProjects
       source = { 'provider' => 'tmdb', 'url' => "https://www.themoviedb.org/tv/#{id}",
                  'first_air_date' => episode['air_date'].to_s, 'episode_id' => episode['id'] }
       { 'title' => episode['name'], 'original_title' => original_title(id, numbers, episode),
+        'poster_path' => @series_data['poster_path'],
         'year' => episode['air_date'].to_s[/\A\d{4}/]&.to_i,
         'abstract' => episode['overview'].to_s, 'source' => source,
         'reference_runtime_minutes' => episode['runtime'] }
@@ -94,6 +95,7 @@ module EncoderProjects
     def row_proposal(id, row)
       source = CatalogueEpisodeMetadata.new(source_url: "https://www.themoviedb.org/tv/#{id}").source(row)
       { 'title' => row['title_fr'], 'original_title' => row['title_original'],
+        'poster_path' => @series_data['poster_path'],
         'year' => row['first_air_date'].to_s[/\A\d{4}/]&.to_i, 'abstract' => row['overview_fr'].to_s,
         'source' => source, 'reference_runtime_minutes' => row['reference_runtime_minutes'],
         'external_parts' => row['external_parts'], 'numbering_source' => row['numbering_source'] }

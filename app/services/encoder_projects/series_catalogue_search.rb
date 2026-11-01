@@ -14,14 +14,18 @@ module EncoderProjects
       return [candidate(client.get("tv/#{id}"))] if id
       return [] if external_film_link?(text)
 
-      title = wikipedia_title(text)
-      client.search(title: title).fetch('results').first(5).map { |row| candidate(row) }
+      search_candidates(wikipedia_title(text))
     rescue ArgumentError, KeyError, JSON::ParserError, CatalogEnrichment::TmdbClient::Error,
            IOError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError
       []
     end
 
     private
+
+    def search_candidates(title)
+      rows = client.search(title: title).fetch('results').uniq { |row| row.fetch('id').to_s }
+      rows.first(5).map { |row| candidate(row) }
+    end
 
     def external_film_link?(text)
       text.start_with?('https://www.themoviedb.org/', 'https://themoviedb.org/',
@@ -37,7 +41,7 @@ module EncoderProjects
 
     def candidate(row)
       { 'tmdb_id' => row.fetch('id'), 'title' => row.fetch('name'), 'original_title' => row['original_name'],
-        'year' => row['first_air_date'].to_s[/\A\d{4}/]&.to_i }
+        'poster_path' => row['poster_path'], 'year' => row['first_air_date'].to_s[/\A\d{4}/]&.to_i }
     end
 
     def client

@@ -73,6 +73,37 @@ sudo journalctl -u vidb-posters-refresh.service -n 30 --no-pager
 sudo systemctl list-timers vidb-posters-refresh.timer
 ```
 
+## Identité confirmée pendant un nouvel encodage
+
+La confirmation d’une proposition externe conserve désormais son identité TMDB
+dans la provenance séparée de `RecordPoster`, sous `encoder_pending`. Cela vaut
+aussi pour une fiche déjà existante dont l’année et le résumé restent inchangés.
+La source principale TMDB ou le lien TMDB explicitement regroupé avec Wikipédia
+peut servir de preuve ; un simple crédit de synopsis ne suffit pas. Les identités
+contradictoires restent bloquées, sans nouvelle recherche contournant le conflit.
+
+Cette confirmation ne télécharge aucune image et ne change aucun champ éditorial
+ni état de visionnage/disponibilité. Le service `vidb-posters-refresh` traite la
+demande au passage suivant (environ 30 minutes). Une image automatique peut alors
+être remplacée par le nouveau poster confirmé de la même identité ; une image
+personnelle ou une suppression volontaire est conservée. Une demande déjà
+traitée avec la même image n’est pas recréée à chaque confirmation.
+
+Pour un épisode, la référence d’affiche est retenue sur sa série : les épisodes
+conservent leur repli d’affichage existant. Une correction manuelle du lien de
+référence de l’épisode suspend cette reprise automatique de la proposition.
+
+La demande et le choix courant sont contrôlés de nouveau sous verrou au moment
+d’attacher l’image. Un téléversement manuel concurrent ou une demande plus récente
+garde la priorité ; un échec réseau conserve l’ancienne image et la demande pour
+réessai. Les fiches sans proposition TMDB confirmée continuent de suivre les
+règles d’identification automatique décrites plus haut ; aucun identifiant n’est
+déduit du seul fait qu’un nouvel encodage existe.
+
+Les confirmations antérieures au déploiement ne sont pas reconstruites à partir
+des noms de fichiers. Une nouvelle confirmation permet de retenir la référence,
+ou l’import périodique peut identifier le film avec les preuves déjà disponibles.
+
 ## Stockage et configuration
 
 Le client emploie TMDB_READ_ACCESS_TOKEN ou TMDB_API_KEY. Les réponses API sont

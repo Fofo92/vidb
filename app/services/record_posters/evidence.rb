@@ -8,6 +8,7 @@ module RecordPosters
 
     def self.ids(record, type)
       values = [record.year_evidence, record.abstract_provenance, record.genre_provenance]
+      values << record.record_poster&.source if record.respond_to?(:record_poster)
       new(type).ids(values).uniq
     end
 

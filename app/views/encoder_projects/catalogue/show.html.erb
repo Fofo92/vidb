@@ -1,4 +1,4 @@
-<div class="container py-4">
+<div class="container py-3 encoder-identification">
   <h1 class="h3">Identifier l’œuvre et préparer sa fiche vidb</h1>
   <p>Wikipédia reste prioritaire pour l’identité ; le synopsis TMDB est privilégié lorsqu’il concorde. Vérifie l’œuvre avant de confirmer.</p>
   <p class="small text-break">Source : <%= @scope.fetch('project').fetch('source_paths').join(' · ') %></p>
@@ -20,8 +20,9 @@
   <% if @search_error %><p class="alert alert-warning"><%= @search_error %></p><% end %>
   <% if @candidates.empty? && Array(@series_candidates).empty? && !@search_error %><p>Aucune proposition externe trouvée. Choisis une fiche vidb existante ci-dessus, précise le titre ou colle un lien externe.</p><% end %>
   <% Array(@series_candidates).each do |candidate| %>
-    <section class="card my-3"><div class="card-body">
-      <h2 class="h4"><%= candidate['title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Série</h2>
+    <section class="card my-2 encoder-proposal-card"><div class="card-body">
+      <%= render 'encoder_projects/artwork', proposal: candidate %>
+      <h2 class="h5"><%= candidate['title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Série</h2>
       <% if candidate['original_title'].present? %><p>Titre original : <%= candidate['original_title'] %></p><% end %>
       <p><%= link_to 'Consulter TMDB', "https://www.themoviedb.org/tv/#{candidate.fetch('tmdb_id')}", target: '_blank', rel: 'noopener' %></p>
       <% project = @scope.fetch('project').merge('episode_target' => { 'season' => 1, 'episode' => 1 }) %>
@@ -39,32 +40,35 @@
       <p class="small">Vérifie le numéro de ton montage. Aucune fiche ni association n’est créée à cette étape.</p>
     </div></section>
   <% end %>
-  <% @candidates.each do |candidate| %>
-    <section class="card my-3"><div class="card-body">
-      <h2 class="h4"><%= candidate['french_title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Film</h2>
+  <% @candidates.each_with_index do |candidate, index| %>
+    <section class="card my-2 encoder-proposal-card"><div class="card-body">
+      <%= render 'encoder_projects/artwork', proposal: candidate %>
+      <h2 class="h5"><%= candidate['french_title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Film</h2>
       <% if candidate['original_title'].present? %><p>Titre original : <%= candidate['original_title'] %></p><% end %>
-      <p><strong>Genres :</strong> <%= candidate['genres_text'] %> · <strong>Pays :</strong>
-        <%= candidate['countries_text'].presence || candidate.fetch('country_codes', []).join(', ') %></p>
       <% if candidate['abstract_notice'].present? %><p class="small text-muted"><%= candidate['abstract_notice'] %></p><% end %>
       <% if candidate['abstract'].present? && candidate.dig('abstract_source', 'provider').present? %>
         <% synopsis_label = { 'tmdb' => 'TMDB', 'wikipedia' => 'Wikipédia', 'senscritique' => 'SensCritique' }.fetch(candidate.dig('abstract_source', 'provider'), candidate.dig('abstract_source', 'provider')) %>
         <p class="small">Synopsis : <%= link_to synopsis_label, candidate.dig('abstract_source', 'url'), target: '_blank', rel: 'noopener' %></p>
       <% end %>
       <p><%= candidate['abstract'] %></p>
-      <p><%= link_to candidate.fetch('source').fetch('url'), candidate.fetch('source').fetch('url'), target: '_blank', rel: 'noopener noreferrer' %></p>
+      <p class="small encoder-proposal-sources">
+        <% ([candidate.fetch('source')] + candidate.fetch('additional_sources', [])).each do |source| %>
+          <%= link_to({ 'wikipedia' => 'Wikipédia', 'tmdb' => 'TMDB', 'senscritique' => 'SensCritique' }.fetch(source['provider'], 'Consulter la source'), source.fetch('url'), target: '_blank', rel: 'noopener noreferrer') %>
+        <% end %>
+      </p>
       <%= form_with url: encoder_projects_catalogue_path, method: :post do |form| %>
         <%= form.hidden_field :encoder_window, value: 1 %>
         <%= render 'encoder_projects/revision_confirmation', form: form %>
         <%= form.hidden_field :request_token, value: params[:request_token] %>
         <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: candidate) %>
-        <div class="row g-3 mb-3">
+        <div class="row g-2 my-2 encoder-reference-row">
           <div class="col-md-6">
-            <%= form.label :gender_ids, 'Genres principaux (deux maximum)', class: 'form-label' %>
-            <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, EncoderProjects::CatalogueReferences.genres(candidate)), multiple: true, size: 6, class: 'form-select' %>
+            <%= label_tag "film-genres-#{index}", 'Genres principaux (deux maximum)', class: 'form-label' %>
+            <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, EncoderProjects::CatalogueReferences.genres(candidate)), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.genres(candidate)).first } %>
           </div>
           <div class="col-md-6">
-            <%= form.label :country_ids, 'Pays de production', class: 'form-label' %>
-            <%= select_tag 'country_ids[]', options_from_collection_for_select(@countries, :id, :long_name, EncoderProjects::CatalogueReferences.countries(candidate)), multiple: true, size: 6, class: 'form-select' %>
+            <%= label_tag "film-countries-#{index}", 'Pays de production', class: 'form-label' %>
+            <%= select_tag 'country_ids[]', options_from_collection_for_select(@countries, :id, :long_name, EncoderProjects::CatalogueReferences.countries(candidate)), multiple: true, size: 3, id: "film-countries-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.countries(candidate)).first } %>
           </div>
         </div>
         <p class="small">La fiche sera créée ou une fiche concordante réutilisée. La disponibilité et le support seront déterminés lors de l’import du fichier terminé.</p>

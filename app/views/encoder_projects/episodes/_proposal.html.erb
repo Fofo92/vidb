@@ -3,7 +3,8 @@
 <% language = @scope.dig('project', 'language_hint').presence || 'IND' if language.blank? || language == 'IND' %>
 <% language = submitted['language_version'] if submitted['language_version'].present? %>
 <% values = proposal.merge((@submitted || {}).slice('title', 'original_title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
-<section class="card my-3"><div class="card-body">
+<section class="card my-2 encoder-proposal-card"><div class="card-body">
+<%= render 'encoder_projects/artwork', proposal: proposal %>
 <% if proposal.dig('source', 'provider').present? %>
   <div class="encoder-proposal-heading">
     <h2 class="h5">Proposition <%= index + 1 %> · <%= proposal.dig('source', 'provider') %></h2>
@@ -124,12 +125,12 @@
   </div>
   <div class="encoder-field">
   <%= form.label :gender_ids, 'Genres principaux (deux maximum)', for: "episode-genres-#{index}" %>
-  <%= form.select :gender_ids, Gender.order(:name).map { |item| [item.name, item.id] }, { selected: values['gender_ids'] }, multiple: true, id: "episode-genres-#{index}" %>
+  <%= form.select :gender_ids, Gender.order(:name).map { |item| [item.name, item.id] }, { selected: values['gender_ids'] }, multiple: true, size: 3, class: 'encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(values['gender_ids']).first }, id: "episode-genres-#{index}" %>
   <% if values.fetch('gender_ids', []).empty? %><p class="small text-warning">Genres : à compléter.</p><% end %>
   </div>
   <div class="encoder-field">
   <%= form.label :country_ids, 'Pays de production', for: "episode-countries-#{index}" %>
-  <%= form.select :country_ids, Country.order(:long_name).map { |item| [item.long_name, item.id] }, { selected: values['country_ids'] }, multiple: true, id: "episode-countries-#{index}" %>
+  <%= form.select :country_ids, Country.order(:long_name).map { |item| [item.long_name, item.id] }, { selected: values['country_ids'] }, multiple: true, size: 3, class: 'encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(values['country_ids']).first }, id: "episode-countries-#{index}" %>
   <% if values.fetch('country_ids', []).empty? %><p class="small text-warning">Pays : à compléter.</p><% end %>
   </div>
   <div class="encoder-field encoder-field-wide">
