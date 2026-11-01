@@ -6,9 +6,9 @@
   <% { is_recorded: "Enregistrés", is_available: "Disponibles", is_seen: "Vus" }.each do |field, label| %>
     <% count = counts.fetch(field) %>
     <div data-state="<%= field %>">
-      <%= label %> : <%= count[:yes] %>/<%= count[:total] %>
+      <span class="record-state-label"><%= label %> :</span> <span class="record-state-value"><%= count[:yes] %>/<%= count[:total] %></span>
       <% if count[:unknown].positive? %>
-        — <%= count[:unknown] %> inconnu(s)
+        <span class="record-state-unknown">— <%= count[:unknown] %> inconnu(s)</span>
       <% end %>
     </div>
   <% end %>

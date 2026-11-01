@@ -36,14 +36,14 @@ class RecordCopiesDisplayTest < ActionDispatch::IntegrationTest
     copy(@episodes.last, 54)
     copy(@episodes.last, 120).update!(status: 'deleted')
     get record_url(@season)
-    assert_select "[data-copy-duration='#{@season.id}']", text: /01:46–01:47 selon les copies/
+    assert_select "[data-copy-duration='#{@season.id}']", text: '01:46–01:47'
   end
 
   test 'incomplete measured coverage stays explicit' do
     copy(@episodes.first, 52)
     get record_url(@season)
-    assert_select "[data-copy-duration='#{@season.id}']", text: /partiel : 1\/2/
-    assert_select "[data-copy-supports='#{@season.id}']", text: /couverture 1\/2/
+    assert_select "[data-copy-duration='#{@season.id}']", text: '≥ 52 mn'
+    assert_select "[data-copy-supports='#{@season.id}']", text: 'DISK'
   end
 
   test 'legacy values are labelled and are not presented as copy confirmations' do

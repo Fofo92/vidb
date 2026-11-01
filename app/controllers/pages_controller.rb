@@ -9,4 +9,6 @@ class PagesController < ApplicationController
       RecordMetadataAudit.new.call.except(:records)
     end
   end
+
+  def credits; end
 end

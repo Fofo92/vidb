@@ -12,14 +12,14 @@ class RecordPostersControllerTest < ActionDispatch::IntegrationTest
     @png = Base64.decode64("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/2k0AAAAASUVORK5CYII=")
   end
 
-  test "show has compact artwork only when attached and never adds a blank image" do
+  test "show doubles artwork dimensions only when attached and never adds a blank image" do
     get record_url(@record)
     assert_response :success
     assert_select "[data-record-poster]", count: 0
     assert_select "[data-record-poster-controls]", count: 1
     RecordPosters::Store.call(@record, bytes: @png, source: { "kind" => "manual" })
     get record_url(@record)
-    assert_select "[data-record-poster] img[width='120']", count: 1
+    assert_select "[data-record-poster] img[width='240']", count: 1
     get record_poster_url(@record)
     assert_response :success
     assert_equal "image/png", response.media_type

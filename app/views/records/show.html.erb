@@ -1,68 +1,136 @@
-<p><%= link_to "Filtrer cet arbre", records_path(filters: { tree_id: @record.id }), class: "btn btn-outline-primary" %></p>
-<div data-controller="record-states" data-record-states-url-value="<%= record_states_path(@record) %>">
+<% content_for :head do %>
+  <%= stylesheet_link_tag "record_show", "data-turbo-track": "reload" %>
+<% end %>
+<% copies = record_copy_summary(@record) %>
+<% metadata = record_metadata_values(@record) %>
+<% genres = metadata.genders(@record).map(&:name).join(", ") %>
+<% countries = metadata.countries(@record).map(&:long_name).sort_by(&:parameterize).join(", ") %>
+<% poster = RecordPosters::Display.call(@record) %>
+<% placement_status = @record.hierarchy_placement_status %>
+<% display_year = @record.display_range_of_years %>
+<div class="record-show" data-controller="record-states" data-record-states-url-value="<%= record_states_path(@record) %>">
   <div class="small" role="status" aria-live="polite" data-record-states-target="message"></div>
 
-<%= render "records/poster", record: @record %>
-<div class="d-flex flex-row justify-content-between align-items-center">
-  <h4>
-    <%= link_to @record.complete_title_with_parents, (@record.has_parent? ? record_path(@record.parent) : nil) %>
-  </h4>
-  <div>
-    <%= link_to(
-      "Déplacer",
-      edit_record_hierarchy_placement_path(@record),
-      class: "btn btn-outline-primary btn-sm"
-    ) %>
+  <section class="record-show-overview" data-record-overview aria-labelledby="record-title">
+    <div class="record-show-artwork">
+      <% if poster %>
+        <%= render "records/poster", record: @record, poster: poster, large: true %>
+      <% else %>
+        <div class="record-show-poster-placeholder" data-record-poster-placeholder role="img" aria-label="Pochette indisponible">
+          <i class="fa-solid fa-film" aria-hidden="true"></i>
+          <span>Pochette indisponible</span>
+        </div>
+      <% end %>
+      <%= render "records/poster_controls", record: @record %>
+    </div>
+    <div class="record-show-content">
+      <section class="record-show-editorial" data-record-information>
+        <header class="record-show-heading">
+          <nav class="record-show-actions" aria-label="Actions sur cette fiche">
+            <%= link_to "Filtrer cet arbre", records_path(filters: { tree_id: @record.id }), class: "btn btn-outline-secondary btn-sm" %>
+            <%= link_to "Déplacer", edit_record_hierarchy_placement_path(@record), class: "btn btn-outline-secondary btn-sm" %>
+            <%= link_to edit_record_path(@record), class: "btn btn-outline-primary btn-sm", title: "Modifier la fiche", aria: { label: "Modifier la fiche" } do %>
+              <i class="fa-regular fa-edit" aria-hidden="true"></i>
+            <% end %>
+            <%= link_to new_record_path, class: "btn btn-outline-primary btn-sm", title: "Nouvelle fiche", aria: { label: "Nouvelle fiche" } do %>
+              <i class="fa-regular fa-square-plus" aria-hidden="true"></i>
+            <% end %>
+          </nav>
+          <div class="record-show-context">
+            <nav class="record-show-breadcrumbs" aria-label="Arborescence vidb" data-record-breadcrumbs>
+              <ol>
+                <% record_show_breadcrumbs(@record, genres: genres).each do |crumb| %>
+                  <li>
+                    <% if crumb[:record] && crumb[:record] != @record %>
+                      <%= link_to crumb[:label], record_path(crumb[:record]) %>
+                    <% else %>
+                      <%= tag.span crumb[:label], aria: { current: ('page' if crumb[:record] == @record) } %>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ol>
+            </nav>
+            <span class="record-show-nature record-show-nature--<%= placement_status %>"
+                  data-record-kind data-hierarchy-placement-status="<%= placement_status %>"
+                  title="Placement : <%= hierarchy_placement_label(placement_status) %>"
+                  aria-label="<%= record_kind_label(@record.record_kind) %> — placement <%= hierarchy_placement_label(placement_status) %>">
+              <%= record_kind_label(@record.record_kind) %>
+            </span>
+          </div>
+          <h1 id="record-title">
+            <span data-record-main-title><%= @record.french_title.presence || @record.original_title %></span>
+            <% if display_year.present? %>
+              <span class="record-show-year">(<span data-record-year="<%= @record.id %>" title="<%= @record.year_basis_description %>"><%= display_year %></span>)</span>
+            <% end %>
+          </h1>
+          <% if @record.original_title.present? && @record.french_title.present? %>
+            <p class="record-show-original-title" data-record-original-title><%= @record.original_title %></p>
+          <% end %>
+        </header>
 
-    <%= link_to edit_record_path(@record), class: "btn btn-primary btn-sm fa-xl" do %>
-          <i class="fa-regular fa-edit"></i>
-    <% end %>
+        <dl class="record-show-facts">
+          <% if genres.present? %>
+            <div><dt>Genres</dt><dd><%= genres %></dd></div>
+          <% end %>
+          <div>
+            <dt>Durée</dt>
+            <dd data-copy-duration="<%= @record.id %>" title="Durée mesurée des copies présentes quand elle est connue ; sinon, durée renseignée. Les copies alternatives ne sont pas additionnées."><%= copies.summary_duration %></dd>
+          </div>
+          <% if countries.present? %>
+            <div><dt>Pays de production</dt><dd><%= countries %></dd></div>
+          <% end %>
+        </dl>
 
-    <%= link_to new_record_path, class: "btn btn-primary btn-sm fa-xl" do %>
-      <i class="fa-regular fa-square-plus"></i>
-    <% end %>
-  </div>
-</div>
-<% copies = record_copy_summary(@record) %>
-<p>
-  <span data-record-kind>
-    <strong>Nature du contenu : </strong><%= record_kind_label(@record.record_kind) %>
-  </span>
-  <% placement_status = @record.hierarchy_placement_status %>
-  <span
-    data-hierarchy-placement-status="<%= placement_status %>"
-    title="Diagnostic du placement de cette fiche par rapport à son parent immédiat ou à la racine ; il ne porte pas sur ses descendants">
-    <strong>, placement de cette fiche : </strong>
-    <span class="badge <%= hierarchy_placement_badge_class(placement_status) %>">
-      <%= hierarchy_placement_label(placement_status) %>
-    </span>
-  </span>
-  <strong>, genre : </strong><%= record_metadata_values(@record).genders(@record).map(&:name).join(", ").presence || "—" %>
-  <strong>, durée : </strong><span data-copy-duration="<%= @record.id %>" title="Durée des vidéos connues ; les copies alternatives ne sont pas additionnées"><%= copies.duration %></span>
-</p>
-<p>
-  <strong>Année : </strong><%= render "records/year", record: @record, detail: true %>,
-  <strong>pays : </strong><%= record_metadata_values(@record).countries(@record).map(&:long_name).join(", ") %>
-  <strong>, disponible sur : </strong><span data-copy-supports="<%= @record.id %>"><%= copies.supports %></span>
-  <strong>, version linguistique : </strong><span data-copy-languages="<%= @record.id %>"><%= copies.languages %></span>
-</p>
-<div class="clearfix"></div>
-<%= render "records/poster_controls", record: @record %>
-<div data-record-states-target="summary">
-  <%= render "state_summary", record: @record %>
-</div>
-<%= render "video_assets", record: @record %>
-<%= render "records/year_provenance", record: @record %>
-<% unless @record.record_kind_season? && @record.abstract.blank? %>
-  <% if @record.record_kind_season? %>
-    <details data-season-presentation>
-      <summary>Présentation de cette saison</summary>
-      <p><%= @record.abstract %></p>
-    </details>
-  <% else %>
-    <p><strong>Abrégé : </strong><%= @record.abstract %></p>
-  <% end %>
-<% end %>
+        <% if @record.abstract.present? %>
+          <% if @record.record_kind_season? %>
+            <details class="record-show-synopsis" data-season-presentation>
+              <summary>Présentation de cette saison</summary>
+              <p class="record-show-abstract"><%= @record.abstract %></p>
+            </details>
+          <% else %>
+            <div class="record-show-synopsis" aria-label="Abrégé">
+              <h2 class="record-show-sr-only">Abrégé</h2>
+              <p class="record-show-abstract"><%= @record.abstract %></p>
+            </div>
+          <% end %>
+        <% end %>
+
+      </section>
+
+      <section class="record-show-viewing" data-record-viewing aria-labelledby="record-viewing-title">
+        <h2 id="record-viewing-title">Visionnage et copies</h2>
+        <div class="record-show-viewing-summary">
+          <div data-record-states-target="summary">
+            <%= render "state_summary", record: @record %>
+          </div>
+          <dl class="record-show-copy-facts">
+            <div>
+              <dt>Supports</dt>
+              <dd data-copy-supports="<%= @record.id %>"><%= copies.summary_supports %></dd>
+            </div>
+            <div>
+              <dt>Versions</dt>
+              <dd data-copy-languages="<%= @record.id %>"><%= copies.summary_languages %></dd>
+            </div>
+          </dl>
+        </div>
+        <% if @record.video_assets.any? %>
+          <details class="record-show-copy-details" data-record-copy-details>
+            <summary>Détails des copies</summary>
+            <%= render "video_assets", record: @record %>
+          </details>
+        <% elsif @record.has_children? %>
+          <p class="record-show-copy-note">Les copies sont détaillées dans les fiches enfants.</p>
+        <% else %>
+          <p class="record-show-copy-note">Aucune copie de fichier confirmée sur cette fiche.</p>
+        <% end %>
+      </section>
+      <div class="record-show-secondary">
+        <%= render "records/year_provenance", record: @record %>
+
+      </div>
+    </div>
+  </section>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>
   <% if @record.allows_new_hierarchy_children? %>

@@ -346,27 +346,21 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-record-kind]", text: /Vidéo autonome/
   end
 
-  test "displays the immediate hierarchy placement diagnosis" do
+  test "displays the immediate hierarchy placement diagnosis with the content kind" do
     expected_presentations = [
-      ["undetermined", "undetermined", "À déterminer", "text-bg-warning"],
-      ["standalone_video", "consistent", "Conforme", "text-bg-success"],
-      ["season", "inconsistent", "Incohérent", "text-bg-danger"]
+      ["undetermined", "undetermined", "À déterminer"],
+      ["standalone_video", "consistent", "Conforme"],
+      ["season", "inconsistent", "Incohérent"]
     ]
 
-    expected_presentations.each do |record_kind, status, label, badge_class|
+    expected_presentations.each do |record_kind, status, label|
       @record.update!(record_kind: record_kind)
-
       get record_url(@record)
 
       assert_response :success
-      assert_select(
-        "[data-hierarchy-placement-status='#{status}']" \
-        "[title='Diagnostic du placement de cette fiche par rapport " \
-        "à son parent immédiat ou à la racine ; il ne porte pas " \
-        "sur ses descendants']"
-      ) do
-        assert_select "strong", text: /placement de cette fiche/i
-        assert_select ".badge.#{badge_class}", text: label
+      assert_select "[data-record-kind][data-hierarchy-placement-status='#{status}']" do |nodes|
+        assert_includes nodes.first['class'], "record-show-nature--#{status}"
+        assert_equal "Placement : #{label}", nodes.first['title']
       end
     end
   end
@@ -537,4 +531,119 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
       count: 1
     )
   end
+
+  test "show separates editorial information from viewing and copies" do
+    @record.update!(record_kind: "standalone_video", year: 2023, abstract: "Présentation de l’œuvre.")
+    before = @record.attributes.deep_dup
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "[data-record-overview] #record-title", text: /Ancien titre/
+    assert_select "[data-record-overview] .record-show-abstract", text: "Présentation de l’œuvre."
+    assert_select "[data-record-overview] [data-copy-duration='#{@record.id}']", count: 1
+    assert_select "[data-record-information] [data-record-state-summary]", count: 0
+    assert_select "[data-record-viewing] [data-record-state-summary='#{@record.id}']", count: 1
+    assert_select "[data-record-viewing] [data-copy-supports='#{@record.id}']", count: 1
+    assert_select "[data-record-viewing] [data-copy-languages='#{@record.id}']", count: 1
+    assert_select "[data-record-copy-details]", count: 0
+    assert_equal before, @record.reload.attributes
+  end
+
+  test "copy paths and technical details remain accessible inside a closed disclosure" do
+    @record.update!(record_kind: "standalone_video")
+    asset = @record.video_assets.create!(status: "present", last_known_path: "/videos/Film de test.mkv",
+                                         duration_minutes: 90, language_version: @record.language_version)
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "[data-record-viewing] details[data-record-copy-details]:not([open])" do
+      assert_select "summary", text: "Détails des copies"
+      assert_select "[data-confirmed-video-assets] [data-video-asset='#{asset.id}']", count: 1
+      assert_select "[data-copy-path]", text: "/videos/Film de test.mkv"
+    end
+    assert_select "[data-record-information] [data-confirmed-video-assets]", count: 0
+  end
+
+  test "season presentation stays optional and collapsed in the editorial section" do
+    @record.update!(record_kind: "series")
+    season = @record.children.create!(french_title: "Saison 01", record_kind: "season", rank: 1,
+                                      abstract: "Présentation propre à cette saison.",
+                                      language_version: @record.language_version)
+    get record_url(season)
+
+    assert_response :success
+    assert_select "[data-record-overview] details[data-season-presentation]:not([open])" do
+      assert_select "summary", text: "Présentation de cette saison"
+      assert_select "p", text: "Présentation propre à cette saison."
+    end
+  end
+
+
+  test "show explicitly loads its stylesheet and keeps a poster slot without an image" do
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "head link[rel='stylesheet'][href*='record_show']", count: 1
+    assert_select "[data-record-overview] .record-show-artwork [data-record-poster-placeholder]", count: 1
+    assert_select "[data-record-poster]", count: 0
+    assert_select "[data-record-poster-controls]", count: 1
+    assert_select "[data-record-overview] .record-show-content [data-record-viewing]", count: 1
+  end
+
+
+  test "show presents a plain year and compact values without catalogue suffixes" do
+    @record.update!(record_kind: "standalone_video", year: 1962, length_in_mn: 105)
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "[data-record-information] [data-record-year='#{@record.id}']", text: "1962"
+    assert_select "[data-record-information] .record-show-facts small", count: 0
+    assert_select "[data-copy-duration='#{@record.id}']", text: "01h45"
+    assert_select "[data-record-information] .record-show-facts", text: /catalogue|\?/, count: 0
+    assert_select "[data-record-viewing] [data-copy-languages='#{@record.id}']", text: "VF"
+    assert_select "[data-record-poster-controls]", text: /Les images personnelles|Ce produit utilise/, count: 0
+    assert_select "a[href='#{credits_path}']", text: "Crédits"
+  end
+
+  test "show prefers the measured copy duration over the reference duration" do
+    @record.update!(record_kind: "standalone_video", length_in_mn: 90)
+    @record.video_assets.create!(status: "present", last_known_path: "/videos/Film mesuré.mkv",
+                                 duration_minutes: 105, language_version: @record.language_version)
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "[data-record-information] [data-copy-duration='#{@record.id}']", text: "01:45"
+  end
+
+  test "credits are available separately from the poster controls" do
+    get credits_path
+    assert_response :success
+    assert_select "h1", text: "Crédits"
+    assert_select "p[lang='en']", text: /This product uses the TMDB API/
+  end
+
+
+  test "show places the year with the French title and separates the original title" do
+    @record.update!(record_kind: "standalone_video", french_title: "Titre français",
+                     original_title: "Original title", year: 1962)
+    get record_url(@record)
+
+    assert_response :success
+    assert_select "h1#record-title [data-record-main-title]", text: "Titre français"
+    assert_select "h1#record-title .record-show-year [data-record-year]", text: "1962"
+    assert_select "h1#record-title", text: /Original title/, count: 0
+    assert_select "[data-record-original-title]", text: "Original title"
+    assert_select "[data-record-breadcrumbs] [aria-current='page']", text: "Titre français (Original title)"
+  end
+
+  test "production countries are alphabetized in the compact facts" do
+    @record.update!(record_kind: "standalone_video")
+    @record.countries << Country.create!(short_name: "ZM", long_name: "Zambie")
+    @record.countries << Country.create!(short_name: "US", long_name: "États-Unis")
+    get record_url(@record)
+
+    assert_response :success
+    assert_select ".record-show-facts dd", text: "États-Unis, Zambie"
+  end
+
 end
