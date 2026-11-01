@@ -87,7 +87,17 @@
   </div>
 
   <div>
+    <% if @record.record_kind_season? %>
+      <details data-season-presentation>
+        <summary>Présentation de cette saison (facultative)</summary>
+        <p class="small text-muted">Réserve ce texte aux particularités de cette saison.
+          La présentation générale appartient à la série ; les résumés aux épisodes.
+          Genres et pays peuvent être hérités de la série.</p>
+        <%= f.input :abstract, input_html: { rows: 5, cols: 105 }, label: "Présentation de cette saison" %>
+      </details>
+    <% else %>
     <%= f.input :abstract, width: 100 , input_html: { rows: 5, cols: 105 }, label: "Résumé" %>
+    <% end %>
     <small class="text-muted" data-record-abstract-protection>
       Les sources externes ne remplaceront pas un résumé saisi, corrigé ou supprimé manuellement.
       Pour accepter un texte de remplacement, modifiez le résumé ici puis sauvegardez.
