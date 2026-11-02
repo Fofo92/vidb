@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+require 'yaml'
+require 'sequel'
+require 'open3'
+require_relative '../lib/confirmed_copy_trash'
+
+begin
+  raise ArgumentError, 'Ne pas exécuter ce service comme root.' if Process.uid.zero?
+  volume, _error, status = Open3.capture3('/usr/bin/findmnt', '-rn', '-T', '/videos', '-o', 'TARGET,UUID')
+  unless status.success? && volume.split == ['/videos', '3430606f-92bb-4da4-aaf2-36a3460bc298']
+    raise ArgumentError, 'Le volume /videos attendu n’est pas monté : aucune suppression.'
+  end
+  encoder = File.realpath(ARGV.fetch(0))
+  %w[project_trash_registry project_trash_usage].each do |name|
+    require File.join(encoder, 'lib/video_encoder', name)
+  end
+  configuration = YAML.safe_load(File.read(File.join(encoder, 'config/video_encoder.yml')))
+  path = File.expand_path(configuration.fetch('database'), encoder)
+  raise ArgumentError, 'Base de la file inaccessible.' unless File.file?(path) && File.readable?(path)
+
+  database = Sequel.sqlite(path, timeout: 5000)
+  database[:jobs].first # Refuse an unknown database; never create or migrate the queue here.
+  registry = VideoEncoder::ProjectTrashRegistry.new(database)
+  input = STDIN.read(16_385)
+  raise ArgumentError, 'Requête trop volumineuse.' if input.bytesize > 16_384
+
+  operation = ConfirmedCopyTrash::Operation.new(database: database, registry: registry,
+                                              usage: VideoEncoder::ProjectTrashUsage.new(database))
+  puts JSON.generate(operation.call(JSON.parse(input)))
+rescue StandardError => e
+  warn "Suppression refusée : #{e.message}"
+  exit 1
+ensure
+  database&.disconnect
+end

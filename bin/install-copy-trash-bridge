@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""Install one fixed, argument-free sudo bridge, running as the encoder owner."""
+import argparse
+import os
+from pathlib import Path
+import pwd
+import re
+import shlex
+import subprocess
+import tempfile
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--encoder-root', type=Path, required=True)
+    parser.add_argument('--ruby', type=Path, required=True)
+    parser.add_argument('--deployed-code', type=Path, default=Path('/srv/vidb/current'))
+    args = parser.parse_args()
+    owner = pwd.getpwuid(os.getuid()).pw_name
+    if os.getuid() == 0 or not re.fullmatch(r'[a-z_][a-z0-9_-]*', owner):
+        parser.error('Exécuter comme propriétaire de la file, sans sudo.')
+    encoder = args.encoder_root.resolve(strict=True)
+    ruby = args.ruby.resolve(strict=True)
+    code = args.deployed_code.resolve(strict=True)
+    # Keep /srv/vidb/current in the launcher so subsequent releases are used.
+    worker = args.deployed_code.absolute() / 'bin/trash-confirmed-copy'
+    for path in (encoder / 'Gemfile', encoder / 'config/video_encoder.yml',
+                 encoder / 'lib/video_encoder/project_trash_usage.rb', code / 'bin/trash-confirmed-copy'):
+        if not path.is_file():
+            parser.error(f'Fichier nécessaire absent : {path}')
+    command = [str(ruby), '-rbundler/setup', str(worker), str(encoder)]
+    launcher = '#!/bin/sh\nset -eu\ncd -- ' + shlex.quote(str(encoder)) + '\n'
+    launcher += 'export BUNDLE_GEMFILE=' + shlex.quote(str(encoder / 'Gemfile')) + '\n'
+    launcher += 'exec ' + shlex.join(command) + '\n'
+    rule = f'vidb ALL=({owner}) NOPASSWD: /usr/local/libexec/vidb-copy-trash ""\n'
+    with tempfile.TemporaryDirectory(prefix='vidb-copy-trash-') as directory:
+        script = Path(directory) / 'bridge'
+        sudoers = Path(directory) / 'sudoers'
+        script.write_text(launcher)
+        sudoers.write_text(rule)
+        subprocess.run(['sudo', '/usr/sbin/visudo', '-cf', str(sudoers)], check=True)
+        subprocess.run(['sudo', 'install', '-d', '-m', '0755', '/usr/local/libexec'], check=True)
+        subprocess.run(['sudo', 'install', '-o', 'root', '-g', 'root', '-m', '0755',
+                        str(script), '/usr/local/libexec/vidb-copy-trash'], check=True)
+        subprocess.run(['sudo', 'install', '-o', 'root', '-g', 'root', '-m', '0440',
+                        str(sudoers), '/etc/sudoers.d/vidb-copy-trash'], check=True)
+    print(f'Passerelle installée : vidb → {owner}, file {encoder}. Aucun service redémarré.')
+    if owner != 'pascal':
+        print(f'Configurer VIDB_COPY_TRASH_USER={owner} dans /etc/vidb/vidb.env.')
+
+
+if __name__ == '__main__':
+    main()

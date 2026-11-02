@@ -1,0 +1,21 @@
+<section class="container py-3" data-copy-removal-confirmation>
+  <h1 class="h4">Supprimer cette copie ?</h1>
+  <p><strong><%= @record.french_title %></strong></p>
+  <p class="mb-1"><strong><%= File.basename(@asset.last_known_path) %></strong></p>
+  <p class="small text-break"><code><%= @asset.last_known_path %></code></p>
+  <p>
+    <%= @asset.duration_minutes ? VideoAssets::DisplaySummary.format_minutes(@asset.duration_minutes) : 'Durée inconnue' %>
+    <% if @asset.byte_size %> — <%= number_to_human_size(@asset.byte_size) %><% end %>
+  </p>
+  <p>Seul ce fichier vidéo sera placé dans la corbeille de video_encoder.
+    Le projet, les fichiers de découpage et les autres copies seront conservés.</p>
+  <p class="small text-muted">L’espace disque sera libéré lors du vidage de la corbeille.
+    Une copie utilisée par une tâche en cours, en attente ou reportée ne peut pas être supprimée.</p>
+  <%= form_with url: record_copy_removals_path(@record), method: :post do |form| %>
+    <%= hidden_field_tag :video_asset_id, @asset.id %>
+    <%= hidden_field_tag :confirmation, @confirmation %>
+    <%= link_to 'Annuler', record_path(@record), class: 'btn btn-outline-secondary me-2' %>
+    <%= form.submit 'Oui, supprimer cette copie', class: 'btn btn-danger',
+                    data: { turbo_submits_with: 'Suppression…' } %>
+  <% end %>
+</section>
