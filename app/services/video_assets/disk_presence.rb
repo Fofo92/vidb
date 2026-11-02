@@ -58,7 +58,8 @@ module VideoAssets
       raise ArgumentError, "Disque modifié pendant le scan : #{path}" if entry.nil? != stat.nil?
       return 'missing' unless stat
       return unless matching_entry?(path, entry, stat)
-      return unless asset.byte_size == stat.size && asset.observed_at && asset.observed_at >= stat.mtime
+      return unless asset.byte_size && asset.observed_at
+      return 'missing' unless asset.byte_size == stat.size && asset.observed_at >= stat.mtime
 
       'present'
     end

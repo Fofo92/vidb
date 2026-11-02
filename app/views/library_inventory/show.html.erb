@@ -1,0 +1,66 @@
+<section class="container py-3">
+  <h1 class="h3">Inventaire et doublons</h1>
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+    <%= form_with url: library_inventory_path, method: :get, class: 'd-flex gap-2' do |form| %>
+      <%= form.text_field :q, value: @query, placeholder: 'Titre ou numéro de fiche', aria: { label: 'Titre ou numéro de fiche' }, class: 'form-control' %>
+      <%= form.submit 'Rechercher', class: 'btn btn-outline-primary' %>
+    <% end %>
+    <%= button_to 'Actualiser l’inventaire', refresh_library_inventory_path, class: 'btn btn-outline-secondary' %>
+  </div>
+  <% if @snapshot %>
+    <p class="small text-muted">Dernier inventaire : <%= @snapshot[:inventory_at] %>. Les changements récents peuvent attendre la prochaine passe.</p>
+  <% else %>
+    <p class="alert alert-warning">Aucun inventaire complet exploitable. Aucune absence n’est déduite.</p>
+  <% end %>
+  <h2 class="h5">Copies à examiner — <%= @issue_count %></h2>
+  <p class="small">Un chemin occupé par un autre encodage ne confirme pas l’ancienne copie.
+    Les renommages proposés nécessitent une vérification ; aucune fusion ni suppression automatique.</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle" data-inventory-issues>
+      <thead><tr><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
+      <tbody>
+        <% @issues.each do |row| %>
+          <% asset = row[:asset] %>
+          <tr>
+            <td><%= link_to "#{asset.record.complete_title} (n° #{asset.record_id})", record_path(asset.record) %></td>
+            <td class="small text-break"><%= asset.last_known_path %></td>
+            <td><%= { 'absent' => 'Chemin absent', 'changed' => 'Fichier remplacé ou modifié', 'unverified' => 'Mesures insuffisantes', 'outside' => 'Hors périmètre de l’inventaire' }.fetch(row[:status]) %></td>
+            <td class="small">
+              <% row[:candidates].first(5).each do |entry| %>
+                <div class="mb-1 text-break">
+                  <%= link_to entry[:path], new_record_copy_relink_path(asset.record, video_asset_id: asset.id, path: entry[:path]) %>
+                </div>
+              <% end %>
+              <% if row[:candidates].empty? %>—<% end %>
+              <% if row[:candidates].size > 5 %><span>Plus de cinq possibilités : examen détaillé nécessaire.</span><% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <h2 class="h5 mt-4">Fiches potentiellement en doublon — <%= @duplicate_count %></h2>
+  <p class="small">Même titre normalisé, année et nature, avec contexte de série concordant.
+    Deux copies d’une seule fiche ne sont pas deux fiches en doublon. À examiner avant toute fusion.</p>
+  <% @duplicates.each do |group| %>
+    <div class="border rounded p-2 mb-2" data-logical-duplicate>
+      <% group[:records].each do |record| %>
+        <% copies = group[:copies].fetch(record.id) %>
+        <div class="mb-2">
+          <%= link_to "#{record.complete_title_with_parents} — n° #{record.id}", record_path(record) %>
+          <span class="small text-muted"> · <%= record.year || 'année inconnue' %> · <%= copies.count(&:status_present?) %> copie(s) présente(s)</span>
+          <% copies.each do |asset| %>
+            <div class="small text-break text-muted"><%= asset.status %> · <%= asset.last_known_path %></div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+  <nav class="d-flex gap-3 mt-3" aria-label="Pages du bilan">
+    <% if @page > 1 %><%= link_to 'Précédent', library_inventory_path(q: @query, page: @page - 1) %><% end %>
+    <span>Page <%= @page %></span>
+    <% if @page * 30 < [@issue_count, @duplicate_count].max %>
+      <%= link_to 'Suivant', library_inventory_path(q: @query, page: @page + 1) %>
+    <% end %>
+  </nav>
+</section>

@@ -1,0 +1,15 @@
+<section class="container py-3">
+  <h1 class="h4">Reconnaître cette copie renommée ?</h1>
+  <p><strong><%= @record.complete_title %></strong> — copie n° <%= @asset.id %></p>
+  <p>Ancien chemin : <code class="text-break"><%= @asset.last_known_path %></code></p>
+  <p>Nouveau chemin : <code class="text-break"><%= @path %></code></p>
+  <p>Confirme qu’il s’agit bien de l’ancienne copie renommée.
+    La concordance de taille et de date ne prouve pas à elle seule que le contenu est identique.</p>
+  <p>Seul le chemin de cette copie dans vidb sera actualisé. Aucun fichier, projet ou tâche d’encodage ne sera modifié.</p>
+  <%= form_with url: record_copy_relinks_path(@record), method: :post do |form| %>
+    <%= hidden_field_tag :video_asset_id, @asset.id %>
+    <%= hidden_field_tag :confirmation, @confirmation %>
+    <%= link_to 'Annuler', library_inventory_path, class: 'btn btn-outline-secondary me-2' %>
+    <%= form.submit 'Oui, il s’agit de cette copie', class: 'btn btn-primary' %>
+  <% end %>
+</section>

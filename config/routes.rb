@@ -11,6 +11,9 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
   get "credits", to: "pages#credits", as: :credits
+  resource :library_inventory, only: :show, controller: 'library_inventory' do
+    post :refresh
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -44,6 +47,7 @@ Rails.application.routes.draw do
              controller: "tv_recording_confirmations"
   end
   resources :records do
+    resources :copy_relinks, only: %i[new create], controller: 'record_copy_relinks'
     resources :copy_removals, only: %i[new create], controller: 'record_copy_removals'
     resource :live, only: :show, controller: "record_live"
     resource :poster, only: %i[show update destroy], controller: "record_posters" do

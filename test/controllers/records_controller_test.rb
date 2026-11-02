@@ -619,7 +619,8 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     get credits_path
     assert_response :success
     assert_select "h1", text: "Crédits"
-    assert_select "p[lang='en']", text: /This product uses the TMDB API/
+    assert_select "p", text: "Ce produit utilise l’API TMDB. Les données et images provenant de TMDB sont identifiées dans les fiches et propositions de cette application."
+    assert_select "p[lang='en']", count: 0
   end
 
 

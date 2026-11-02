@@ -48,6 +48,13 @@ class DiskPresenceTest < ActiveSupport::TestCase
     assert_equal 'deleted', @asset.reload.status
   end
 
+  test 'a new file reusing the old path no longer confirms the old copy' do
+    @service.call(inventory(restore_file('new encoding')))
+    assert_equal 'missing', @asset.reload.status
+    assert_equal false, @record.reload.is_available
+    assert_equal true, @record.is_recorded
+  end
+
   test 'incomplete scans and scan races do not mark absent copies' do
     assert_raises(ArgumentError) { @service.call(inventory([{ type: 'inaccessible', path: @directory }])) }
     restore_file
