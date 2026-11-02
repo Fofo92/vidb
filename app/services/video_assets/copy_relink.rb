@@ -3,7 +3,7 @@
 module VideoAssets
   # Reassociate a manually renamed file; no filesystem/project/queue mutation.
   class CopyRelink
-    def initialize(asset, user:, root: '/videos', guard: ReconciliationVolumeGuard.new)
+    def initialize(asset, user:, root: '/videos', guard: ReconciliationVolumeGuard.new(root: root))
       @asset = asset
       @user = user
       @root = root

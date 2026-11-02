@@ -20,6 +20,11 @@ class CopyRelinkTest < ActiveSupport::TestCase
 
   teardown { FileUtils.remove_entry(@directory) }
 
+  test 'the default volume guard receives its required root without a custom guard' do
+    service = VideoAssets::CopyRelink.new(@asset, user: @user, root: @directory)
+    assert_instance_of VideoAssets::CopyRelink, service
+  end
+
   def confirmation
     reader = Struct.new(:call).new(@snapshot)
     VideoAssets::InventorySnapshot.stub(:new, -> { reader }) { @service.confirmation(@target) }
