@@ -44,6 +44,7 @@ Rails.application.routes.draw do
              controller: "tv_recording_confirmations"
   end
   resources :records do
+    resource :live, only: :show, controller: "record_live"
     resource :poster, only: %i[show update destroy], controller: "record_posters" do
       post :fetch, on: :member
     end

@@ -2,7 +2,7 @@
 <% large = local_assigns.fetch(:large, false) %>
 <% if poster %>
   <figure class="<%= large ? 'record-show-poster' : 'float-start me-3 mb-2' %>" data-record-poster>
-    <%= image_tag record_poster_path(record), alt: "Pochette : #{record.complete_title}",
+    <%= image_tag record_poster_path(record, image: poster.image_attachment&.blob_id), alt: "Pochette : #{record.complete_title}",
                   width: large ? 240 : 120,
                   style: "max-width: 100%; height: auto; max-height: #{large ? 360 : 180}px; object-fit: contain;",
                   decoding: "async" %>

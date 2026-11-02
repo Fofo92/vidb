@@ -12,6 +12,7 @@ export default class extends Controller {
     const state = { field: button.dataset.field, value: button.dataset.value }
     if (button.dataset.childId) state.child_id = button.dataset.childId
     this.busy = true
+    this.dispatch("busy", { detail: { busy: true } })
     this.messageTarget.textContent = "Enregistrement…"
     this.setDisabled(true)
 
@@ -41,6 +42,7 @@ export default class extends Controller {
       this.messageTarget.textContent = error.message || "Impossible d’enregistrer la modification."
     } finally {
       this.busy = false
+      this.dispatch("busy", { detail: { busy: false } })
       this.setDisabled(false)
     }
   }

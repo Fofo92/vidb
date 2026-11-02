@@ -8,11 +8,15 @@
 <% poster = RecordPosters::Display.call(@record) %>
 <% placement_status = @record.hierarchy_placement_status %>
 <% display_year = @record.display_range_of_years %>
-<div class="record-show" data-controller="record-states" data-record-states-url-value="<%= record_states_path(@record) %>">
+<div class="record-show" data-controller="record-states record-live" data-record-live-root
+     data-record-live-url-value="<%= record_live_path(@record) %>"
+     data-record-live-version-value="<%= @record_live_version %>" data-record-states-url-value="<%= record_states_path(@record) %>">
   <div class="small" role="status" aria-live="polite" data-record-states-target="message"></div>
 
+  <span class="record-show-sr-only" role="status" aria-live="polite" data-record-live-target="status"></span>
+
   <section class="record-show-overview" data-record-overview aria-labelledby="record-title">
-    <div class="record-show-artwork">
+    <div class="record-show-artwork" data-record-live-region="artwork">
       <% if poster %>
         <%= render "records/poster", record: @record, poster: poster, large: true %>
       <% else %>
@@ -24,7 +28,7 @@
       <%= render "records/poster_controls", record: @record %>
     </div>
     <div class="record-show-content">
-      <section class="record-show-editorial" data-record-information>
+      <section class="record-show-editorial" data-record-information data-record-live-region="information">
         <header class="record-show-heading">
           <nav class="record-show-actions" aria-label="Actions sur cette fiche">
             <%= link_to "Filtrer cet arbre", records_path(filters: { tree_id: @record.id }), class: "btn btn-outline-secondary btn-sm" %>
@@ -97,11 +101,11 @@
 
       </section>
 
-      <section class="record-show-viewing" data-record-viewing aria-labelledby="record-viewing-title">
+      <section class="record-show-viewing" data-record-viewing data-record-live-region="viewing" aria-labelledby="record-viewing-title">
         <h2 id="record-viewing-title">Visionnage et copies</h2>
         <div class="record-show-viewing-summary">
           <div data-record-states-target="summary">
-            <%= render "state_summary", record: @record %>
+            <%= render "records/state_summary", record: @record %>
           </div>
           <dl class="record-show-copy-facts">
             <div>
@@ -117,7 +121,7 @@
         <% if @record.video_assets.any? %>
           <details class="record-show-copy-details" data-record-copy-details>
             <summary>Détails des copies</summary>
-            <%= render "video_assets", record: @record %>
+            <%= render "records/video_assets", record: @record %>
           </details>
         <% elsif @record.has_children? %>
           <p class="record-show-copy-note">Les copies sont détaillées dans les fiches enfants.</p>
@@ -125,16 +129,17 @@
           <p class="record-show-copy-note">Aucune copie de fichier confirmée sur cette fiche.</p>
         <% end %>
       </section>
-      <div class="record-show-secondary">
+      <div class="record-show-secondary" data-record-live-region="provenance">
         <%= render "records/year_provenance", record: @record %>
 
       </div>
     </div>
   </section>
+<div data-record-live-region="children">
 <div class="d-flex flex-row justify-content-between align-items-center">
   <%= link_to "Retour à la liste d'enregistrements", records_path, class: "btn btn-primary btn-sm" %>
   <% if @record.allows_new_hierarchy_children? %>
-    <%= link_to new_child_record_path,
+    <%= link_to new_child_record_path(@record),
       class: "btn btn-primary btn-sm fa-xl" do %>
       <i class="fa-regular fa-square-plus"></i>
     <% end %>
@@ -164,14 +169,16 @@
         <th>Pays</th>
         <th>Version</th>
         <th>Support</th>
-        <%= render "state_columns", record: @record, header: true %>
+        <%= render "records/state_columns", record: @record, header: true %>
         <th><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody data-record-states-target="rows">
-      <%= render "child_rows", record: @record %>
+      <%= render "records/child_rows", record: @record %>
     </tbody>
   </table>
 <% end %>
+
+</div>
 
 </div>

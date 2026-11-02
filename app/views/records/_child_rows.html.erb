@@ -1,6 +1,6 @@
       <% record.children.order(:rank).each do |record| %>
         <% copies = record_copy_summary(record) %>
-        <tr>
+        <tr data-record-live-child="<%= record.id %>">
           <td><%= record.id %></td>
           <td><%= record.rank %></td>
           <td>

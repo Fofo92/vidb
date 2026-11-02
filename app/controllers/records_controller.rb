@@ -12,6 +12,8 @@ class RecordsController < ApplicationController
   end
 
   def show
+    @record_live_version = RecordShowVersion.new(@record).call
+    @record.reload
   end
 
   def new
