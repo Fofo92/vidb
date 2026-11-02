@@ -21,15 +21,27 @@ begin
   path = File.expand_path(configuration.fetch('database'), encoder)
   raise ArgumentError, 'Base de la file inaccessible.' unless File.file?(path) && File.readable?(path)
 
+  input = STDIN.read(16_385)
+  raise ArgumentError, 'Requête trop volumineuse.' if input.bytesize > 16_384
+  request = JSON.parse(input)
+  if request.is_a?(Hash) && request['operation'] == 'health'
+    require 'sqlite3'
+    probe = SQLite3::Database.new(path, readonly: true)
+    begin
+      probe.get_first_value('SELECT 1 FROM jobs LIMIT 1')
+      puts JSON.generate(status: 'ready')
+    ensure
+      probe.close
+    end
+    exit 0
+  end
+
   database = Sequel.sqlite(path, timeout: 5000)
   database[:jobs].first # Refuse an unknown database; never create or migrate the queue here.
   registry = VideoEncoder::ProjectTrashRegistry.new(database)
-  input = STDIN.read(16_385)
-  raise ArgumentError, 'Requête trop volumineuse.' if input.bytesize > 16_384
-
   operation = ConfirmedCopyTrash::Operation.new(database: database, registry: registry,
                                               usage: VideoEncoder::ProjectTrashUsage.new(database))
-  puts JSON.generate(operation.call(JSON.parse(input)))
+  puts JSON.generate(operation.call(request))
 rescue StandardError => e
   warn "Suppression refusée : #{e.message}"
   exit 1

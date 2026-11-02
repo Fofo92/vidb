@@ -71,12 +71,19 @@ installe un lanceur appartenant à root dans `/usr/local/libexec/vidb-copy-trash
 et `/etc/sudoers.d/vidb-copy-trash`. La seule autorisation accordée à `vidb` est
 ce lanceur **sans argument**, comme `pascal`, jamais comme root. Il accepte une
 requête JSON bornée sur son entrée standard. Les données de la page ne deviennent
-ni une commande shell, ni un chemin de programme. Le lanceur suit
-`/srv/vidb/current` et fixe le dépôt, le Ruby et le Gemfile de video_encoder.
+ni une commande shell, ni un chemin de programme. L’installateur lit uniquement
+les deux fichiers de code nécessaires dans `/srv/vidb/current`, comme `vidb`,
+et les installe dans `/usr/local/libexec/vidb-copy-trash-code/<empreinte>/`.
+Ces copies appartiennent à root et sont lisibles par Pascal. Le lanceur utilise
+ces copies et fixe le dépôt, le Ruby et le Gemfile de video_encoder. Aucun accès
+supplémentaire aux releases, à la base PostgreSQL ou aux secrets de production.
 
 Pour un autre utilisateur propriétaire, renseigner `VIDB_COPY_TRASH_USER` dans
 `/etc/vidb/vidb.env`, puis redémarrer uniquement vidb. Si le dépôt video_encoder
-ou son Ruby change d’emplacement, réexécuter l’installateur. Si le pont n’est pas
+ou son Ruby change d’emplacement, réexécuter l’installateur. Le réexécuter aussi
+après un déploiement qui modifie `bin/trash-confirmed-copy` ou
+`lib/confirmed_copy_trash.rb` : ces deux fichiers sont copiés, pas liés à la release.
+Si le pont n’est pas
 installé ou que l’accès est refusé, la confirmation échoue sans suppression.
 Le worker refuse d’être lancé comme root. Aucun timer supplémentaire.
 
