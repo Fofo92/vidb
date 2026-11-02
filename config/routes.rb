@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
   get "credits", to: "pages#credits", as: :credits
+  resources :copy_retirements, only: %i[new create]
   resource :library_inventory, only: :show, controller: 'library_inventory' do
     post :refresh
   end

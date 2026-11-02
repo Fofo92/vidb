@@ -15,13 +15,23 @@
   <h2 class="h5">Copies à examiner — <%= @issue_count %></h2>
   <p class="small">Un chemin occupé par un autre encodage ne confirme pas l’ancienne copie.
     Les renommages proposés nécessitent une vérification ; aucune fusion ni suppression automatique.</p>
+  <%= form_with url: new_copy_retirement_path, method: :get, id: 'missing-copy-selection', class: 'mb-2' do |form| %>
+    <%= form.submit 'Confirmer la suppression des fichiers sélectionnés…', class: 'btn btn-outline-secondary btn-sm' %>
+    <span class="small text-muted">Uniquement les fichiers absents supprimés volontairement ; confirmation avant validation.</span>
+  <% end %>
   <div class="table-responsive">
     <table class="table table-sm align-middle" data-inventory-issues>
-      <thead><tr><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
+      <thead><tr><th><span class="visually-hidden">Sélection</span></th><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
       <tbody>
         <% @issues.each do |row| %>
           <% asset = row[:asset] %>
           <tr>
+            <td>
+              <% if asset.status_missing? && row[:status] == 'absent' && asset.technical_details['copy_removal_pending'].blank? %>
+                <%= check_box_tag 'video_asset_ids[]', asset.id, false, form: 'missing-copy-selection',
+                                  aria: { label: "Confirmer la suppression du fichier de la copie #{asset.id}" } %>
+              <% end %>
+            </td>
             <td><%= link_to "#{asset.record.complete_title} (n° #{asset.record_id})", record_path(asset.record) %></td>
             <td class="small text-break"><%= asset.last_known_path %></td>
             <td><%= { 'absent' => 'Chemin absent', 'changed' => 'Fichier remplacé ou modifié', 'unverified' => 'Mesures insuffisantes', 'outside' => 'Hors périmètre de l’inventaire' }.fetch(row[:status]) %></td>
