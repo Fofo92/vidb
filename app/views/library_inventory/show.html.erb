@@ -16,8 +16,8 @@
   <p class="small">Un chemin occupé par un autre encodage ne confirme pas l’ancienne copie.
     Les renommages proposés nécessitent une vérification ; aucune fusion ni suppression automatique.</p>
   <%= form_with url: new_copy_retirement_path, method: :get, id: 'missing-copy-selection', class: 'mb-2' do |form| %>
-    <%= form.submit 'Confirmer la suppression des fichiers sélectionnés…', class: 'btn btn-outline-secondary btn-sm' %>
-    <span class="small text-muted">Uniquement les fichiers absents supprimés volontairement ; confirmation avant validation.</span>
+    <%= form.submit 'Retirer les anciennes références sélectionnées…', class: 'btn btn-outline-secondary btn-sm' %>
+    <span class="small text-muted">Chemins absents uniquement ; sauvegarde et confirmation avant retrait de vidb.</span>
   <% end %>
   <div class="table-responsive">
     <table class="table table-sm align-middle" data-inventory-issues>
@@ -29,7 +29,7 @@
             <td>
               <% if asset.status_missing? && row[:status] == 'absent' && asset.technical_details['copy_removal_pending'].blank? %>
                 <%= check_box_tag 'video_asset_ids[]', asset.id, false, form: 'missing-copy-selection',
-                                  aria: { label: "Confirmer la suppression du fichier de la copie #{asset.id}" } %>
+                                  aria: { label: "Retirer l’ancienne référence #{asset.id} après sauvegarde" } %>
               <% end %>
             </td>
             <td><%= link_to "#{asset.record.complete_title} (n° #{asset.record_id})", record_path(asset.record) %></td>
@@ -55,7 +55,7 @@
   <% @duplicates.each do |group| %>
     <div class="border rounded p-2 mb-2" data-logical-duplicate>
       <% group[:records].each do |record| %>
-        <% copies = group[:copies].fetch(record.id) %>
+        <% copies = group[:copies].fetch(record.id).reject(&:status_deleted?) %>
         <div class="mb-2">
           <%= link_to "#{record.complete_title_with_parents} — n° #{record.id}", record_path(record) %>
           <span class="small text-muted"> · <%= record.year || 'année inconnue' %> · <%= copies.count(&:status_present?) %> copie(s) présente(s)</span>

@@ -12,7 +12,8 @@ class MissingCopyRetirementTest < ActiveSupport::TestCase
     @current = @record.video_assets.create!(status: 'present', last_known_path: File.join(@root, 'current.mkv'),
                                             duration_minutes: 42)
     File.write(@current.last_known_path, 'current encoding')
-    @service = VideoAssets::MissingCopyRetirement.new(user: @user, root: @root, guard: -> {})
+    @backup = VideoAssets::CopyReferenceBackup.new(directory: File.join(@root, 'backups'))
+    @service = VideoAssets::MissingCopyRetirement.new(user: @user, root: @root, guard: -> {}, backup: @backup)
   end
 
   teardown { FileUtils.remove_entry(@root) }
@@ -27,23 +28,27 @@ class MissingCopyRetirementTest < ActiveSupport::TestCase
     assert_equal ['current.mkv'], Dir.children(@root)
   end
 
-  test 'retirement preserves history availability and the other encoding' do
+  test 'cleanup backs up the obsolete reference and preserves the present copy and viewing state' do
+    @record.update_columns(is_seen: true)
     @service.call(token(@old))
-    assert @old.reload.status_deleted?
-    assert_equal 'keep', @old.technical_details['qualification']
-    assert_equal @user.id, @old.technical_details.dig('copy_retirement', 'user_id')
-    assert_equal 2, @record.video_assets.count
+    assert_not VideoAsset.exists?(@old.id)
+    data = VideoAssets::CopyReferenceBackup.read(@service.backup_path)
+    assert_equal 'keep', data['assets'].first.dig('technical_details', 'qualification')
+    assert_equal @user.id, data['user_id']
+    assert_equal 1, @record.video_assets.count
+    assert @record.reload.is_seen
     assert @record.reload.is_recorded
     assert @record.is_available
     assert @current.reload.status_present?
     assert_equal 'current encoding', File.read(@current.last_known_path)
-    assert_equal ['current.mkv'], Dir.children(@root)
+    assert_equal ['backups', 'current.mkv'], Dir.children(@root).sort
   end
 
-  test 'present or already deleted references cannot be retired' do
+  test 'present copies cannot be cleaned but old deleted references can' do
     assert_raises(ArgumentError) { token(@current) }
     @old.update!(status: 'deleted')
-    assert_raises(ArgumentError) { token(@old) }
+    @service.call(token(@old))
+    assert_not VideoAsset.exists?(@old.id)
   end
 
   test 'reappearing file prevents confirmation even before the next inventory' do
@@ -74,8 +79,8 @@ class MissingCopyRetirementTest < ActiveSupport::TestCase
     other = @record.video_assets.create!(status: 'missing', last_known_path: File.join(@root, 'other.mkv'))
     result = @service.call(token(@old, other))
     assert_equal [@old.id, other.id], result.map(&:id)
-    assert @old.reload.status_deleted?
-    assert other.reload.status_deleted?
+    assert_not VideoAsset.exists?(@old.id)
+    assert_not VideoAsset.exists?(other.id)
     assert @current.reload.status_present?
   end
 
@@ -85,7 +90,7 @@ class MissingCopyRetirementTest < ActiveSupport::TestCase
     travel 16.minutes do
       assert_raises(ArgumentError) { @service.call(confirmation) }
     end
-    service = VideoAssets::MissingCopyRetirement.new(user: Struct.new(:id).new(@user.id + 1), root: @root, guard: -> {})
+    service = VideoAssets::MissingCopyRetirement.new(user: Struct.new(:id).new(@user.id + 1), root: @root, guard: -> {}, backup: @backup)
     assert_raises(ArgumentError) { service.call(confirmation) }
     assert @old.reload.status_missing?
   end
@@ -99,7 +104,7 @@ class MissingCopyRetirementTest < ActiveSupport::TestCase
     confirmation = token(@old)
     count = 0
     guard = -> { count += 1; raise ArgumentError, 'Volume lost' if count == 2 }
-    service = VideoAssets::MissingCopyRetirement.new(user: @user, root: @root, guard: guard)
+    service = VideoAssets::MissingCopyRetirement.new(user: @user, root: @root, guard: guard, backup: @backup)
     assert_raises(ArgumentError) { service.call(confirmation) }
     assert @old.reload.status_missing?
   end
@@ -111,6 +116,35 @@ class MissingCopyRetirementTest < ActiveSupport::TestCase
   test 'empty excessive or invalid selections are refused' do
     [[], (1..101).to_a, ['invalid']].each do |ids|
       assert_raises(ArgumentError) { @service.confirmation(ids) }
+    end
+  end
+
+  test 'backup failure prevents every removal' do
+    failed = Object.new
+    failed.define_singleton_method(:write) { |*_args, **_options| raise Errno::ENOSPC }
+    service = VideoAssets::MissingCopyRetirement.new(user: @user, root: @root, guard: -> {}, backup: failed)
+    assert_raises(Errno::ENOSPC) { service.call(token(@old)) }
+    assert @old.reload.status_missing?
+    assert @current.reload.status_present?
+  end
+
+  test 'old retirement confirmations cannot authorize physical reference cleanup' do
+    plan = { 'user_id' => @user.id, 'copies' => [] }
+    previous = Rails.application.message_verifier('missing-copy-retirement').generate(
+      plan, purpose: 'missing-copy-retirement', expires_in: 15.minutes
+    )
+    assert_raises(ArgumentError) { @service.call(previous) }
+    assert @old.reload.status_missing?
+  end
+
+  test 'viewing states including unknown survive removal of the final copy' do
+    @current.destroy!
+    [true, false, nil].each_with_index do |seen, index|
+      copy = @record.video_assets.create!(status: 'missing', last_known_path: File.join(@root, "gone#{index}.mkv"))
+      @record.update_columns(is_seen: seen, seen_state_confirmed_at: Time.current)
+      before = @record.reload.attributes.slice('is_seen', 'seen_state_confirmed_at')
+      @service.call(token(copy))
+      assert_equal before, @record.reload.attributes.slice('is_seen', 'seen_state_confirmed_at')
     end
   end
 end

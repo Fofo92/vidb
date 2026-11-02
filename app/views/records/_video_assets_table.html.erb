@@ -64,8 +64,8 @@
             <td class="text-end text-nowrap">
               <% if asset.status_missing? && asset.technical_details['copy_removal_pending'].blank? %>
                 <%= link_to new_copy_retirement_path(video_asset_ids: [asset.id]),
-                            class: 'btn btn-sm btn-outline-secondary', title: 'Confirmer la suppression du fichier',
-                            aria: { label: 'Confirmer la suppression de ce fichier introuvable' } do %>
+                            class: 'btn btn-sm btn-outline-secondary', title: 'Retirer cette ancienne référence…',
+                            aria: { label: 'Retirer cette référence absente de vidb après sauvegarde' } do %>
                   <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
                 <% end %>
               <% end %>

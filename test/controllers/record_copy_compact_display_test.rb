@@ -44,12 +44,27 @@ class RecordCopyCompactDisplayTest < ActionDispatch::IntegrationTest
     assert_select "[data-video-asset='#{asset.id}'] summary", text: /\/videos\//, count: 0
   end
 
-  test 'retains deleted copy status and broadcast part numbering' do
+  test 'deleted copies leave the main display and offer reference cleanup' do
     @record.update!(broadcast_part_count: 2)
     asset = VideoAsset.create!(record: @record, last_known_path: '/videos/partie-1.mkv',
                                language_version: @vf, broadcast_part_number: 1, status: 'deleted')
     get record_url(@record)
-    assert_select "[data-video-asset='#{asset.id}']", text: /Supprimée.*Partie 1\/2/m
+    assert_select "[data-video-asset='#{asset.id}']", count: 0
+    assert_select '[data-copy-history]', count: 0
+    assert_select "[data-copy-cleanup] a[href='#{new_copy_retirement_path(video_asset_ids: [asset.id])}']", count: 1
+    assert asset.reload.status_deleted?
+  end
+
+  test 'present and missing copies retain their broadcast part numbering' do
+    @record.update!(broadcast_part_count: 2)
+    first = VideoAsset.create!(record: @record, last_known_path: '/videos/partie-1.mkv',
+                               language_version: @vf, broadcast_part_number: 1, status: 'present')
+    second = VideoAsset.create!(record: @record, last_known_path: '/videos/partie-2.mkv',
+                                language_version: @vf, broadcast_part_number: 2, status: 'missing')
+    get record_url(@record)
+    assert_response :success
+    assert_select "[data-video-asset='#{first.id}']", text: /Présente.*Partie 1\/2/m
+    assert_select "[data-video-asset='#{second.id}']", text: /Introuvable.*Partie 2\/2/m
   end
 
   private

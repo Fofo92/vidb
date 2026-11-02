@@ -18,13 +18,14 @@ class CopyRetirementsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-video-asset='#{@current.id}'] a[title='Supprimer cette copie…']", count: 1
   end
 
-  test 'deleted copy details are retained inside a closed history disclosure' do
+  test 'old deleted rows no longer appear as a visible technical history' do
     @old.update!(status: 'deleted')
     get record_url(@record)
     assert_select '[data-confirmed-video-assets]', count: 1
     assert_select "[data-confirmed-video-assets] [data-video-asset='#{@old.id}']", count: 0
-    assert_select '[data-copy-history]:not([open])', count: 1
-    assert_select "[data-copy-history] [data-video-asset='#{@old.id}']", count: 1
+    assert_select '[data-copy-history]', count: 0
+    assert_select '[data-copy-cleanup]', text: /Nettoyer ces références/
+    assert_select "[data-video-asset='#{@old.id}']", count: 0
     assert_select "[data-confirmed-video-assets] [data-video-asset='#{@current.id}']", count: 1
   end
 
@@ -37,7 +38,7 @@ class CopyRetirementsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_select 'input[name="confirmation"][value="signed"]'
-    assert_select 'input[type="submit"][value="Oui, ces fichiers ont été supprimés"]'
+    assert_select 'input[type="submit"][value="Retirer ces références de vidb"]'
     assert @old.reload.status_missing?
   end
 

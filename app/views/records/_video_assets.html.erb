@@ -1,14 +1,14 @@
 <% assets = record.video_assets.includes(:medium, :language_version).order(:id).to_a %>
 <% active, history = assets.partition { |asset| !asset.status_deleted? } %>
 <% if active.any? %>
-  <p class="mb-1"><strong>Copies confirmées :</strong></p>
+  <p class="mb-1"><strong>Copies :</strong></p>
   <div data-confirmed-video-assets>
     <%= render "records/video_assets_table", record: record, assets: active %>
   </div>
 <% end %>
 <% if history.any? %>
-  <details class="small mt-2" data-copy-history>
-    <summary>Afficher l’historique des copies (<%= history.size %>)</summary>
-    <%= render "records/video_assets_table", record: record, assets: history %>
-  </details>
+  <div class="small mt-2" data-copy-cleanup>
+    <%= history.size %> ancienne(s) référence(s) classée(s) supprimée(s).
+    <%= link_to 'Nettoyer ces références…', new_copy_retirement_path(video_asset_ids: history.first(100).map(&:id)) %>
+  </div>
 <% end %>

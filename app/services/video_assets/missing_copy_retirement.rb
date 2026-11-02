@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 module VideoAssets
-  # Close obsolete references only; no file, project or job is removed.
+  # Back up and remove obsolete references only; no media, project or job is removed.
   class MissingCopyRetirement
-    def initialize(user:, root: '/videos', guard: ReconciliationVolumeGuard.new(root: root))
+    attr_reader :backup_path
+
+    def initialize(user:, root: '/videos', guard: ReconciliationVolumeGuard.new(root: root),
+                   backup: CopyReferenceBackup.new)
       @user = user
       @guard = guard
       @absence = AbsentCopyPath.new(root: root)
+      @backup = backup
     end
 
     def confirmation(ids)
@@ -19,11 +23,11 @@ module VideoAssets
 
       assets.each { |asset| validate_copy(asset) }
       plan = { 'user_id' => @user.id, 'copies' => assets.map { |asset| snapshot(asset) } }
-      { assets: assets, token: verifier.generate(plan, expires_in: 15.minutes, purpose: 'missing-copy-retirement') }
+      { assets: assets, token: verifier.generate(plan, expires_in: 15.minutes, purpose: 'copy-reference-cleanup') }
     end
 
     def call(token)
-      plan = verifier.verified(token, purpose: 'missing-copy-retirement')
+      plan = verifier.verified(token, purpose: 'copy-reference-cleanup')
       valid = plan.is_a?(Hash) && plan['user_id'] == @user.id && plan['copies'].is_a?(Array)
       raise ArgumentError, 'Confirmation expirée ou invalide.' unless valid && plan['copies'].size.between?(1, 100)
 
@@ -45,9 +49,9 @@ module VideoAssets
     end
 
     def validate_copy(asset)
-      unless asset.status_missing?
+      unless asset.status_missing? || asset.status_deleted?
         raise ArgumentError,
-              'Seules les copies introuvables peuvent être classées supprimées.'
+              'Une copie présente ne peut pas être nettoyée.'
       end
       raise ArgumentError, 'Une suppression vers la corbeille est déjà en cours.' if
         asset.technical_details['copy_removal_pending']
@@ -70,6 +74,7 @@ module VideoAssets
       raise ArgumentError, 'La sélection a changé : renouvelle la confirmation.' unless current == copies
 
       assets.each { |asset| validate_copy(asset) }
+      @backup_path = @backup.write(assets, user: @user)
       update_references(assets)
       @guard.call
       assets.each { |asset| @absence.call(asset.last_known_path) }
@@ -77,14 +82,7 @@ module VideoAssets
     end
 
     def update_references(assets)
-      assets.each { |asset| update_reference(asset) }
-    end
-
-    def update_reference(asset)
-      event = { 'origin' => 'manual_missing_confirmation', 'confirmed_at' => Time.current.iso8601(9),
-                'user_id' => @user.id, 'path' => asset.last_known_path, 'previous_status' => asset.status }
-      details = asset.technical_details.merge('copy_retirement' => event)
-      asset.update!(status: 'deleted', technical_details: details)
+      assets.each(&:destroy!)
     end
   end
 end

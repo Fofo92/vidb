@@ -1,19 +1,19 @@
 <section class="container py-3">
-  <h1 class="h4">Confirmer la suppression de ces fichiers ?</h1>
-  <p>Les <%= @assets.size %> fichiers ci-dessous sont absents. Confirme que tu les as supprimés volontairement
-    et que tu ne souhaites plus conserver leurs références parmi les copies actives.</p>
-  <p>Si tu les as renommés ou déplacés, utilise plutôt le rattachement au nouveau chemin.</p>
+  <h1 class="h4">Retirer ces anciennes références ?</h1>
+  <p>Ces <%= @assets.size %> anciens chemins sont absents. Leurs références seront retirées de vidb après sauvegarde technique.</p>
+  <p>S’il s’agit d’un déplacement vers une copie déjà présente dans cette fiche, conserve cette copie présente et retire
+    les anciennes références devenues inutiles. Si le nouveau chemin n’est pas encore associé, utilise plutôt le rattachement.</p>
   <ul>
     <% @assets.each do |asset| %>
       <li><strong><%= asset.record.complete_title %></strong> — copie n° <%= asset.id %><br>
         <code class="text-break"><%= asset.last_known_path %></code></li>
     <% end %>
   </ul>
-  <p>Aucun fichier ne sera effacé. Les copies passeront dans l’historique avec l’état « Supprimée ».</p>
+  <p>Aucun fichier sur disque ne sera effacé ou déplacé. La fiche de l’œuvre et son état vu/non vu seront conservés.</p>
   <%= form_with url: copy_retirements_path, method: :post do |form| %>
     <%= hidden_field_tag :confirmation, @confirmation %>
     <%= link_to 'Annuler', library_inventory_path, class: 'btn btn-outline-secondary me-2' %>
-    <%= form.submit 'Oui, ces fichiers ont été supprimés', class: 'btn btn-danger',
+    <%= form.submit 'Retirer ces références de vidb', class: 'btn btn-danger',
                     data: { turbo_submits_with: 'Validation…' } %>
   <% end %>
 </section>

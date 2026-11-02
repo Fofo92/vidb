@@ -10,9 +10,11 @@ class CopyRetirementsController < ApplicationController
   end
 
   def create
-    assets = service.call(params.require(:confirmation))
+    operation = service
+    assets = operation.call(params.require(:confirmation))
     destination = assets.one? ? record_path(assets.first.record_id) : library_inventory_path
-    redirect_to destination, notice: "#{assets.size} copie(s) classée(s) supprimée(s), historique conservé.",
+    message = "#{assets.size} référence(s) retirée(s). Sauvegarde technique : #{operation.backup_path}"
+    redirect_to destination, notice: message,
                              status: :see_other
   rescue ArgumentError, SystemCallError => e
     redirect_to library_inventory_path, alert: e.message, status: :see_other
