@@ -1,49 +1,75 @@
-<%= search_form_for @q, html: { class: "card my-3", "data-record-filters": true } do |form| %>
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-4">
-        <%= form.label :french_title_or_original_title_cont, "Titre contenant" %>
-        <%= form.search_field :french_title_or_original_title_cont, class: "form-control" %>
+<%= search_form_for @q, html: { class: "card my-2", "data-record-filters": true } do |form| %>
+  <div class="card-body p-2">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-6 col-lg-3">
+        <%= form.label :french_title_or_original_title_cont, "Titre contenant", class: "small mb-0" %>
+        <%= form.search_field :french_title_or_original_title_cont, class: "form-control form-control-sm" %>
       </div>
-      <% { country_id: "Pays", gender_id: "Genre", language_version_id: "Version linguistique",
-           medium_id: "Support", record_kind: "Nature", missing: "Information manquante" }.each do |field, label| %>
-        <div class="col-md-4">
-          <%= label_tag "filters_#{field}", label %>
+      <% { record_kind: ["Nature", "col-md-6 col-lg-2"],
+           completeness: ["Complétude sur disque", "col-md-6 col-lg-2"] }.each do |field, (label, columns)| %>
+        <div class="col-12 <%= columns %>">
+          <%= label_tag "filters_#{field}", label, class: "small mb-0" %>
           <%= select_tag "filters[#{field}]", options_for_select(record_filter_options(field), record_filter_value(field)),
-                         include_blank: "Tous", class: "form-select", id: "filters_#{field}" %>
+                         include_blank: "Tous", class: "form-select form-select-sm", id: "filters_#{field}" %>
         </div>
       <% end %>
-      <div class="col-md-4">
-        <%= label_tag :filters_year, "Année" %>
-        <%= number_field_tag "filters[year]", record_filter_value(:year), min: 1900, max: Date.current.year,
-                             class: "form-control", id: "filters_year", autocomplete: "off" %>
-      </div>
-      <div class="col-md-4">
-        <%= label_tag :filters_tree_id, "Arbre — parent et descendants" %>
+      <div class="col-12 col-md-6 col-lg-3">
+        <%= label_tag :filters_tree_id, "Arbre", class: "small mb-0" %>
         <%= select_tag "filters[tree_id]", options_for_select(
               RecordTreeOptions.new.call(selected_id: record_filter_value(:tree_id)), record_filter_value(:tree_id)),
-              include_blank: "Tous les arbres", class: "form-select", id: "filters_tree_id" %>
+              include_blank: "Tous les arbres", class: "form-select form-select-sm", id: "filters_tree_id" %>
       </div>
-      <div class="col-md-4">
-        <%= label_tag :filters_display, "Afficher" %>
+      <div class="col-12 col-md-6 col-lg-2">
+        <%= label_tag :filters_display, "Afficher", class: "small mb-0" %>
         <%= select_tag "filters[display]", options_for_select(
               [["Fiches correspondantes", "matches"], ["Arbres des fiches correspondantes", "trees"], ["Racines seules", "roots"]],
-              record_filter_value(:display) || "matches"), class: "form-select", id: "filters_display" %>
+              record_filter_value(:display) || "matches"), class: "form-select form-select-sm", id: "filters_display" %>
+      </div>
+      <% { country_id: "Pays", gender_id: "Genre", language_version_id: "Version", medium_id: "Support" }.each do |field, label| %>
+        <div class="col-6 col-md-3 col-lg-2">
+          <%= label_tag "filters_#{field}", label, class: "small mb-0" %>
+          <%= select_tag "filters[#{field}]", options_for_select(record_filter_options(field), record_filter_value(field)),
+                         include_blank: "Tous", class: "form-select form-select-sm", id: "filters_#{field}" %>
+        </div>
+      <% end %>
+      <div class="col-6 col-md-3 col-lg-1">
+        <%= label_tag :filters_year, "Année", class: "small mb-0" %>
+        <%= number_field_tag "filters[year]", record_filter_value(:year), min: 1900, max: Date.current.year,
+                             class: "form-control form-control-sm", id: "filters_year", autocomplete: "off" %>
+      </div>
+      <div class="col-12 col-md-6 col-lg-3 d-flex gap-2">
+        <%= form.submit "Filtrer", class: "btn btn-primary btn-sm" %>
+        <%= link_to "Réinitialiser", records_path, class: "btn btn-outline-secondary btn-sm" %>
       </div>
     </div>
-    <div class="form-check my-3">
-      <%= check_box_tag "filters[review]", "1", record_filter_value(:review) == "1", class: "form-check-input", id: "filters_review" %>
-      <%= label_tag :filters_review, "Uniquement les fiches à consolider", class: "form-check-label" %>
-    </div>
-    <p class="small text-muted">Les critères se cumulent sur une même fiche. Pays, genres et année portent sur ses champs.
-      Version et support portent sur ses copies présentes, ou ses champs si elle n’a aucune copie présente.
-      L’affichage par arbres ajoute les autres membres pour donner le contexte.</p>
+    <% advanced = record_filter_value(:missing).present? || record_filter_value(:review) == "1" %>
+    <details class="small mt-2" data-record-filter-advanced <%= 'open' if advanced %>>
+      <summary class="text-muted">Contrôles du catalogue et aide sur les critères</summary>
+      <div class="row g-2 align-items-end mt-1">
+        <div class="col-12 col-md-4">
+          <%= label_tag :filters_missing, "Information manquante", class: "mb-0" %>
+          <%= select_tag "filters[missing]", options_for_select(record_filter_options(:missing), record_filter_value(:missing)),
+                         include_blank: "Toutes", class: "form-select form-select-sm", id: "filters_missing" %>
+        </div>
+        <div class="col-12 col-md-6 form-check ms-2 mb-1">
+          <%= check_box_tag "filters[review]", "1", record_filter_value(:review) == "1", class: "form-check-input", id: "filters_review" %>
+          <%= label_tag :filters_review, "Uniquement les fiches à consolider", class: "form-check-label" %>
+        </div>
+      </div>
+      <p class="text-muted mt-2 mb-0">La complétude sur disque concerne les collections, séries et saisons, selon leurs œuvres connues dans vidb :
+        complet si chacune possède une copie confirmée présente (toutes les parties si nécessaire) ; incomplet si au moins une n’est pas couverte ;
+        indéterminé pour un ensemble ou une branche sans contenu renseigné. Les anciennes cases de disponibilité ne suffisent pas.
+        Les présences sont celles du dernier inventaire, pas d’un nouveau scan pendant la recherche.
+        Elle ne garantit pas que le catalogue connaît tous les épisodes ou films existants.
+        Les autres critères se cumulent sur une même fiche. Version et support portent sur ses copies présentes,
+        ou ses champs si elle n’a aucune copie présente. L’affichage par arbres ajoute le contexte.</p>
+    </details>
     <% if @record_filter.tree %>
-      <p>Recherche dans <strong><%= @record_filter.tree.complete_title %></strong>, parent inclus.</p>
-      <%= link_to "Qualifier les enfants de cet arbre", edit_record_child_qualification_path(@record_filter.tree),
-                  class: "btn btn-outline-primary" if @record_filter.tree.has_children? %>
+      <div class="small mt-2">
+        Recherche dans <strong><%= @record_filter.tree.complete_title %></strong>, parent inclus.
+        <%= link_to "Qualifier les enfants", edit_record_child_qualification_path(@record_filter.tree),
+                    class: "btn btn-outline-primary btn-sm ms-2" if @record_filter.tree.has_children? %>
+      </div>
     <% end %>
-    <%= form.submit "Filtrer", class: "btn btn-primary" %>
-    <%= link_to "Réinitialiser", records_path, class: "btn btn-outline-secondary" %>
   </div>
 <% end %>

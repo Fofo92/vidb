@@ -47,6 +47,9 @@ class RecordIndexFilter
   def scalar_filters(scope)
     scope = scope.where(record_kind: @parameters["record_kind"]) if @parameters["record_kind"].present?
     scope = scope.where(year: integer(@parameters["year"])) if @parameters["year"].present?
+    if @parameters['completeness'].present?
+      scope = scope.where(id: RecordCompleteness.new.ids(@parameters['completeness']))
+    end
     scope
   end
 

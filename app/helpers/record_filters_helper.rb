@@ -6,6 +6,7 @@ module RecordFiltersHelper
     when :language_version_id then LanguageVersion.order(:short_name).pluck(:short_name, :id)
     when :medium_id then Medium.order(:short_name).pluck(:short_name, :id)
     when :record_kind then RecordsHelper::RECORD_KIND_LABELS.map { |value, label| [label, value] }
+    when :completeness then [["Complets", "complete"], ["Incomplets", "incomplete"], ["Indéterminés", "unknown"]]
     when :missing then RecordMetadataAudit::LABELS.map { |value, label| [label, value] }
     end
   end

@@ -66,7 +66,7 @@ class RecordsController < ApplicationController
   def filter_params
     params.fetch(:filters, ActionController::Parameters.new)
           .permit(:country_id, :gender_id, :language_version_id, :medium_id,
-                  :year, :record_kind, :tree_id, :display, :missing, :review)
+                  :year, :record_kind, :tree_id, :display, :missing, :review, :completeness)
   end
 
   def set_record

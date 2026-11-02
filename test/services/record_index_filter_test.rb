@@ -84,6 +84,19 @@ class RecordIndexFilterTest < ActiveSupport::TestCase
     assert_includes filter(review: "1", tree_id: @series.id).call.pluck(:id), @episode.id
   end
 
+  test "completeness filters use present copies and combine with nature and tree scope" do
+    @episode.update_columns(is_available: true)
+    assert_empty filter(tree_id: @series.id, completeness: 'complete').call
+    assert_equal [@series.id], filter(tree_id: @series.id, record_kind: 'series', completeness: 'incomplete').call.pluck(:id)
+    VideoAsset.create!(record: @episode, status: 'present', last_known_path: '/videos/completeness.mkv')
+    assert_equal [@series.id], filter(tree_id: @series.id, record_kind: 'series', completeness: 'complete').call.pluck(:id)
+    assert_equal [@season.id], filter(tree_id: @series.id, record_kind: 'season', completeness: 'complete').call.pluck(:id)
+  end
+
+  test "completeness rejects an invalid criterion" do
+    assert_raises(ActiveRecord::RecordNotFound) { filter(completeness: 'invalid').call }
+  end
+
   private
 
   def filter(**values)
