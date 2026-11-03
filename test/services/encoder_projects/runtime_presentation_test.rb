@@ -21,6 +21,14 @@ class EncoderProjects::RuntimePresentationTest < ActiveSupport::TestCase
     def record_kind_episode?
       false
     end
+
+    def record_kind_standalone_video?
+      true
+    end
+
+    def parent
+      nil
+    end
   end
 
   test 'the encoder response includes the existing catalogue duration without a network request' do

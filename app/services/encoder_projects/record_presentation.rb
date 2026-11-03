@@ -6,7 +6,7 @@ module EncoderProjects
         'reference_runtime_minutes' => record.length_in_mn,
         'original_language_evidence' => OriginalLanguage.call(record),
         'genres' => record.effective_genders.map(&:name), 'countries' => record.effective_countries.map(&:long_name)
-      ).merge(episode_placement(record))
+      ).merge(episode_placement(record)).merge(DestinationContainer.call(record))
     end
 
     def self.episode_placement(record)
