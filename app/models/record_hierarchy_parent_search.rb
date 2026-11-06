@@ -22,9 +22,10 @@ class RecordHierarchyParentSearch
   private
 
   def matching_records
-    records_outside_current_branch
-      .where(record_kind: allowed_parent_kinds)
-      .where(title_matches)
+    candidates = records_outside_current_branch.where(record_kind: allowed_parent_kinds)
+    return candidates.where(id: normalized_query.to_i) if normalized_query.match?(/\A[0-9]+\z/)
+
+    candidates.where(title_matches)
   end
 
   def allowed_parent_kinds
