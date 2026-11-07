@@ -15,11 +15,13 @@ class EncoderProjects::FilmProposalGroupingTest < ActiveSupport::TestCase
 
   test 'one concordant film keeps Wikipedia identity and both source links with the TMDB poster' do
     original = wiki
-    result = EncoderProjects::FilmProposalGrouping.call([original, movie]).sole
+    result = EncoderProjects::FilmProposalGrouping.call([original, movie(tmdb_genres: ['Drame', 'Thriller', 'Mystère'])]).sole
     assert_equal 'wikipedia', result.dig('source', 'provider')
     assert_equal 'Synopsis choisi.', result['abstract']
     assert_equal [movie['source']], result['additional_sources']
     assert_equal '/poster.jpg', result['poster_path']
+    assert_equal ['Drame', 'Thriller', 'Mystère'], result['tmdb_genres']
+    assert_nil original['tmdb_genres']
     assert_nil original['poster_path']
   end
 

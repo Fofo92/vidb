@@ -63,6 +63,10 @@
         <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: candidate) %>
         <div class="row g-2 my-2 encoder-reference-row">
           <div class="col-md-6">
+            <% if Array(candidate['tmdb_genres']).any? %>
+              <p class="small mb-1">Genres TMDB : <%= Array(candidate['tmdb_genres']).join(' · ') %></p>
+              <p class="small text-muted">Choisis jusqu’à deux genres dans ta liste vidb. Les genres TMDB sont indiqués pour t’aider, y compris ceux absents de cette liste.</p>
+            <% end %>
             <%= label_tag "film-genres-#{index}", 'Genres principaux (deux maximum)', class: 'form-label' %>
             <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, EncoderProjects::CatalogueReferences.genres(candidate)), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.genres(candidate)).first } %>
           </div>

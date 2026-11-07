@@ -83,6 +83,7 @@ module EncoderProjects
       { 'french_title' => data.fetch('title'), 'original_title' => data['original_title'].to_s,
         'year' => data['release_date']&.first(4)&.to_i, 'reference_runtime_minutes' => data['runtime'],
         'genres_text' => data.fetch('genres', []).pluck('name').join(', '),
+        'tmdb_genres' => data.fetch('genres', []).pluck('name'),
         'country_codes' => data.fetch('production_countries', []).map { |item| item['iso_3166_1'] },
         'poster_path' => data['poster_path'], 'abstract' => data['overview'].to_s,
         'record_kind' => 'standalone_video', 'source' => tmdb_source(data) }
