@@ -75,7 +75,10 @@ module EncoderProjects
     end
 
     def title_keys(names)
-      names.compact_blank.map { |name| name.parameterize.presence || name.unicode_normalize.downcase.squish }
+      names.compact_blank.map do |name|
+        key = name.parameterize.presence || name.unicode_normalize.downcase.squish
+        key.sub(/-(\d+)(?:ere|re|eme|e|er)-partie\z/, '-partie-\1')
+      end
     end
   end
 end
