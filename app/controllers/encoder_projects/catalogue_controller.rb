@@ -1,11 +1,12 @@
 module EncoderProjects
   class CatalogueController < ApplicationController
     before_action :load_scope
+    before_action :select_work_kind, only: :show
     before_action :route_episode, only: :show
 
     def show
       @query = params[:q].presence || File.basename(@scope.fetch('project').fetch('output_path'), '.mkv')
-      @series_candidates = SeriesCatalogueSearch.new.call(@query)
+      @series_candidates = standalone_work? ? [] : SeriesCatalogueSearch.new.call(@query)
       load_films
       @genders = Gender.order(:name)
       @countries = Country.order(:long_name)
@@ -30,6 +31,21 @@ module EncoderProjects
 
     private
 
+    def standalone_work?
+      @scope.fetch('project')['work_kind'] == 'standalone_video'
+    end
+
+    def select_work_kind
+      url = FilmCatalogue.tmdb_movie_url(params[:q])
+      return unless url || params[:work_kind] == 'standalone_video'
+
+      project = @scope.fetch('project').except('episode_target', 'episode_search')
+                      .merge('work_kind' => 'standalone_video')
+      @scope = @scope.merge('project' => project, 'candidate' => nil)
+      params[:request_token] = CatalogueScope.issue(user: current_user, project: project)
+      params[:q] = url if url
+    end
+
     def load_films
       catalogue = FilmCatalogue.new
       @candidates = catalogue.call(@query)
@@ -44,6 +60,8 @@ module EncoderProjects
     end
 
     def route_episode
+      return if standalone_work?
+
       original = @scope.fetch('project')
       project = EpisodeRequest.with_query(original, params[:q])
       return unless EpisodeRequest.match?(project)

@@ -1,6 +1,7 @@
 module EncoderProjects
   class EpisodesController < ApplicationController
     before_action :load_scope
+    include StandaloneSourceRouting
 
     def show
       select_episode_query

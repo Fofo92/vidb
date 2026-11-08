@@ -11,9 +11,14 @@ module EncoderProjects
 
     attr_reader :warnings
 
+    def self.tmdb_movie_url(value)
+      id = value.to_s.strip[%r{\Ahttps://(?:www\.)?themoviedb\.org/movie/([1-9]\d*)(?:[-/?#].*)?\z}i, 1]
+      "https://www.themoviedb.org/movie/#{id}" if id
+    end
+
     def call(query)
       @warnings = []
-      title = query.to_s.strip
+      title = normalized_query(query)
       raise ArgumentError, 'Titre ou lien limité à 300 caractères' unless title.present? && title.bytesize <= 300
       return tmdb_id(title) ? SynopsisPreference.call([movie(tmdb_id(title))]) : [] if title.start_with?('https://www.themoviedb.org/')
 
@@ -25,6 +30,10 @@ module EncoderProjects
     end
 
     private
+
+    def normalized_query(query)
+      self.class.tmdb_movie_url(query) || query.to_s.strip
+    end
 
     def other_films(query, title)
       proposals = tmdb_synopses(query)

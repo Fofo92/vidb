@@ -1,5 +1,8 @@
 <%= stylesheet_link_tag "encoder_forms" %>
 <h1>Préparer un épisode dans vidb</h1>
+<p><%= link_to 'Préparer un film ou un documentaire autonome dans cette source',
+               encoder_projects_catalogue_path(request_token: params[:request_token],
+                                               work_kind: 'standalone_video') %></p>
 <div data-controller="episode-preparation">
 <p>Saison <%= format('%02d', @episode.season) %> · épisode <%= format('%02d', @episode.episode) %></p>
 <% if @target_warning %><p class="text-warning"><%= @target_warning %></p><% end %>
@@ -15,7 +18,7 @@
   <%= form.label :episode_number, 'Épisode à préparer' %>
   <%= form.number_field :episode_number, value: @episode.episode, min: 1, max: 999, required: true, data: { episode_preparation_target: 'selection' } %>
   <div>
-    <%= form.label :source_url, 'URL TMDB de la série ou de l’épisode (facultative)' %>
+    <%= form.label :source_url, 'URL TMDB de la série, de l’épisode ou du film (facultative)' %>
     <%= form.url_field :source_url, value: params[:source_url], placeholder: 'https://www.themoviedb.org/tv/42083', size: 60, data: { episode_preparation_target: 'selection' } %>
   </div>
   <%= form.hidden_field :series_id, value: params[:series_id] %>
