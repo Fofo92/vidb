@@ -53,12 +53,19 @@ module EncoderProjects
     end
 
     def check_other_owners!(record, row)
+      verify_partition_owners!(record, row)
       links = CatalogueEpisodeLink.where(provider: 'tmdb', external_series_id: @series_id).where.not(record: record)
       conflict = links.any? do |link|
         owned = [link.external_episode_id, *Array(link.evidence['external_parts']).pluck('episode_id')]
         owned.intersect?(ids(row))
       end
       raise ArgumentError, 'Une partie du catalogue est déjà associée à une autre fiche.' if conflict
+    end
+
+    def verify_partition_owners!(record, row)
+      partitioned = CatalogueEpisodePartition.where(record: record).exists? ||
+                    CatalogueEpisodePartition.where(external_episode_id: ids(row)).exists?
+      raise ArgumentError, 'Cet épisode possède un découpage local en parties à vérifier.' if partitioned
     end
   end
 end

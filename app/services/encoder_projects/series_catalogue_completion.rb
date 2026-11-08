@@ -11,18 +11,35 @@ module EncoderProjects
     def call
       Record.transaction do
         @root.lock!
+        verify_partition_series!
         @snapshot.fetch('series').fetch('seasons').each { |season| season_for(season.fetch('season_number')) }
-        @snapshot.fetch('episodes').each { |row| complete_episode(row) }
+        @snapshot.fetch('episodes').group_by { |row| row.fetch('season_number') }.each do |number, rows|
+          LocalEpisodePartitions.new.call(season_for(number), rows).each { |row| complete_episode(row) }
+        end
       end
     end
 
     private
 
+    def verify_partition_series!
+      links = CatalogueEpisodePartition.where(record_id: @root.subtree.select(:id))
+      return unless links.where.not(external_series_id: @snapshot.fetch('tmdb_series_id')).exists?
+
+      raise ArgumentError, 'Des parties locales possèdent une autre identité de série TMDB.'
+    end
+
     def complete_episode(row)
       season = season_for(row.fetch('season_number'))
       record = episode_for(season, row)
       @metadata.call(record, row)
-      @attachment.call(record, row)
+      attach_episode(record, row)
+    end
+
+    def attach_episode(record, row)
+      return @attachment.call(record, row) unless row['local_partition']
+
+      attachment = CataloguePartitionAttachment.new(series_id: @snapshot.fetch('tmdb_series_id'), metadata: @metadata)
+      attachment.call(record, row)
     end
 
     def season_for(number)

@@ -1,0 +1,10 @@
+<% partition = CatalogueEpisodePartition.find_by(record_id: record.id) %>
+<% if partition %>
+  <p>
+    Correspondance du catalogue · Partie <%= partition.part_number %>/<%= partition.part_count %>
+    de l’épisode double TMDB
+    <%= link_to partition.evidence["whole_title"].presence || partition.external_episode_id,
+                partition.evidence.fetch("url"), target: "_blank", rel: "noopener noreferrer" %>.
+    La durée de <%= partition.evidence["whole_runtime_minutes"] %> min concerne l’épisode entier.
+  </p>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_08_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_180000) do
     t.index ["provider", "external_episode_id"], name: "index_unique_catalogue_external_episode", unique: true
     t.index ["provider", "record_id"], name: "index_unique_catalogue_record_provider", unique: true
     t.index ["record_id"], name: "index_catalogue_episode_links_on_record_id"
+  end
+
+  create_table "catalogue_episode_partitions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "evidence", default: {}, null: false
+    t.bigint "external_episode_id", null: false
+    t.integer "external_episode_number", null: false
+    t.integer "external_season_number", null: false
+    t.bigint "external_series_id", null: false
+    t.integer "part_count", null: false
+    t.integer "part_number", null: false
+    t.bigint "record_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_episode_id", "part_number"], name: "index_unique_catalogue_episode_partition", unique: true
+    t.index ["record_id"], name: "index_catalogue_episode_partitions_on_record_id", unique: true
+    t.check_constraint "part_number > 0 AND part_count > 1 AND part_number <= part_count", name: "catalogue_episode_partition_numbers"
   end
 
   create_table "countries", force: :cascade do |t|
@@ -428,6 +444,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_180000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "catalogue_episode_links", "records"
+  add_foreign_key "catalogue_episode_partitions", "records", on_delete: :cascade
   add_foreign_key "reconciliation_case_reviews", "reconciliation_cases"
   add_foreign_key "reconciliation_case_reviews", "users"
   add_foreign_key "reconciliation_record_changes", "reconciliation_cases"
