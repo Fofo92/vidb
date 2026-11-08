@@ -1,0 +1,19 @@
+<h1>Compléter le catalogue de la série</h1>
+<p>DVD <%= @edition.ean %> · <%= @edition.record.complete_title %></p>
+<%= form_with url: dvd_catalogue_path, method: :get do %>
+  <%= hidden_field_tag :ean, @edition.ean %>
+  <%= label_tag :title, "Titre de la série" %>
+  <%= search_field_tag :title, @query %>
+  <%= submit_tag "Rechercher" %>
+<% end %>
+<p>Choisis la même série : son catalogue sera complété sans déclarer ses épisodes possédés.</p>
+<% if @choices.empty? %><p>Aucune proposition de série.</p><% end %>
+<ul>
+  <% @choices.each do |series| %>
+    <li>
+      <%= series["title"] %> · <%= series["original_title"] %> · <%= series["year"] %>
+      <%= button_to "Compléter cette série", dvd_catalogue_path,
+                    params: { ean: @edition.ean, tmdb_series_id: series.fetch("tmdb_id") } %>
+    </li>
+  <% end %>
+</ul>

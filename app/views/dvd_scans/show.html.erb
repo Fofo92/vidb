@@ -1,0 +1,122 @@
+<h1>Scanner un DVD</h1>
+<p><%= link_to "Conserver des scans et reprendre les coffrets à préparer", dvd_preparations_path %></p>
+
+<%= form_with url: dvd_preparations_path do |form| %>
+  <%= form.label :ean, "Code-barres EAN-13" %>
+  <%= form.text_field :ean, inputmode: "numeric", autocomplete: "off", value: "", autofocus: true %>
+  <%= form.submit "Conserver le scan", class: "btn btn-primary" %>
+<% end %>
+
+<% if @ean.present? %>
+  <% if DvdEdition.valid_ean?(@ean) %>
+    <p role="status">EAN lu · <strong><%= @ean %></strong></p>
+  <% else %>
+    <p role="alert">Code reçu · <code><%= @ean %></code> · EAN-13 invalide.</p>
+  <% end %>
+<% end %>
+
+<% if @edition %>
+  <h2>Édition DVD <%= @edition.ean %></h2>
+  <% if @edition.record.record_kind_series? %>
+    <p><%= link_to "Compléter le catalogue de cette série", dvd_catalogue_path(ean: @edition.ean) %></p>
+  <% end %>
+  <p><%= link_to "Décrire le contenu possédé et les langues", edit_dvd_edition_contents_path(@edition) %>
+    · <%= @edition.dvd_contents.count %> œuvre(s) confirmée(s) dans ce coffret.</p>
+  <p><%= link_to @edition.record.french_title.presence || @edition.record.original_title.presence || "Fiche #{@edition.record_id}", record_path(@edition.record) %></p>
+<% elsif @record %>
+  <h2>Confirmer le rattachement</h2>
+  <p>DVD <%= @ean %> · <%= link_to @record.french_title.presence || @record.original_title.presence || "Fiche #{@record.id}", record_path(@record) %></p>
+  <%= button_to "Enregistrer l’édition DVD", dvd_scan_path,
+                params: { ean: @ean, record_id: @record.id }, class: "btn btn-primary" %>
+  <%= link_to "Choisir une autre fiche", dvd_scan_path(ean: @ean) %>
+<% elsif DvdEdition.valid_ean?(@ean) %>
+  <h2>Code inconnu dans vidb</h2>
+  <%= link_to "Identifier le DVD par EAN", dvd_scan_path(ean: @ean, lookup: 1), class: "btn btn-primary" %>
+  <% if @external_lookup_failed %>
+    <p>La recherche par EAN est momentanément indisponible. Tu peux rechercher par titre ci-dessous.</p>
+  <% elsif @external_titles&.empty? %>
+    <p>Aucun titre trouvé pour cet EAN dans UPCitemdb.</p>
+  <% elsif @external_titles.present? %>
+    <h3>Éditions proposées par UPCitemdb</h3>
+    <p>Vérifie le résultat sur la pochette. Tu peux ensuite ajuster le titre de l’œuvre avant de créer sa fiche.</p>
+    <ul>
+      <% @external_titles.each do |title| %>
+        <% work_title, season_number = dvd_work_query(title) %>
+        <li>
+          <div><%= title %></div>
+          <%= link_to "Chercher « #{work_title} » dans vidb", dvd_scan_path(ean: @ean, title: work_title, catalogue: 1) %>
+          <% if season_number %>
+            <small>Le coffret indique la saison <%= season_number %>.</small>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  <% external_query = { q: %("#{@ean}" DVD) }.to_query %>
+  <p>
+    <%= link_to "Rechercher ce code en ligne",
+                "https://www.google.com/search?#{external_query}",
+                target: "_blank", rel: "noopener noreferrer" %>
+    (nouvel onglet)
+  </p>
+  <p>Vérifie que le résultat correspond à l’EAN de la pochette, puis cherche le titre de l’œuvre dans vidb.</p>
+  <%= form_with url: dvd_scan_path, method: :get do |form| %>
+    <%= form.hidden_field :ean, value: @ean, id: nil %>
+    <%= form.label :title, "Titre de la fiche" %>
+    <%= form.search_field :title, value: @title %>
+    <%= form.submit "Chercher une fiche" %>
+    <%= form.button "Chercher dans TMDB et Wikipédia", type: "submit", name: "catalogue", value: "1" %>
+  <% end %>
+
+  <% if @records %>
+    <% if @records.empty? %>
+      <p>Aucune fiche trouvée.</p>
+    <% else %>
+      <ul>
+        <% @records.each do |record| %>
+          <li>
+            <%= link_to dvd_scan_path(ean: @ean, record_id: record.id) do %>
+              <%= record.french_title.presence || record.original_title %>
+              · <%= record.year if record.year.present? %> · fiche <%= record.id %>
+            <% end %>
+            <%= link_to "Consulter", record_path(record) %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+  <% if @tmdb_series_error %>
+    <p role="alert">TMDB (séries) · <%= @tmdb_series_error %></p>
+  <% end %>
+  <% if @catalogue_incomplete %>
+    <p>Une partie de la recherche externe est indisponible.</p>
+  <% end %>
+  <% if @catalogue_choices %>
+    <h3>Propositions pour l’œuvre</h3>
+    <% if @catalogue_choices.empty? && !@tmdb_series_error && !@catalogue_incomplete %>
+      <p>Aucune proposition. Essaie un autre titre ou un lien TMDB ou Wikipédia.</p>
+    <% end %>
+    <ul>
+      <% @catalogue_choices.each do |candidate| %>
+        <% metadata = candidate.slice("original_title", "year", "record_kind") %>
+        <% metadata["abstract"] = candidate["abstract"].to_s.truncate(600).presence %>
+        <% references = candidate.slice("tmdb_series_id", "genres_text", "country_codes", "countries_text") %>
+        <li>
+          <%= candidate["record_kind"] == "series" ? "Série" : "Film" %> ·
+          <%= candidate["french_title"] %> <%= "(#{candidate['year']})" if candidate["year"].present? %>
+          <% if candidate.dig("source", "url").present? %>
+            · <%= link_to "Source", candidate.dig("source", "url"), target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
+          · <%= link_to "Préremplir la fiche", new_record_path(dvd_ean: @ean, dvd_title: candidate["french_title"], dvd_metadata: metadata.compact, dvd_references: references) %>
+          <% if candidate["tmdb_series_id"].present? %>
+            <%= button_to "Compléter toute la série et inventorier ce coffret", dvd_catalogue_path,
+                          params: { ean: @ean, tmdb_series_id: candidate["tmdb_series_id"] },
+                          class: "btn btn-primary" %>
+            <small>Ajoute les saisons et épisodes du catalogue, puis te laisse confirmer ceux du DVD.</small>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  <%= link_to "Créer une fiche", new_record_path(dvd_ean: @ean, dvd_title: @title.presence) %>
+<% end %>

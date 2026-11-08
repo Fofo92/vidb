@@ -1,0 +1,33 @@
+<h1>Contenu possédé · DVD <%= @edition.ean %></h1>
+<p><%= @edition.record.complete_title %></p>
+<p>Coche uniquement les œuvres présentes dans ce coffret. Les autres restent au catalogue.
+  Renseigne les langues et sous-titres d’après la pochette ou le disque ; laisse vide si tu ne les connais pas.
+  Décocher une œuvre retire sa possession pour ce coffret.</p>
+<%= form_with url: dvd_edition_contents_path(@edition), method: :patch do %>
+  <%= hidden_field_tag :content_selection, "1" %>
+  <% @episodes.group_by(&:parent).sort_by { |season, _| season&.rank.to_i }.each do |season, episodes| %>
+    <fieldset>
+      <legend><%= season&.french_title || "Œuvre" %></legend>
+      <% episodes.sort_by { |episode| [episode.rank.to_i, episode.id] }.each do |episode| %>
+        <% content = @contents[episode.id] %>
+        <% prefix = "contents[#{episode.id}]" %>
+        <div class="border rounded p-2 mb-2">
+          <label><%= check_box_tag "#{prefix}[selected]", "1", content.present? %>
+            <%= episode.rank %> · <%= episode.french_title %></label>
+          <div>
+            <%= label_tag "version_#{episode.id}", "Version" %>
+            <%= select_tag "#{prefix}[language_version_id]",
+                           options_from_collection_for_select(@languages, :id, :long_name, content&.language_version_id),
+                           include_blank: "Indéterminée", id: "version_#{episode.id}" %>
+            <%= label_tag "audio_#{episode.id}", "Langues audio" %>
+            <%= text_field_tag "#{prefix}[audio_languages]", content&.audio_languages, id: "audio_#{episode.id}", maxlength: 300 %>
+            <%= label_tag "subtitles_#{episode.id}", "Sous-titres" %>
+            <%= text_field_tag "#{prefix}[subtitle_languages]", content&.subtitle_languages, id: "subtitles_#{episode.id}", maxlength: 300 %>
+          </div>
+        </div>
+      <% end %>
+    </fieldset>
+  <% end %>
+  <%= submit_tag "Confirmer le contenu possédé", class: "btn btn-primary" %>
+<% end %>
+<%= link_to "Retour au DVD", dvd_scan_path(ean: @edition.ean) %>

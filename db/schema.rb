@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_08_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_08_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,6 +86,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_120000) do
   create_table "countries_records", id: false, force: :cascade do |t|
     t.bigint "country_id", null: false
     t.bigint "record_id", null: false
+  end
+
+  create_table "dvd_contents", force: :cascade do |t|
+    t.string "audio_languages", default: "", null: false
+    t.datetime "created_at", null: false
+    t.bigint "dvd_edition_id", null: false
+    t.bigint "language_version_id"
+    t.bigint "record_id", null: false
+    t.string "subtitle_languages", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dvd_edition_id", "record_id"], name: "index_dvd_contents_on_dvd_edition_id_and_record_id", unique: true
+    t.index ["dvd_edition_id"], name: "index_dvd_contents_on_dvd_edition_id"
+    t.index ["language_version_id"], name: "index_dvd_contents_on_language_version_id"
+    t.index ["record_id"], name: "index_dvd_contents_on_record_id"
+  end
+
+  create_table "dvd_editions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "ean", limit: 13, null: false
+    t.bigint "record_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ean"], name: "index_dvd_editions_on_ean", unique: true
+    t.index ["record_id"], name: "index_dvd_editions_on_record_id"
+  end
+
+  create_table "dvd_preparations", force: :cascade do |t|
+    t.integer "announced_content_count"
+    t.datetime "created_at", null: false
+    t.string "ean", limit: 13, null: false
+    t.jsonb "external_titles", default: [], null: false
+    t.datetime "last_scanned_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "lookup_checked_at"
+    t.string "lookup_status", default: "pending", null: false
+    t.text "notes"
+    t.string "provisional_title"
+    t.datetime "updated_at", null: false
+    t.index ["ean"], name: "index_dvd_preparations_on_ean", unique: true
+    t.check_constraint "announced_content_count IS NULL OR announced_content_count > 0", name: "dvd_preparations_positive_content_count"
   end
 
   create_table "genders", force: :cascade do |t|
@@ -445,6 +483,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_120000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "catalogue_episode_links", "records"
   add_foreign_key "catalogue_episode_partitions", "records", on_delete: :cascade
+  add_foreign_key "dvd_contents", "dvd_editions", on_delete: :cascade
+  add_foreign_key "dvd_contents", "language_versions"
+  add_foreign_key "dvd_contents", "records", on_delete: :cascade
+  add_foreign_key "dvd_editions", "records", on_delete: :cascade
   add_foreign_key "reconciliation_case_reviews", "reconciliation_cases"
   add_foreign_key "reconciliation_case_reviews", "users"
   add_foreign_key "reconciliation_record_changes", "reconciliation_cases"

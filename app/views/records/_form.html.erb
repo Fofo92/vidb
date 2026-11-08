@@ -1,4 +1,12 @@
 <%= simple_form_for(@record) do |f| %>
+  <% if @dvd_ean %>
+    <%= hidden_field_tag :dvd_ean, @dvd_ean %>
+    <p>Édition DVD à rattacher après création · <%= @dvd_ean %></p>
+    <p>
+      Renseigne le titre de l’œuvre, son titre original s’il diffère, sa nature (film, série ou collection)
+      et son année de première diffusion ou de sortie. L’année de publication du DVD concerne l’édition.
+    </p>
+  <% end %>
   <div class="d-flex flex-row justify-content-between align-items-center">
     <%= f.input :french_title, input_html: { :size => 40 }, label: "Titre français" %>
     <%= f.input :original_title, input_html: { size: 40 }, label: "Titre original"  %>

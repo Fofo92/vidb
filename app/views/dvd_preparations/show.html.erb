@@ -1,0 +1,41 @@
+<h1>Préparer le coffret <%= @preparation.ean %></h1>
+<p><%= link_to "Scanner le suivant ou retrouver les préparations", dvd_preparations_path %></p>
+<p role="status"><%= @preparation.preparation_status %></p>
+
+<% if @preparation.dvd_edition %>
+  <% record = @preparation.dvd_edition.record %>
+  <p>Fiche confirmée : <%= link_to record.french_title.presence || record.original_title, record_path(record) %>.</p>
+<% end %>
+
+<h2>Informations proposées par UPCitemdb</h2>
+<% if @preparation.external_titles.any? %>
+  <p>Ces intitulés commerciaux sont des propositions ; ils ne confirment pas le contenu exact des disques.</p>
+  <ul><% @preparation.external_titles.each do |title| %><li><%= title %></li><% end %></ul>
+<% end %>
+<% if @preparation.lookup_status == "pending" %>
+  <p>La recherche externe reste à effectuer.</p>
+<% elsif @preparation.lookup_status == "not_found" %>
+  <p>Aucun intitulé trouvé pour cet EAN. Le scan est conservé.</p>
+<% elsif @preparation.lookup_status == "unavailable" %>
+  <p>La recherche externe était indisponible. Le scan et les informations précédentes sont conservés.</p>
+<% end %>
+<%= button_to "Actualiser la recherche par EAN", lookup_dvd_preparation_path(@preparation), class: "btn btn-secondary" %>
+
+<h2>Ébauche à compléter</h2>
+<p>Ces notes restent dans la préparation : elles ne créent aucune fiche d’œuvre et ne modifient aucun état de possession.</p>
+<% if @preparation.errors.any? %>
+  <p role="alert"><%= @preparation.errors.full_messages.to_sentence %></p>
+<% end %>
+<%= form_with model: @preparation do |form| %>
+  <div><%= form.label :provisional_title, "Titre provisoire de l’œuvre ou de la série" %>
+    <%= form.text_field :provisional_title, maxlength: 300, class: "form-control" %></div>
+  <div><%= form.label :announced_content_count, "Nombre de contenus utiles annoncé (facultatif, à confirmer)" %>
+    <%= form.number_field :announced_content_count, min: 1, step: 1 %></div>
+  <div><%= form.label :notes, "Notes sur le coffret, les saisons ou les disques" %>
+    <%= form.text_area :notes, maxlength: 5000, rows: 4, class: "form-control" %></div>
+  <%= form.submit "Conserver l’ébauche", class: "btn btn-primary" %>
+<% end %>
+<% query = @preparation.provisional_title.presence %>
+<% query ||= dvd_work_query(@preparation.external_titles.first).first if @preparation.external_titles.one? %>
+<p><%= link_to "Identifier l’œuvre ou retrouver son rattachement dans vidb",
+              dvd_scan_path(ean: @preparation.ean, title: query, catalogue: 1) %></p>

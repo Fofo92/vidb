@@ -1,0 +1,17 @@
+<% holdings = DvdContent.where(record_id: record.subtree.select(:id)).includes(:dvd_edition, :record, :language_version) %>
+<% if holdings.any? %>
+  <details>
+    <summary>DVD possédés · <%= holdings.map(&:record_id).uniq.size %> œuvre(s)</summary>
+    <ul>
+      <% holdings.each do |content| %>
+        <li>
+          <%= content.record.complete_title_with_parents %> ·
+          <%= link_to "DVD #{content.dvd_edition.ean}", edit_dvd_edition_contents_path(content.dvd_edition) %>
+          · <%= content.language_version&.long_name || "Version indéterminée" %>
+          · Audio : <%= content.audio_languages.presence || "non renseigné" %>
+          · Sous-titres : <%= content.subtitle_languages.presence || "non renseignés" %>
+        </li>
+      <% end %>
+    </ul>
+  </details>
+<% end %>

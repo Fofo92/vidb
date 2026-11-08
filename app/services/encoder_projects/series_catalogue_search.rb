@@ -6,7 +6,7 @@ module EncoderProjects
       @client = client
     end
 
-    def call(query)
+    def call(query, raise_errors: false)
       text = query.to_s.strip
       raise ArgumentError, 'Titre ou lien limité à 300 caractères' unless text.present? && text.bytesize <= 300
 
@@ -16,7 +16,9 @@ module EncoderProjects
 
       search_candidates(wikipedia_title(text))
     rescue ArgumentError, KeyError, JSON::ParserError, CatalogEnrichment::TmdbClient::Error,
-           IOError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError
+           IOError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError, SocketError
+      raise if raise_errors
+
       []
     end
 

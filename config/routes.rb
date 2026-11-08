@@ -47,6 +47,14 @@ Rails.application.routes.draw do
     resource :recording_confirmation, only: %i[create destroy],
              controller: "tv_recording_confirmations"
   end
+  resources :dvd_preparations, only: %i[index show create update] do
+    post :lookup, on: :member
+  end
+  resource :dvd_scan, controller: "dvd_scans", only: %i[show create]
+  resource :dvd_catalogue, only: %i[show create], controller: "dvd_catalogues"
+  resources :dvd_editions, only: [] do
+    resource :contents, only: %i[edit update], controller: "dvd_contents"
+  end
   resources :records do
     resources :copy_relinks, only: %i[new create], controller: 'record_copy_relinks'
     resources :copy_removals, only: %i[new create], controller: 'record_copy_removals'

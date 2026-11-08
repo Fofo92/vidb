@@ -5,6 +5,7 @@ class Record < ApplicationRecord
   paginates_per 26
   belongs_to :language_version
   has_many :video_assets, inverse_of: :record
+  has_many :dvd_contents, dependent: :destroy
   has_one :record_poster, dependent: :destroy
   has_and_belongs_to_many :media
   has_and_belongs_to_many :genders,
@@ -47,11 +48,6 @@ class Record < ApplicationRecord
 
   def self.ransackable_associations(_auth_object = nil)
     []
-  end
-
-  def formatted_length(length_in_mn)
-    minutes = length_in_mn.to_i
-    format('%<hours>02dh%<minutes>02d', hours: minutes / 60, minutes: minutes % 60)
   end
 
   def display_range_of_years

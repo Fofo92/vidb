@@ -103,6 +103,7 @@
 
       <section class="record-show-viewing" data-record-viewing data-record-live-region="viewing" aria-labelledby="record-viewing-title">
         <h2 id="record-viewing-title">Visionnage et copies</h2>
+        <%= render "records/dvd_holdings", record: @record %>
         <div class="record-show-viewing-summary">
           <div data-record-states-target="summary">
             <%= render "records/state_summary", record: @record %>

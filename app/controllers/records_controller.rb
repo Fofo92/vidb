@@ -17,7 +17,12 @@ class RecordsController < ApplicationController
   end
 
   def new
+    set_dvd_ean
     @record = Record.new
+    prefill_dvd_record if @dvd_ean
+  rescue CatalogEnrichment::TmdbClient::Error, ArgumentError, KeyError, JSON::ParserError,
+         IOError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError, SocketError
+    flash.now[:alert] = "Genres et pays indisponibles : renseigne-les avant d’enregistrer la fiche."
   end
 
   def new_child
@@ -31,6 +36,7 @@ class RecordsController < ApplicationController
   end
 
   def create
+    set_dvd_ean
     @record = Record.new(record_params)
 
     if @record.save
@@ -82,7 +88,24 @@ class RecordsController < ApplicationController
     )
   end
 
+  def prefill_dvd_record
+    fields = params.permit(:dvd_title, dvd_metadata: %i[original_title year abstract record_kind])
+    @record.french_title = fields[:dvd_title].to_s.strip.presence
+    metadata = fields[:dvd_metadata]
+    return unless metadata
+
+    @record.assign_attributes(metadata.except(:record_kind))
+    @record.record_kind = metadata[:record_kind] if %w[series standalone_video].include?(metadata[:record_kind])
+    @record.assign_attributes(DvdCatalogueReferences.new.call(params))
+  end
+
+  def set_dvd_ean
+    @dvd_ean = params[:dvd_ean] if DvdEdition.valid_ean?(params[:dvd_ean])
+  end
+
   def redirect_after_create
+    return redirect_to dvd_scan_path(ean: @dvd_ean, record_id: @record.id), status: :see_other if @dvd_ean
+
     destination = @record.parent || @record
 
     redirect_to(

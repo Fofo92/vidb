@@ -9,6 +9,11 @@ module RecordDuration
                                              less_than_or_equal_to: 240, only_integer: true }
   end
 
+  def formatted_length(length_in_mn)
+    minutes = length_in_mn.to_i
+    format('%<hours>02dh%<minutes>02d', hours: minutes / 60, minutes: minutes % 60)
+  end
+
   def minimum_catalogue_length
     return 10 unless record_kind_episode?
     return 3 if genders.any? { |genre| genre.name.casecmp?('Animation') }

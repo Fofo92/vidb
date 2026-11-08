@@ -1,0 +1,35 @@
+<h1>DVD à préparer</h1>
+<p>Scanne les coffrets maintenant ; leur identification et la lecture des disques peuvent attendre.
+  Un code déjà scanné retrouve sa préparation.</p>
+
+<%= form_with url: dvd_preparations_path do |form| %>
+  <%= form.label :ean, "Code-barres EAN-13" %>
+  <%= form.text_field :ean, inputmode: "numeric", autocomplete: "off", autofocus: true,
+                      required: true, maxlength: 13, pattern: "[0-9]{13}" %>
+  <%= form.submit "Conserver le scan", class: "btn btn-primary" %>
+<% end %>
+
+<p><%= link_to "Tous les scans", dvd_preparations_path %> ·
+  <%= link_to "À identifier", dvd_preparations_path(pending: 1) %> ·
+  <%= link_to "Recherche et rattachement d’un EAN", dvd_scan_path %></p>
+
+<% if @preparations.empty? %>
+  <p>Aucun coffret dans cette liste.</p>
+<% else %>
+  <table class="table">
+    <thead><tr><th>EAN</th><th>Œuvre proposée</th><th>Préparation</th><th>Dernier scan</th><th></th></tr></thead>
+    <tbody>
+      <% @preparations.each do |preparation| %>
+        <tr>
+          <td><%= preparation.ean %></td>
+          <td><%= preparation.display_title %>
+            <% unless preparation.dvd_edition %><small> · à confirmer</small><% end %></td>
+          <td><%= preparation.preparation_status %></td>
+          <td><%= preparation.last_scanned_at.strftime("%d/%m/%Y %H:%M") %></td>
+          <td><%= link_to "Reprendre", dvd_preparation_path(preparation) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <%= paginate @preparations %>
+<% end %>
