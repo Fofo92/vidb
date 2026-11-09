@@ -48,20 +48,30 @@ module VideoAssets
 
     def observed_copies(counts)
       copies = { 'present' => [], 'missing' => [] }
-      VideoAsset.where(status: %w[present missing]).order(:id).lock.each do |asset|
+      occupied = {}
+      present, missing = VideoAsset.where(status: %w[present missing]).order(:id).lock.partition(&:status_present?)
+      (present + missing).each do |asset|
         next unless library_path?(asset.last_known_path)
 
-        target = target_status(asset)
-        update_presence(asset, target, counts)
-        copies.fetch(target) << asset if retirement_candidate?(asset, target)
+        target = observe(asset, occupied, counts)
+        copies.fetch(asset.status) << asset if retirement_candidate?(asset, target)
       end
       copies
+    end
+
+    def observe(asset, occupied, counts)
+      path = asset.last_known_path
+      # An existing live reference takes precedence over restoring a historical row at the same path.
+      target = occupied.key?(path) ? 'missing' : target_status(asset)
+      update_presence(asset, target, counts)
+      occupied[path] = true if asset.status_present?
+      target
     end
 
     def retirement_candidate?(asset, target)
       return false if asset.technical_details['copy_removal_pending'].present?
 
-      target == 'present' || (target == 'missing' && !@entries.key?(asset.last_known_path))
+      target == 'present' || asset.status_missing?
     end
 
     def library_path?(path)

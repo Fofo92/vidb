@@ -103,6 +103,19 @@ class DiskPresenceTest < ActiveSupport::TestCase
     assert_equal 'missing', @asset.reload.status
   end
 
+  test 'a missing reference to the exact path of a verified present copy is retired without restoring it' do
+    @asset.update!(status: 'missing')
+    entries = restore_file
+    current = @record.video_assets.create!(last_known_path: @path, byte_size: 3, observed_at: Time.current)
+    backup = VideoAssets::CopyReferenceBackup.new(directory: File.join(@directory, 'backups'))
+    service = VideoAssets::DiskPresence.new(root: @directory, guard: -> {}, backup: backup)
+
+    assert_equal({ 'missing' => 0, 'restored' => 0, 'retired' => 1 }, service.call(inventory(entries)))
+    assert_not VideoAsset.exists?(@asset.id)
+    assert current.reload.status_present?
+    assert_equal 'abc', File.read(@path)
+  end
+
   def install_same_name_copy
     directory = File.join(@directory, 'nouveau')
     Dir.mkdir(directory)
