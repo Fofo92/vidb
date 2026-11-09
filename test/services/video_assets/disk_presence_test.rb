@@ -82,6 +82,37 @@ class DiskPresenceTest < ActiveSupport::TestCase
     assert_equal true, @record.reload.is_available
   end
 
+  test 'a verified same-name replacement retires only the absent reference and backs it up' do
+    @service.call(inventory)
+    other = install_same_name_copy
+    backup = VideoAssets::CopyReferenceBackup.new(directory: File.join(@directory, 'backups'))
+    service = VideoAssets::DiskPresence.new(root: @directory, guard: -> {}, backup: backup)
+
+    assert_equal 1, service.call(inventory([other]))['retired']
+    assert_not VideoAsset.exists?(@asset.id)
+    assert_equal 'abc', File.read(other[:path])
+    assert @record.reload.is_available
+    saved = VideoAssets::CopyReferenceBackup.read(Dir.glob(File.join(@directory, 'backups', '*.json')).sole)
+    assert_equal [@asset.id], saved.fetch('assets').pluck('id')
+    assert_equal 0, service.call(inventory([other]))['retired']
+  end
+
+  test 'a changed file at the old path keeps its reference even with a same-name copy' do
+    other = install_same_name_copy
+    assert_equal 0, @service.call(inventory(restore_file('changed') + [other]))['retired']
+    assert_equal 'missing', @asset.reload.status
+  end
+
+  def install_same_name_copy
+    directory = File.join(@directory, 'nouveau')
+    Dir.mkdir(directory)
+    path = File.join(directory, File.basename(@path))
+    File.write(path, 'abc')
+    File.utime(2.days.ago.to_time, 2.days.ago.to_time, path)
+    @record.video_assets.create!(last_known_path: path, byte_size: 3, observed_at: Time.current)
+    { type: 'file', path: path, size: 3, modified_at: File.mtime(path).iso8601 }
+  end
+
   test 'legacy metadata validation does not prevent refreshing derived availability' do
     @record.update_columns(length_in_mn: 1)
     @service.call(inventory)

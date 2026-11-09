@@ -1,9 +1,10 @@
 module VideoAssets
   # Only a complete inventory of the mounted volume can establish an absence.
   class DiskPresence
-    def initialize(root: '/videos', guard: ReconciliationVolumeGuard.new(root: '/videos'))
+    def initialize(root: '/videos', guard: ReconciliationVolumeGuard.new(root: root), backup: CopyReferenceBackup.new)
       @root = root
       @guard = guard
+      @retirement = RedundantCopyRetirement.new(root: root, backup: backup)
     end
 
     def call(inventory)
@@ -38,17 +39,40 @@ module VideoAssets
 
     def synchronize
       counts = { 'missing' => 0, 'restored' => 0 }
-      VideoAsset.where(status: %w[present missing]).order(:id).lock.each do |asset|
-        path = asset.last_known_path
-        next unless path&.start_with?("#{@root}/") && Pathname.new(path).cleanpath.to_s == path
-
-        target = target_status(asset)
-        next unless target && target != asset.status
-
-        transition(asset, target)
-        counts[target == 'missing' ? 'missing' : 'restored'] += 1
+      copies = observed_copies(counts)
+      counts['retired'] = @retirement.call(copies.fetch('present'), copies.fetch('missing')) do |asset|
+        target_status(asset) == 'present'
       end
       counts
+    end
+
+    def observed_copies(counts)
+      copies = { 'present' => [], 'missing' => [] }
+      VideoAsset.where(status: %w[present missing]).order(:id).lock.each do |asset|
+        next unless library_path?(asset.last_known_path)
+
+        target = target_status(asset)
+        update_presence(asset, target, counts)
+        copies.fetch(target) << asset if retirement_candidate?(asset, target)
+      end
+      copies
+    end
+
+    def retirement_candidate?(asset, target)
+      return false if asset.technical_details['copy_removal_pending'].present?
+
+      target == 'present' || (target == 'missing' && !@entries.key?(asset.last_known_path))
+    end
+
+    def library_path?(path)
+      path&.start_with?("#{@root}/") && Pathname.new(path).cleanpath.to_s == path
+    end
+
+    def update_presence(asset, target, counts)
+      return unless target && target != asset.status
+
+      transition(asset, target)
+      counts[target == 'missing' ? 'missing' : 'restored'] += 1
     end
 
     def target_status(asset)

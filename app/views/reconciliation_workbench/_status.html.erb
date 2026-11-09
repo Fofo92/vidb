@@ -22,7 +22,7 @@
             </p>
             <% presence = run.summary.dig('plan', 'disk_presence') || {} %>
             <% if presence.values.any?(&:positive?) %>
-              <p class="mb-0 mt-1 small">Contrôle disque : <%= presence['missing'].to_i %> copies devenues introuvables · <%= presence['restored'].to_i %> copies retrouvées. Historique conservé.</p>
+              <p class="mb-0 mt-1 small">Contrôle disque : <%= presence['missing'].to_i %> copies devenues introuvables · <%= presence['restored'].to_i %> copies retrouvées · <%= presence['retired'].to_i %> références redondantes retirées. Historique conservé.</p>
             <% end %>
           </div>
           <% unless run.terminal? %>

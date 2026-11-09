@@ -60,7 +60,7 @@ module VideoAssets
     end
 
     def snapshot(assets, user)
-      { 'format' => FORMAT, 'version' => 1, 'created_at' => Time.current.iso8601(9), 'user_id' => user.id,
+      { 'format' => FORMAT, 'version' => 1, 'created_at' => Time.current.iso8601(9), 'user_id' => user&.id,
         'purpose' => 'before_reference_cleanup', 'assets' => assets.map { |asset| attributes(asset) },
         'records' => assets.map(&:record).uniq(&:id).map { |record| attributes(record) } }
     end
