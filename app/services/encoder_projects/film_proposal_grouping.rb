@@ -32,7 +32,8 @@ module EncoderProjects
     end
 
     def combined(wiki, movie)
-      wiki.merge('additional_sources' => [movie.fetch('source')],
+      wiki.merge(movie.slice('tmdb_genres'),
+                 'additional_sources' => [movie.fetch('source')],
                  'poster_path' => movie['poster_path'], 'poster_source' => movie['source'])
     end
 
