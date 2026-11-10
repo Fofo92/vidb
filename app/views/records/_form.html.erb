@@ -28,12 +28,12 @@
     <%= f.association :genders,
                       collection: Gender.all.order(:name).collect { |g| [g.name, g.id] },
                       input_html: { multiple: true, size: 5, class: 'w-100' },
-											include_hidden: false, label: "Genre cinématographique",
+											include_hidden: @metadata_forcing_parent == true, label: "Genre cinématographique",
                       include_blank: true %>
     <%= f.association :countries,
                 collection: Country.all.order(:long_name).collect { |c| [c.long_name, c.id] },
                 input_html: { multiple: true, size: 5, class: 'w-100' }, input_blank: false,
-								include_hidden: false, label: "Pays de production", include_blank: true %>
+								include_hidden: @metadata_forcing_parent == true, label: "Pays de production", include_blank: true %>
     <%= f.association :language_version,
                 collection: LanguageVersion.all,
                 required: true,
@@ -112,5 +112,15 @@
     </small>
   </div>
 
+  <% if @metadata_forcing_parent %>
+    <fieldset class="border rounded p-2 mb-2 small">
+      <legend class="float-none w-auto px-1 mb-0 h6">Métadonnées communes aux enfants</legend>
+      <div class="d-flex flex-wrap gap-3">
+        <%= f.input :descendant_genre_mode, collection: RecordMetadataValues::MODES.invert, include_blank: false, label: 'Genres des enfants' %>
+        <%= f.input :descendant_country_mode, collection: RecordMetadataValues::MODES.invert, include_blank: false, label: 'Pays des enfants' %>
+      </div>
+      <p class="mb-0 text-muted">Le mode choisi s’applique dès la sauvegarde. Les valeurs propres des enfants restent enregistrées.</p>
+    </fieldset>
+  <% end %>
   <%= f.button :submit, "Sauvegarder l'enregistrement", class: "btn btn-primary" %>
 <% end %>

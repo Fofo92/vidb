@@ -48,10 +48,12 @@ class RecordsController < ApplicationController
   end
 
   def edit
+    @metadata_forcing_parent = RecordMetadataValues.forcing_root?(@record)
   end
 
   def update
-    if @record.update(record_params)
+    @metadata_forcing_parent = RecordMetadataValues.forcing_root?(@record)
+    if save_record_update
       redirect_to(
         record_path(@record),
         notice: "L'enregistrement a été mis à jour avec succès."
@@ -68,6 +70,13 @@ class RecordsController < ApplicationController
   end
 
   private
+
+  def save_record_update
+    return @record.update(record_params) unless @metadata_forcing_parent
+
+    modes = params.require(:record).permit(*RecordMetadataValues::MODE_ATTRIBUTES.values)
+    RecordMetadataModeUpdate.new(@record, attributes: record_params.merge(modes)).call
+  end
 
   def filter_params
     params.fetch(:filters, ActionController::Parameters.new)

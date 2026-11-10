@@ -56,6 +56,82 @@ class LibraryInventoryControllerTest < ActionDispatch::IntegrationTest
     assert_equal [country.id], episode.country_ids
   end
 
+  test 'forcing can be enabled independently and reversed without rewriting the child' do
+    language = LanguageVersion.find_or_create_by!(short_name: 'VF') { |row| row.long_name = 'Français inventaire' }
+    collection = Record.create!(french_title: 'Collection inventaire', record_kind: 'collection',
+                                language_version: language)
+    film = collection.children.create!(french_title: 'Film inventaire', record_kind: 'standalone_video',
+                                       language_version: language)
+    common = Gender.create!(name: 'Genre de collection')
+    own = Gender.create!(name: 'Genre du film')
+    collection.genders = [common]
+    film.genders = [own]
+    common_country = Country.create!(short_name: 'CA', long_name: 'Canada inventaire')
+    collection.countries = [common_country]
+
+    patch update_metadata_forcing_library_inventory_url,
+          params: { root_id: collection.id, field: 'genders', mode: 'parent' }
+    assert_redirected_to metadata_review_library_inventory_path(q: collection.id)
+    assert_equal 'parent', collection.reload.descendant_genre_mode
+    assert_equal 'current', collection.descendant_country_mode
+    assert_equal [common], film.reload.effective_genders
+    assert_equal [own.id], film.gender_ids
+
+    patch update_metadata_forcing_library_inventory_url,
+          params: { root_id: collection.id, field: 'countries', mode: 'parent' }
+    assert_equal 'parent', collection.reload.descendant_country_mode
+    new_film = collection.children.create!(french_title: 'Nouveau film', record_kind: 'standalone_video',
+                                           language_version: language)
+    assert_equal [common_country], new_film.effective_countries
+    assert_empty new_film.country_ids
+
+    get metadata_review_library_inventory_url, params: { q: collection.id, genres: 'current' }
+    assert_select '[data-metadata-review] tbody tr' do |rows|
+      assert_equal [common.name, own.name], rows.first.css('td').to_a.values_at(3, 4).map(&:text)
+    end
+
+    patch update_metadata_forcing_library_inventory_url,
+          params: { root_id: collection.id, field: 'genders', mode: 'current' }
+    assert_equal 'current', collection.reload.descendant_genre_mode
+    assert_equal [own], film.reload.effective_genders
+
+    patch update_metadata_forcing_library_inventory_url,
+          params: { root_id: collection.id, field: 'genders', mode: 'add' }
+    assert_equal 'add', collection.reload.descendant_genre_mode
+    assert_equal [common, own], film.reload.effective_genders
+    assert_equal [own.id], film.gender_ids
+  end
+
+  test 'editing the series updates effective child genres and rejects an invalid forced selection' do
+    language = LanguageVersion.find_or_create_by!(short_name: 'VF') { |row| row.long_name = 'Français inventaire' }
+    series = Record.create!(french_title: 'Série à éditer', record_kind: 'series', language_version: language)
+    season = series.children.create!(french_title: 'Saison à éditer', record_kind: 'season', language_version: language)
+    episode = season.children.create!(french_title: 'Épisode à conserver', record_kind: 'episode',
+                                      language_version: language)
+    original, replacement, own = %w[Original Remplacement Particulier].map { |name| Gender.create!(name: name) }
+    series.genders = [original]
+    episode.genders = [own]
+
+    get edit_record_url(series)
+    assert_select 'select[name="record[descendant_genre_mode]"]'
+
+    patch record_url(series), params: { record: { descendant_genre_mode: 'parent', gender_ids: [replacement.id] } }
+    assert_redirected_to record_path(series)
+    assert_equal 'parent', series.reload.descendant_genre_mode
+    assert_equal [replacement], season.reload.effective_genders
+    assert_equal [replacement], episode.reload.effective_genders
+    assert_equal [own.id], episode.gender_ids
+
+    patch record_url(series), params: { record: { gender_ids: [original.id] } }
+    assert_redirected_to record_path(series)
+    assert_equal [original], episode.reload.effective_genders
+
+    patch record_url(series), params: { record: { gender_ids: [''] } }
+    assert_response :unprocessable_content
+    assert_equal [original.id], series.reload.gender_ids
+    assert_equal [original], episode.reload.effective_genders
+  end
+
   test 'authentication is required' do
     sign_out :user
     get library_inventory_url

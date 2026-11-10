@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   resource :library_inventory, only: :show, controller: 'library_inventory' do
     post :refresh
     get :metadata_review
+    patch :update_metadata_forcing
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

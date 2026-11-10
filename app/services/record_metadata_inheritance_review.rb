@@ -3,32 +3,35 @@
 class RecordMetadataInheritanceReview
   FIELDS = { genders: :name, countries: :long_name }.freeze
 
-  def initialize(records: Record.includes(:genders, :countries).to_a, forced: FIELDS.keys)
+  def initialize(records: Record.includes(:genders, :countries).to_a,
+                 modes: { genders: 'parent', countries: 'parent' }, include_aligned: false)
     @records = records
     @metadata = RecordMetadataValues.new(records: records)
-    @forced = forced
+    @modes = modes
+    @include_aligned = include_aligned
   end
 
   def call
-    @records.filter_map { |root| branch(root) if root.root? && container?(root) }
+    @records.filter_map { |root| branch(root) if RecordMetadataValues.forcing_root?(root) }
   end
 
   private
 
   def branch(root)
+    show_aligned = @include_aligned || configured?(root)
     children = branch_children(root)
-    return if children.empty?
+    return if children.empty? && !show_aligned
 
     targets = targets_for(root)
     rows = children.filter_map { |record| child_row(record, targets) }
-    return if rows.empty?
+    return if rows.empty? && !show_aligned
 
     { root: root, targets: targets, children_count: children.size, rows: rows,
       changed_count: rows.count { |row| row[:changed] } }
   end
 
-  def container?(record)
-    record.record_kind_series? || record.record_kind_collection?
+  def configured?(record)
+    RecordMetadataValues::MODE_ATTRIBUTES.values.any? { |attribute| record.public_send(attribute) != 'current' }
   end
 
   def branch_children(root)
@@ -43,8 +46,9 @@ class RecordMetadataInheritanceReview
   def targets_for(root)
     FIELDS.to_h do |field, attribute|
       values = sorted(@metadata.explicit(root, field), attribute)
-      ready = values.any? && (field != :genders || values.size <= 2)
-      [field, { values: values, ready: ready }]
+      ready = RecordMetadataValues.forceable?(field, values)
+      configured = root.public_send(RecordMetadataValues::MODE_ATTRIBUTES.fetch(field))
+      [field, { values: values, ready: ready, configured: configured }]
     end
   end
 
@@ -61,8 +65,9 @@ class RecordMetadataInheritanceReview
     current = sorted(@metadata.public_send(field, record), attribute)
     parent = target.fetch(:values)
     ready = target.fetch(:ready)
-    proposed = ready && @forced.include?(field) ? parent : current
-    review = !ready || current != parent || (own.any? && own != parent)
+    unforced = sorted(@metadata.values_for_mode(record, field, 'current'), attribute)
+    proposed = sorted(@metadata.values_for_mode(record, field, @modes.fetch(field)), attribute)
+    review = !ready || unforced != parent || proposed != current || (own.any? && own != parent)
     { own: own, current: current, proposed: proposed, changed: proposed != current, review: review }
   end
 
