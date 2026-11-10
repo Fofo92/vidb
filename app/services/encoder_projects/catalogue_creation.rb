@@ -53,10 +53,11 @@ module EncoderProjects
     end
 
     def create_and_bind(scope, candidate, genders, countries)
-      record = existing(candidate) || create_record(candidate, genders, countries)
+      project = scope.fetch('project')
+      record = existing(candidate, project) || create_record(candidate, genders, countries)
       complete_record(record, candidate)
       result = Identification.new(user: @user, url: @url,
-                                  matcher: SelectedFilm.new(record)).call(scope.fetch('project'))
+                                  matcher: SelectedFilm.new(record)).call(project)
       raise ArgumentError, 'Association à examiner dans la file de consolidation' unless result[:status] == 'identified'
 
       record
@@ -69,11 +70,11 @@ module EncoderProjects
       completed
     end
 
-    def existing(candidate)
+    def existing(candidate, project = {})
       title = Record.where('LOWER(french_title) = ?', candidate.fetch('french_title').downcase)
                     .to_a
       source = Record.where("year_evidence ->> 'url' = ?", candidate.fetch('source').fetch('url')).to_a
-      title.reject! { |record| distinct_hierarchical_work?(record, candidate) && !source.include?(record) }
+      title.reject! { |record| distinct_work?(record, candidate, project) && !source.include?(record) }
       matches = (title + source).uniq(&:id)
       return if matches.empty?
       return matches.sole if matches.one? && compatible?(matches.sole, candidate, source)
@@ -86,8 +87,17 @@ module EncoderProjects
       record.record_kind_standalone_video? && Matcher.qualified?(record) && (same_year || sourced.include?(record))
     end
 
-    def distinct_hierarchical_work?(record, candidate)
-      record.has_parent? && record.year.present? && candidate['year'].present? && record.year != candidate['year']
+    def distinct_work?(record, candidate, project)
+      return false if record.year.blank? || candidate['year'].blank? || record.year == candidate['year']
+      return true if record.has_parent?
+
+      record.record_kind_standalone_video? && explicit_tmdb_revision?(candidate, project)
+    end
+
+    def explicit_tmdb_revision?(candidate, project)
+      url = project['explicit_tmdb_movie_url']
+      project['replace_binding'].present? && url.present? &&
+        candidate.dig('source', 'provider') == 'tmdb' && candidate.dig('source', 'url') == url
     end
 
     def create_record(candidate, genders, countries)

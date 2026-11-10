@@ -49,8 +49,17 @@ module EncoderProjects
       return unless project['completion_record_id']
 
       @completion_record = ExistingFilmCompletion.bound_record!(project)
+      @replacement_token = replacement_token(project)
     rescue ArgumentError, ActiveRecord::RecordNotFound => e
       render plain: e.message, status: :unprocessable_content
+    end
+
+    def replacement_token(project)
+      binding = Binding.current(project.fetch('project_id'))
+      return unless binding && binding['record_id'] == @completion_record.id
+
+      revision = project.except('completion_record_id').merge('replace_binding' => binding)
+      CatalogueScope.issue(user: current_user, project: revision)
     end
 
     def select_work_kind
@@ -60,7 +69,7 @@ module EncoderProjects
       return unless url || params[:work_kind] == 'standalone_video'
 
       project = @scope.fetch('project').except('episode_target', 'episode_search')
-                      .merge('work_kind' => 'standalone_video')
+                      .merge('work_kind' => 'standalone_video', 'explicit_tmdb_movie_url' => url)
       @scope = @scope.merge('project' => project, 'candidate' => nil)
       params[:request_token] = CatalogueScope.issue(user: current_user, project: project)
       params[:q] = url if url

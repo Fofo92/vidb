@@ -3,6 +3,12 @@
     <h1 class="h3">Compléter la fiche associée</h1>
     <p><strong><%= @completion_record.complete_title_with_parents %></strong> · fiche n° <%= @completion_record.id %><% if @completion_record.year %> · <%= @completion_record.year %><% end %></p>
     <p>Choisis une source correspondant à cette œuvre. Seuls les champs manquants seront complétés.</p>
+    <% if @replacement_token %>
+      <p><%= link_to 'Ce n’est pas le bon film : changer de fiche',
+                     encoder_projects_catalogue_path(request_token: @replacement_token, q: @query,
+                                                     work_kind: 'standalone_video'),
+                     class: 'btn btn-outline-primary' %></p>
+    <% end %>
   <% else %>
     <h1 class="h3">Identifier l’œuvre et préparer sa fiche vidb</h1>
   <% end %>

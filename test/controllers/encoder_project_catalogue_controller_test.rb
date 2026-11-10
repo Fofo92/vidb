@@ -113,6 +113,49 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     assert_equal original_binding, EncoderProjects::Binding.current(@project.fetch('project_id'))
   end
 
+  test 'a confirmed direct TMDB link can replace an associated film from another year' do
+    old_film = @candidate.merge('french_title' => 'Hit Man', 'year' => 1991)
+    confirm(EncoderProjects::CatalogueScope.issue(user: @user, project: @project, candidate: old_film))
+    binding = EncoderProjects::Binding.current(@project.fetch('project_id'))
+    old_record = Record.find(binding.fetch('record_id'))
+    original = old_record.attributes
+    url = 'https://www.themoviedb.org/movie/974635'
+    candidate = old_film.merge('year' => 2024, 'source' => {
+                                 'provider' => 'tmdb', 'tmdb_movie_id' => 974635, 'url' => url
+                               })
+    project = @project.merge('completion_record_id' => old_record.id)
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
+    catalogue = Object.new
+    catalogue.define_singleton_method(:warnings) { [] }
+    catalogue.define_singleton_method(:call) { |_query| [candidate] }
+
+    EncoderProjects::FilmCatalogue.stub(:new, -> { catalogue }) do
+      get encoder_projects_catalogue_path, params: { request_token: token, q: "#{url}-hit-man" }
+      assert_response :success
+      link = css_select('a').find { |node| node.text.include?('changer de fiche') }
+      assert link, 'Le parcours de complément doit permettre de changer de fiche'
+      get link['href']
+    end
+    assert_response :success
+    assert_select 'input[name="confirm_replacement"][type="checkbox"]', 1
+    proposal_token = css_select('input[name="proposal_token"]').first['value']
+    revision_token = css_select('form[method="post"] input[name="request_token"]').first['value']
+
+    assert_no_difference 'Record.count' do
+      post encoder_projects_catalogue_path, params: { request_token: revision_token, proposal_token: proposal_token }
+    end
+    assert_equal binding, EncoderProjects::Binding.current(@project.fetch('project_id'))
+
+    assert_difference 'Record.count', 1 do
+      post encoder_projects_catalogue_path, params: { request_token: revision_token, proposal_token: proposal_token,
+                                                     confirm_replacement: '1', encoder_window: '1' }
+    end
+    selected = EncoderProjects::Binding.current(@project.fetch('project_id')).fetch('record_id')
+    assert_redirected_to record_path(selected, encoder_prepared: 1)
+    assert_equal 2024, Record.find(selected).year
+    assert_equal original, old_record.reload.attributes
+  end
+
   test 'an already qualified concordant record is reused without rewriting its metadata' do
     record = Record.create!(french_title: 'Adieu Philippine', year: 1962, record_kind: 'standalone_video',
                              language_version: LanguageVersion.find_by!(short_name: 'IND'), abstract: 'Texte manuel')
