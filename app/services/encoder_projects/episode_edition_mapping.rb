@@ -42,13 +42,23 @@ module EncoderProjects
       matches = groups.select do |parts|
         keys.intersect?(EpisodeEditionTitles.keys(parts.first.values_at('title_fr', 'title_original')))
       end
-      raise ArgumentError, "Découpage à consolider pour l’épisode local #{number}." unless matches.one?
+      parts = matched_parts(number, matches, groups)
+      raise ArgumentError, "Découpage à consolider pour l’épisode local #{number}." unless parts
 
-      parts = matches.sole
       marker = EpisodeEditionTitles.part(item['title'])
       parts = select_part(parts, marker) if marker
       validate_parts!(parts, local_title: item['title'])
       grouped_row(number, item, parts)
+    end
+
+    def matched_parts(number, matches, groups)
+      return matches.sole if matches.one?
+      return unless matches.empty? && !@split_edition
+
+      positional = groups.select do |parts|
+        parts.one? && parts.first.fetch('episode_number') == number
+      end
+      positional.sole if positional.one?
     end
 
     def select_part(parts, marker)
