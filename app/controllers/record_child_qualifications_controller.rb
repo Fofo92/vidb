@@ -16,7 +16,35 @@ class RecordChildQualificationsController < ApplicationController
     end
   end
 
+  def metadata_modes
+    return head :unprocessable_content unless RecordMetadataValues.forcing_root?(@record)
+
+    if RecordMetadataModeUpdate.new(@record, attributes: branch_mode_params).call
+      redirect_to edit_record_child_qualification_path(@record), status: :see_other,
+                                                                 notice: 'Règle de la branche enregistrée.'
+    else
+      @branch_mode_errors = @record.errors.full_messages
+      @record.reload
+      prepare_page
+      render :edit, status: :unprocessable_content
+    end
+  end
+
   private
+
+  def branch_mode_params
+    params.permit(*RecordMetadataValues::MODE_ATTRIBUTES.values)
+  end
+
+  def prepare_branch_review
+    return unless RecordMetadataValues.forcing_root?(@record)
+
+    submitted_modes = branch_mode_params
+    @branch_modes = RecordMetadataValues::MODE_ATTRIBUTES.transform_values do |attribute|
+      submitted_modes[attribute].presence_in(RecordMetadataValues::MODES.keys) || @record.public_send(attribute)
+    end
+    @branch_review = RecordMetadataInheritanceReview.new(root: @record, modes: @branch_modes).call
+  end
 
   def set_record
     @record = Record.find(params[:record_id])
@@ -54,6 +82,7 @@ class RecordChildQualificationsController < ApplicationController
     @common_values = @submitted&.fetch("common", {}) || { "record_kind" => kind || @qualification_targets.first }
     @row_values = @submitted&.fetch("rows", {}) || {}
     prepare_choices
+    prepare_branch_review
   end
 
   def selected_child_ids

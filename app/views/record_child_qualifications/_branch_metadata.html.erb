@@ -1,0 +1,62 @@
+<section class="card card-body mb-3" data-branch-metadata>
+  <h2 class="h5">Genres et pays de toute la branche</h2>
+  <p class="small mb-2">Cette règle s’applique à tous les enfants concernés, actuels et futurs, même sans les cocher.
+    Leurs valeurs propres restent enregistrées.</p>
+  <% if @branch_mode_errors.present? %>
+    <ul class="alert alert-danger">
+      <% @branch_mode_errors.each do |message| %><li><%= message %></li><% end %>
+    </ul>
+  <% end %>
+
+  <%= form_with url: edit_record_child_qualification_path(@record), method: :get,
+                class: 'row g-2 align-items-end mb-2' do |form| %>
+    <% @branch_review[:targets].each do |field, target| %>
+      <% attribute = RecordMetadataValues::MODE_ATTRIBUTES.fetch(field) %>
+      <div class="col-sm">
+        <%= form.label attribute, field == :genders ? 'Genres' : 'Pays', class: 'form-label small mb-1' %>
+        <%= form.select attribute, RecordMetadataValues::MODES.invert,
+                        { selected: @branch_modes.fetch(field) }, class: 'form-select form-select-sm' %>
+        <p class="small text-muted mb-0">
+          Parent : <%= target[:names].presence || 'Non renseigné' %> ·
+          Règle active : <%= RecordMetadataValues::MODES.fetch(@record.public_send(attribute)) %>
+        </p>
+      </div>
+    <% end %>
+    <div class="col-sm-auto"><%= form.submit 'Simuler', class: 'btn btn-outline-primary btn-sm' %></div>
+  <% end %>
+
+  <% if @branch_review[:blocked] %>
+    <p class="small">Pour imposer le parent, renseigne un ou deux genres connus ou au moins un pays connu, selon le champ.
+      <%= link_to 'Modifier le parent', edit_record_path(@record) %>.</p>
+  <% end %>
+  <p class="small"><strong><%= @branch_review[:rows].size %> fiche(s) changeraient</strong>
+    sur <%= @branch_review[:children_count] %> dans cette branche.</p>
+  <% if @branch_review[:rows].any? %>
+    <details class="small mb-2">
+      <summary>Voir les écarts (12 fiches maximum)</summary>
+      <table class="table table-sm" data-metadata-review>
+        <thead><tr><th>Fiche</th><th>Champ</th><th>Actuel</th><th>Simulé</th></tr></thead>
+        <tbody>
+          <% @branch_review[:rows].first(12).each do |row| %>
+            <% row[:changes].each do |field, change| %>
+              <tr>
+                <td><%= link_to row[:record].complete_title_with_parents, record_path(row[:record]) %></td>
+                <td><%= field == :genders ? 'Genres' : 'Pays' %></td>
+                <td><%= change[:current].presence || '—' %></td>
+                <td><%= change[:proposed].presence || '—' %></td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </details>
+  <% end %>
+
+  <%= form_with url: metadata_modes_record_child_qualification_path(@record), method: :patch do |form| %>
+    <% RecordMetadataValues::MODE_ATTRIBUTES.each do |field, attribute| %>
+      <%= form.hidden_field attribute, value: @branch_modes.fetch(field), id: "save_#{attribute}" %>
+    <% end %>
+    <%= form.submit 'Enregistrer la règle de la branche', class: 'btn btn-primary btn-sm',
+                    disabled: @branch_review[:blocked] || !@branch_review[:mode_changed] %>
+  <% end %>
+</section>

@@ -1,3 +1,0 @@
-<% attribute = RecordMetadataInheritanceReview::FIELDS.fetch(key) %>
-<%= target[:values].map(&attribute).join(', ').presence || '—' %>
-<% unless target[:ready] %><span class="text-muted"> · À qualifier</span><% end %>

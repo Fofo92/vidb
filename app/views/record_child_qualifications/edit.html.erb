@@ -3,6 +3,8 @@
   <strong>Parent :</strong> <%= link_to @record.complete_title, record_path(@record) %>
 </p>
 
+<%= render 'branch_metadata' if @branch_review %>
+
 <% if @qualification&.errors&.any? %>
   <div class="alert alert-danger" data-child-qualification-errors>
     <ul class="mb-0">

@@ -19,8 +19,6 @@ Rails.application.routes.draw do
   resources :copy_retirements, only: %i[new create]
   resource :library_inventory, only: :show, controller: 'library_inventory' do
     post :refresh
-    get :metadata_review
-    patch :update_metadata_forcing
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -75,7 +73,9 @@ Rails.application.routes.draw do
              only: %i[edit update]
     resource :child_qualification,
              controller: "record_child_qualifications",
-             only: %i[edit update]
+             only: %i[edit update] do
+      patch :metadata_modes
+    end
     member do
       get :new_child
       post :new_child

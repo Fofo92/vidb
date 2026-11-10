@@ -1,6 +1,5 @@
 <section class="container py-3">
   <h1 class="h3">Inventaire et doublons</h1>
-  <p><%= link_to 'Examiner les genres et pays des branches', metadata_review_library_inventory_path, class: 'btn btn-outline-primary btn-sm' %></p>
   <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
     <%= form_with url: library_inventory_path, method: :get, class: 'd-flex gap-2' do |form| %>
       <%= form.text_field :q, value: @query, placeholder: 'Titre ou numéro de fiche', aria: { label: 'Titre ou numéro de fiche' }, class: 'form-control' %>
