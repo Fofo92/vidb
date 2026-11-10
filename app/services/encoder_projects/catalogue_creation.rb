@@ -14,18 +14,28 @@ module EncoderProjects
     def call(scope:, gender_ids:, country_ids:, confirmed: false)
       candidate = scope.fetch('candidate')
       validate!(candidate, gender_ids, country_ids)
+      project = scope.fetch('project')
       Record.transaction do
         lock_projects!
-        AssociationRevision.call(scope.fetch('project'), confirmed: confirmed) do
-          previous = Binding.current(scope.fetch('project').fetch('project_id'))
-          next complete_record(Record.find(previous.fetch('record_id')), candidate) if previous
-
-          create_and_bind(scope, candidate, gender_ids, country_ids)
+        if project['completion_record_id']
+          next ExistingFilmCompletion.new(user: @user).call(project, candidate, gender_ids, country_ids)
         end
+
+        associate(scope, candidate, gender_ids, country_ids, confirmed: confirmed)
       end
     end
 
     private
+
+    def associate(scope, candidate, gender_ids, country_ids, confirmed:)
+      project = scope.fetch('project')
+      AssociationRevision.call(project, confirmed: confirmed) do
+        previous = Binding.current(project.fetch('project_id'))
+        next complete_record(Record.find(previous.fetch('record_id')), candidate) if previous
+
+        create_and_bind(scope, candidate, gender_ids, country_ids)
+      end
+    end
 
     def lock_projects!
       Record.connection.execute('SELECT pg_advisory_xact_lock(20261024, 2)') if

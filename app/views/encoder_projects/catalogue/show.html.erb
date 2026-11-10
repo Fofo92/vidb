@@ -1,13 +1,21 @@
 <div class="container py-3 encoder-identification">
-  <h1 class="h3">Identifier l’œuvre et préparer sa fiche vidb</h1>
+  <% if @completion_record %>
+    <h1 class="h3">Compléter la fiche associée</h1>
+    <p><strong><%= @completion_record.complete_title_with_parents %></strong> · fiche n° <%= @completion_record.id %><% if @completion_record.year %> · <%= @completion_record.year %><% end %></p>
+    <p>Choisis une source correspondant à cette œuvre. Seuls les champs manquants seront complétés.</p>
+  <% else %>
+    <h1 class="h3">Identifier l’œuvre et préparer sa fiche vidb</h1>
+  <% end %>
   <p>Wikipédia reste prioritaire pour l’identité ; le synopsis TMDB est privilégié lorsqu’il concorde. Vérifie l’œuvre avant de confirmer.</p>
   <p class="small text-break">Source : <%= @scope.fetch('project').fetch('source_paths').join(' · ') %></p>
-  <div class="alert alert-info">
-    <p class="mb-2">La fiche existe déjà dans vidb ou vient d’être créée ? Recherche-la dans ta vidéothèque et sélectionne-la pour ce montage.</p>
-    <%= link_to 'Choisir une fiche vidb existante / Actualiser',
-                encoder_projects_local_records_path(request_token: params[:request_token], q: @query),
-                class: 'btn btn-outline-primary' %>
-  </div>
+  <% unless @completion_record %>
+    <div class="alert alert-info">
+      <p class="mb-2">La fiche existe déjà dans vidb ou vient d’être créée ? Recherche-la dans ta vidéothèque et sélectionne-la pour ce montage.</p>
+      <%= link_to 'Choisir une fiche vidb existante / Actualiser',
+                  encoder_projects_local_records_path(request_token: params[:request_token], q: @query),
+                  class: 'btn btn-outline-primary' %>
+    </div>
+  <% end %>
   <%= form_with url: encoder_projects_catalogue_path, method: :get do |form| %>
     <%= form.hidden_field :request_token, value: params[:request_token] %>
     <%= form.label :q, 'Titre de l’œuvre, lien Wikipédia, TMDB ou SensCritique', class: 'form-label' %>
@@ -18,7 +26,7 @@
   <% end %>
   <% Array(@source_warnings).uniq.each do |warning| %><p class="alert alert-warning"><%= warning %></p><% end %>
   <% if @search_error %><p class="alert alert-warning"><%= @search_error %></p><% end %>
-  <% if @candidates.empty? && Array(@series_candidates).empty? && !@search_error %><p>Aucune proposition externe trouvée. Choisis une fiche vidb existante ci-dessus, précise le titre ou colle un lien externe.</p><% end %>
+  <% if @candidates.empty? && Array(@series_candidates).empty? && !@search_error %><p>Aucune proposition externe trouvée. Précise le titre ou colle un lien externe.</p><% end %>
   <% Array(@series_candidates).each do |candidate| %>
     <section class="card my-2 encoder-proposal-card"><div class="card-body">
       <%= render 'encoder_projects/artwork', proposal: candidate %>
@@ -58,25 +66,33 @@
       </p>
       <%= form_with url: encoder_projects_catalogue_path, method: :post do |form| %>
         <%= form.hidden_field :encoder_window, value: 1 %>
-        <%= render 'encoder_projects/revision_confirmation', form: form %>
+        <%= render 'encoder_projects/revision_confirmation', form: form unless @completion_record %>
         <%= form.hidden_field :request_token, value: params[:request_token] %>
         <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: candidate) %>
         <div class="row g-2 my-2 encoder-reference-row">
-          <div class="col-md-6">
-            <% if Array(candidate['tmdb_genres']).any? %>
-              <p class="small mb-1">Genres TMDB : <%= Array(candidate['tmdb_genres']).join(' · ') %></p>
-              <p class="small text-muted">Choisis jusqu’à deux genres dans ta liste vidb. Les genres TMDB sont indiqués pour t’aider, y compris ceux absents de cette liste.</p>
-            <% end %>
-            <%= label_tag "film-genres-#{index}", 'Genres principaux (deux maximum)', class: 'form-label' %>
-            <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, EncoderProjects::CatalogueReferences.genres(candidate)), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.genres(candidate)).first } %>
-          </div>
-          <div class="col-md-6">
-            <%= label_tag "film-countries-#{index}", 'Pays de production', class: 'form-label' %>
-            <%= select_tag 'country_ids[]', options_from_collection_for_select(@countries, :id, :long_name, EncoderProjects::CatalogueReferences.countries(candidate)), multiple: true, size: 3, id: "film-countries-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.countries(candidate)).first } %>
-          </div>
+          <% if !@completion_record || @completion_record.effective_genders.empty? %>
+            <div class="col-md-6">
+              <% if Array(candidate['tmdb_genres']).any? %>
+                <p class="small mb-1">Genres TMDB : <%= Array(candidate['tmdb_genres']).join(' · ') %></p>
+                <p class="small text-muted">Choisis jusqu’à deux genres dans ta liste vidb. Les genres TMDB sont indiqués pour t’aider, y compris ceux absents de cette liste.</p>
+              <% end %>
+              <%= label_tag "film-genres-#{index}", 'Genres principaux (deux maximum)', class: 'form-label' %>
+              <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, EncoderProjects::CatalogueReferences.genres(candidate)), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.genres(candidate)).first } %>
+            </div>
+          <% end %>
+          <% if !@completion_record || @completion_record.effective_countries.empty? %>
+            <div class="col-md-6">
+              <%= label_tag "film-countries-#{index}", 'Pays de production', class: 'form-label' %>
+              <%= select_tag 'country_ids[]', options_from_collection_for_select(@countries, :id, :long_name, EncoderProjects::CatalogueReferences.countries(candidate)), multiple: true, size: 3, id: "film-countries-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.countries(candidate)).first } %>
+            </div>
+          <% end %>
         </div>
-        <p class="small">La fiche sera créée ou une fiche concordante réutilisée. La disponibilité et le support seront déterminés lors de l’import du fichier terminé.</p>
-        <%= form.submit 'C’est ce film : préparer la fiche et l’associer au montage', class: 'btn btn-primary', data: { turbo_submits_with: 'Préparation de la fiche…' } %>
+        <% if @completion_record %>
+          <%= form.submit 'Compléter cette fiche et reprendre l’encodage', class: 'btn btn-primary', data: { turbo_submits_with: 'Complément de la fiche…' } %>
+        <% else %>
+          <p class="small">La fiche sera créée ou une fiche concordante réutilisée. La disponibilité et le support seront déterminés lors de l’import du fichier terminé.</p>
+          <%= form.submit 'C’est ce film : préparer la fiche et l’associer au montage', class: 'btn btn-primary', data: { turbo_submits_with: 'Préparation de la fiche…' } %>
+        <% end %>
       <% end %>
     </div></section>
   <% end %>

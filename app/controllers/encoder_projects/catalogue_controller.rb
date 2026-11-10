@@ -1,11 +1,13 @@
 module EncoderProjects
   class CatalogueController < ApplicationController
     before_action :load_scope
+    before_action :load_completion_record, only: :show
     before_action :select_work_kind, only: :show
     before_action :route_episode, only: :show
 
     def show
-      @query = params[:q].presence || File.basename(@scope.fetch('project').fetch('output_path'), '.mkv')
+      @query = params[:q].presence || @completion_record&.french_title.presence ||
+               File.basename(@scope.fetch('project').fetch('output_path'), '.mkv')
       @series_candidates = standalone_work? ? [] : SeriesCatalogueSearch.new.call(@query)
       load_films
       @genders = Gender.order(:name)
@@ -22,8 +24,7 @@ module EncoderProjects
         confirmed: params[:confirm_replacement] == '1'
       )
       prepared = params[:encoder_window] == '1' ? 1 : nil
-      redirect_to record_path(record, encoder_prepared: prepared),
-                  notice: 'Fiche prête et associée au montage. Reprends l’identification dans video_encoder.'
+      redirect_to record_path(record, encoder_prepared: prepared), notice: completion_notice
     rescue ArgumentError, ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound,
            ActiveRecord::SoleRecordExceeded => e
       redirect_to encoder_projects_catalogue_path(request_token: params[:request_token]), alert: e.message
@@ -31,11 +32,30 @@ module EncoderProjects
 
     private
 
+    def completion_notice
+      if @scope.dig('project', 'completion_record_id')
+        return 'Fiche mise à jour. Reprends la préparation dans video_encoder.'
+      end
+
+      'Fiche prête et associée au montage. Reprends l’identification dans video_encoder.'
+    end
+
     def standalone_work?
-      @scope.fetch('project')['work_kind'] == 'standalone_video'
+      @completion_record.present? || @scope.fetch('project')['work_kind'] == 'standalone_video'
+    end
+
+    def load_completion_record
+      project = @scope.fetch('project')
+      return unless project['completion_record_id']
+
+      @completion_record = ExistingFilmCompletion.bound_record!(project)
+    rescue ArgumentError, ActiveRecord::RecordNotFound => e
+      render plain: e.message, status: :unprocessable_content
     end
 
     def select_work_kind
+      return if @completion_record
+
       url = FilmCatalogue.tmdb_movie_url(params[:q])
       return unless url || params[:work_kind] == 'standalone_video'
 

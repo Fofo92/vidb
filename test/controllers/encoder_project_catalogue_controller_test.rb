@@ -85,6 +85,34 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     assert_equal record.id, EncoderProjects::Binding.current(@project['project_id'])['record_id']
   end
 
+  test 'external completion fills the associated film without replacing its reviewed metadata or binding' do
+    confirm
+    original_binding = EncoderProjects::Binding.current(@project.fetch('project_id'))
+    record = Record.find(original_binding.fetch('record_id'))
+    record.update!(genre_provenance: {})
+    record.with_reviewed_genre_assignment { record.genders = [] }
+    candidate = @candidate.merge('abstract' => 'Autre résumé proposé par la source.')
+
+    result = EncoderProjects::Identification.new(user: @user, url: 'https://vidb.test').call(@project)
+    uri = URI.parse(result.fetch(:review_url))
+    request_token = Rack::Utils.parse_query(uri.query).fetch('request_token')
+    scope = EncoderProjects::CatalogueScope.read(request_token, user: @user)
+    assert_equal record.id, scope.dig('project', 'completion_record_id')
+    proposal_token = EncoderProjects::CatalogueScope.issue(user: @user, project: scope.fetch('project'),
+                                                           candidate: candidate)
+
+    assert_no_difference ['Record.count', 'VideoAsset.count'] do
+      post encoder_projects_catalogue_path, params: { request_token: request_token, proposal_token: proposal_token,
+                                                     gender_ids: [@genre.id], encoder_window: '1' }
+    end
+
+    assert_redirected_to record_path(record, encoder_prepared: 1)
+    assert_equal [@genre.id], record.reload.gender_ids
+    assert_equal 'Résumé de test.', record.abstract
+    assert_equal [@country.id], record.country_ids
+    assert_equal original_binding, EncoderProjects::Binding.current(@project.fetch('project_id'))
+  end
+
   test 'an already qualified concordant record is reused without rewriting its metadata' do
     record = Record.create!(french_title: 'Adieu Philippine', year: 1962, record_kind: 'standalone_video',
                              language_version: LanguageVersion.find_by!(short_name: 'IND'), abstract: 'Texte manuel')
