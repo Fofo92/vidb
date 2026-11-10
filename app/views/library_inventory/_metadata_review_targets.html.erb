@@ -1,0 +1,10 @@
+<dl class="small mb-2">
+  <% targets.each do |key, target| %>
+    <dt><%= key == :genders ? 'Genres renseignés sur le parent' : 'Pays renseignés sur le parent' %></dt>
+    <% attribute = RecordMetadataInheritanceReview::FIELDS.fetch(key) %>
+    <dd>
+      <%= target[:values].map(&attribute).join(', ').presence || 'Non renseignés' %>
+      <% unless target[:ready] %><strong> · Parent à qualifier</strong><% end %>
+    </dd>
+  <% end %>
+</dl>

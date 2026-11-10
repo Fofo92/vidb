@@ -1,0 +1,80 @@
+<section class="container py-3">
+  <p><%= link_to '← Inventaire et doublons', library_inventory_path %></p>
+  <h1 class="h3">Genres et pays des séries et collections</h1>
+  <p>Simulation en lecture seule. Pour chaque champ forcé, la valeur renseignée sur la série ou la collection
+    remplacerait la valeur affichée chez ses enfants. Les données enregistrées restent intactes.</p>
+  <%= form_with url: metadata_review_library_inventory_path, method: :get, class: 'row g-3 align-items-end mb-4' do |form| %>
+    <div class="col-md">
+      <%= form.label :q, 'Titre du parent ou numéro de fiche', class: 'form-label' %>
+      <%= form.search_field :q, value: @metadata_query, class: 'form-control' %>
+    </div>
+    <div class="col-md">
+      <%= form.label :genres, 'Genres', class: 'form-label' %>
+      <%= form.select :genres, [['Forcer ceux du parent', 'parent'], ['Conserver les valeurs actuelles', 'current']],
+                      { selected: @metadata_filters[:genres] }, class: 'form-select' %>
+    </div>
+    <div class="col-md">
+      <%= form.label :pays, 'Pays', class: 'form-label' %>
+      <%= form.select :pays, [['Forcer ceux du parent', 'parent'], ['Conserver les valeurs actuelles', 'current']],
+                      { selected: @metadata_filters[:pays] }, class: 'form-select' %>
+    </div>
+    <div class="col-auto"><%= form.submit 'Simuler', class: 'btn btn-primary' %></div>
+  <% end %>
+
+  <p><strong><%= @metadata_changed %> fiche(s) changeraient</strong> avec ces choix, sur
+    <%= @metadata_reviewed %> fiche(s) à examiner dans <%= @metadata_total %> branche(s).</p>
+  <p class="small">Une branche apparaît si un enfant a une valeur différente ou si le parent reste à qualifier.
+    Quand un parent n’a pas de pays connu, ou n’a pas exactement un ou deux genres connus,
+    le champ concerné garde sa valeur actuelle dans la simulation.</p>
+
+  <% if @metadata_branch %>
+    <% branch = @metadata_branch %>
+    <h2 class="h5"><%= link_to branch[:root].complete_title, record_path(branch[:root]) %> · n° <%= branch[:root].id %></h2>
+    <%= render 'metadata_review_targets', targets: branch[:targets] %>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle" data-metadata-review>
+        <thead><tr><th>Fiche</th><th>Champ</th><th>Saisi sur la fiche</th><th>Affiché aujourd’hui</th><th>Après simulation</th></tr></thead>
+        <tbody>
+          <% @metadata_rows.each do |row| %>
+            <% row[:fields].each do |key, field| %>
+              <tr>
+                <td><%= link_to row[:record].complete_title_with_parents, record_path(row[:record]) %> · n° <%= row[:record].id %></td>
+                <td><%= key == :genders ? 'Genres' : 'Pays' %></td>
+                <% attribute = RecordMetadataInheritanceReview::FIELDS.fetch(key) %>
+                <td><%= field[:own].map(&attribute).join(', ').presence || '—' %></td>
+                <td><%= field[:current].map(&attribute).join(', ').presence || '—' %></td>
+                <td class="<%= 'fw-bold' if field[:changed] %>"><%= field[:proposed].map(&attribute).join(', ').presence || '—' %></td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <% if @metadata_rows.empty? %><p>Aucun écart dans cette branche.</p><% end %>
+    <p><%= link_to 'Toutes les branches', metadata_review_library_inventory_path(@metadata_filters.except(:q)) %></p>
+  <% else %>
+    <% @metadata_groups.each do |branch| %>
+      <article class="border rounded p-2 mb-2">
+        <h2 class="h6">
+          <%= link_to "#{branch[:root].complete_title} · n° #{branch[:root].id}",
+                      metadata_review_library_inventory_path(@metadata_filters.merge(q: branch[:root].id)) %>
+        </h2>
+        <%= render 'metadata_review_targets', targets: branch[:targets] %>
+        <p class="small mb-0"><%= branch[:changed_count] %> changement(s) simulé(s) ·
+          <%= branch[:rows].size %> fiche(s) à examiner sur <%= branch[:children_count] %>.</p>
+      </article>
+    <% end %>
+    <% if @metadata_groups.empty? %><p>Aucune branche à examiner pour cette recherche.</p><% end %>
+  <% end %>
+  <% if @metadata_page_count > 1 %>
+    <nav class="d-flex gap-3" aria-label="Pages de la simulation">
+      <% if @metadata_page > 1 %>
+        <%= link_to 'Précédent', metadata_review_library_inventory_path(@metadata_filters.merge(page: @metadata_page - 1)) %>
+      <% end %>
+      <span>Page <%= @metadata_page %> sur <%= @metadata_page_count %></span>
+      <% if @metadata_page < @metadata_page_count %>
+        <%= link_to 'Suivant', metadata_review_library_inventory_path(@metadata_filters.merge(page: @metadata_page + 1)) %>
+      <% end %>
+    </nav>
+  <% end %>
+</section>

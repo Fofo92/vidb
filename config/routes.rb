@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   resources :copy_retirements, only: %i[new create]
   resource :library_inventory, only: :show, controller: 'library_inventory' do
     post :refresh
+    get :metadata_review
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
