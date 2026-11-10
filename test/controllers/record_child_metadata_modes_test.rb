@@ -62,7 +62,9 @@ class RecordChildMetadataModesTest < ActionDispatch::IntegrationTest
 
     get edit_record_child_qualification_url(collection), params: { descendant_genre_mode: 'current' }
     assert_select '[data-metadata-review] tbody tr' do |rows|
-      assert_equal [common.name, own.name], rows.first.css('td').to_a.values_at(2, 3).map(&:text)
+      film_row = rows.find { |row| row.at_css("a[href='#{record_path(film)}']") }
+      assert_not_nil film_row, 'Le film doit figurer dans la simulation'
+      assert_equal [common.name, own.name], film_row.css('td').to_a.values_at(2, 3).map(&:text)
     end
 
     patch metadata_modes_record_child_qualification_url(collection), params: { descendant_genre_mode: 'current' }
@@ -84,16 +86,36 @@ class RecordChildMetadataModesTest < ActionDispatch::IntegrationTest
     original, replacement, own = %w[Original Remplacement Particulier].map { |name| Gender.create!(name: name) }
     series.genders = [original]
     episode.genders = [own]
+    common_country = Country.create!(short_name: 'JP', long_name: 'Japon branche test')
+    own_country = Country.create!(short_name: 'AU', long_name: 'Australie branche test')
+    series.countries = [common_country]
+    episode.countries = [own_country]
 
     get edit_record_url(series)
     assert_select 'select[name="record[descendant_genre_mode]"]'
 
-    patch record_url(series), params: { record: { descendant_genre_mode: 'parent', gender_ids: [replacement.id] } }
+    patch record_url(series), params: {
+      record: { descendant_genre_mode: 'parent', descendant_country_mode: 'parent', gender_ids: [replacement.id] }
+    }
     assert_redirected_to record_path(series)
     assert_equal 'parent', series.reload.descendant_genre_mode
     assert_equal [replacement], season.reload.effective_genders
     assert_equal [replacement], episode.reload.effective_genders
     assert_equal [own.id], episode.gender_ids
+    assert_equal [common_country], episode.effective_countries
+    assert_equal [own_country.id], episode.country_ids
+
+    get edit_record_child_qualification_url(season)
+    assert_response :success
+    assert_select "[data-qualifiable-child='#{episode.id}']" do
+      assert_select '[data-child-effective-genres]', text: replacement.name
+      assert_select '[data-child-effective-countries]', text: common_country.long_name
+    end
+
+    get record_url(episode)
+    assert_response :success
+    assert_select '.record-show-facts dd', text: replacement.name
+    assert_select '.record-show-facts dd', text: common_country.long_name
 
     patch record_url(series), params: { record: { gender_ids: [original.id] } }
     assert_redirected_to record_path(series)

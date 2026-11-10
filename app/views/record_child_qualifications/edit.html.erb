@@ -16,6 +16,7 @@
 <% end %>
 
 <% if @children.any? %>
+  <% metadata = record_metadata_values(@record) %>
   <%= form_with(url: record_child_qualification_path(@record), method: :patch,
                 scope: :record_child_qualification, data: { controller: "child-qualification" }) do %>
     <%= hidden_field_tag "record_child_qualification[common][fields][]", "" %>
@@ -31,6 +32,7 @@
     <p class="small">
       Les corrections par enfant sont prioritaires sur les valeurs communes.
       Les états et les valeurs des copies s’appliquent aussi aux épisodes sous les enfants sélectionnés.
+      Les genres et pays affichés tiennent compte des règles de la branche ; le formulaire modifie les valeurs propres.
       Enregistré et disponible sont calculés à partir des copies.
     </p>
     <div class="d-flex gap-2 mb-2">
@@ -51,8 +53,8 @@
         </div>
         <p class="small mb-2">
           <%= record_kind_label(child.record_kind) %> · <%= child.display_range_of_years || "Année inconnue" %> ·
-          <%= child.genders.map(&:name).join(", ").presence || "Genre inconnu" %> ·
-          <%= child.countries.map(&:long_name).join(", ").presence || "Pays inconnu" %> ·
+          <span data-child-effective-genres><%= metadata.genders(child).map(&:name).join(", ").presence || "Genre inconnu" %></span> ·
+          <span data-child-effective-countries><%= metadata.countries(child).map(&:long_name).join(", ").presence || "Pays inconnu" %></span> ·
           <%= child.language_version.short_name %> · <%= record_copy_summary(child).summary_supports %>
         </p>
         <%= hidden_field_tag "record_child_qualification[snapshots][#{child.id}]",
