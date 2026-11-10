@@ -41,6 +41,26 @@ class RecordDuplicateReviewTest < ActiveSupport::TestCase
     assert_equal [[1, 2], [3, 4]], groups(records).map { |row| row[:records].map(&:id) }
   end
 
+  test 'episode years identify same-title series even without any video files' do
+    records = [item(1, 'Einstein', kind: 'series', year: nil),
+               item(2, 'Einstein', kind: 'series', year: nil),
+               item(3, 'Einstein', kind: 'series', year: nil),
+               item(4, 'Saison 01', kind: 'season', year: nil, parents: [1]),
+               item(5, 'Second', kind: 'episode', year: 2018, parents: [1, 4]),
+               item(6, 'Pilot', kind: 'episode', year: 2017, parents: [1, 4]),
+               item(7, 'Other pilot', kind: 'episode', year: 2017, parents: [2]),
+               item(8, 'Remake pilot', kind: 'episode', year: 2024, parents: [3])]
+
+    group = groups(records).sole
+    assert_equal [1, 2], group[:records].map(&:id)
+    assert_equal({ 1 => 2017, 2 => 2017 }, group[:years])
+    assert_equal({ 1 => [], 2 => [] }, group[:copies])
+  end
+
+  test 'two unknown years do not count as a matching year' do
+    assert_empty groups([item(1, year: nil), item(2, year: nil)])
+  end
+
   test 'films inside and outside a collection can still be duplicates' do
     assert_equal 1, groups([item(1, parents: [99]), item(2)]).size
   end

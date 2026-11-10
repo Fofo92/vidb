@@ -51,6 +51,8 @@
   </div>
   <h2 class="h5 mt-4">Fiches potentiellement en doublon — <%= @duplicate_count %></h2>
   <p class="small">Même titre normalisé, année et nature, avec contexte de série concordant.
+    Pour les séries et saisons, l’année du plus ancien épisode renseigné est utilisée lorsqu’elle est disponible.
+    Le nombre de copies présentes est indiqué à titre informatif.
     Deux copies d’une seule fiche ne sont pas deux fiches en doublon. À examiner avant toute fusion.</p>
   <% @duplicates.each do |group| %>
     <div class="border rounded p-2 mb-2" data-logical-duplicate>
@@ -58,7 +60,7 @@
         <% copies = group[:copies].fetch(record.id).reject(&:status_deleted?) %>
         <div class="mb-2">
           <%= link_to "#{record.complete_title_with_parents} — n° #{record.id}", record_path(record) %>
-          <span class="small text-muted"> · <%= record.year || 'année inconnue' %> · <%= copies.count(&:status_present?) %> copie(s) présente(s)</span>
+          <span class="small text-muted"> · <%= group[:years].fetch(record.id) %> · <%= copies.count(&:status_present?) %> copie(s) présente(s)</span>
           <% copies.each do |asset| %>
             <div class="small text-break text-muted"><%= asset.status %> · <%= asset.last_known_path %></div>
           <% end %>
