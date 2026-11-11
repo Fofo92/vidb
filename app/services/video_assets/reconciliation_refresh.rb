@@ -15,7 +15,9 @@ module VideoAssets
     def call
       @directory.mkpath
       File.open(@directory.join('refresh.lock'), File::RDWR | File::CREAT, 0o600) do |lock|
-        return { skipped: 'refresh_already_running' } unless lock.flock(File::LOCK_EX | File::LOCK_NB)
+        # PathExists retriggers while refresh.request remains present. Wait for
+        # the current worker instead of returning into a rapid activation loop.
+        lock.flock(File::LOCK_EX)
 
         refresh
       end

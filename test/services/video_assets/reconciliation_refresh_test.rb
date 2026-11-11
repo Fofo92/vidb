@@ -2,6 +2,7 @@
 
 require 'test_helper'
 require 'tmpdir'
+require 'minitest/mock'
 
 class ReconciliationRefreshTest < ActiveSupport::TestCase
   test 'refresh consumes pending request and retains requests made during the scan' do
@@ -49,11 +50,37 @@ class ReconciliationRefreshTest < ActiveSupport::TestCase
     end
   end
 
-  test 'concurrent refreshes do not start a second scan' do
+  test 'a concurrent refresh waits without consuming the pending request then runs once' do
     Dir.mktmpdir do |directory|
+      marker = Pathname.new(directory).join('refresh.request')
+      VideoAssets::ReconciliationRefreshRequest.call(path: marker)
+      service = refresh(directory)
+      entered = Queue.new
+      started = Queue.new
+      worker = nil
       File.open(File.join(directory, 'refresh.lock'), File::RDWR | File::CREAT, 0o600) do |lock|
         lock.flock(File::LOCK_EX)
-        assert_equal 'refresh_already_running', refresh(directory).call[:skipped]
+        perform = lambda do
+          entered << true
+          marker.delete
+          { counts: { 'confirmed' => 1 } }
+        end
+        service.stub(:refresh, perform) do
+          worker = Thread.new { started << true; service.call }
+          started.pop
+          assert_nil worker.join(0.05), 'The worker must wait rather than return skipped'
+          assert entered.empty?, 'Do not enter the refresh while another worker owns the lock'
+          assert marker.exist?, 'A waiting worker must preserve the request'
+          lock.flock(File::LOCK_UN)
+          assert worker.join(5), 'The worker must resume after the lock is released'
+          assert_equal({ 'confirmed' => 1 }, worker.value.fetch(:counts))
+          assert_equal 1, entered.size
+          assert_not marker.exist?
+        ensure
+          lock.flock(File::LOCK_UN)
+          worker&.kill if worker&.alive?
+          worker&.join
+        end
       end
     end
   end
