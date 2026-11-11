@@ -48,11 +48,11 @@ class RecordsController < ApplicationController
   end
 
   def edit
-    @metadata_forcing_parent = RecordMetadataValues.forcing_root?(@record)
+    @metadata_forcing_parent = RecordMetadataValues.forcing_parent?(@record)
   end
 
   def update
-    @metadata_forcing_parent = RecordMetadataValues.forcing_root?(@record)
+    @metadata_forcing_parent = RecordMetadataValues.forcing_parent?(@record)
     if save_record_update
       redirect_to(
         record_path(@record),

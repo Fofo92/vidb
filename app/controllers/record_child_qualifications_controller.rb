@@ -17,7 +17,7 @@ class RecordChildQualificationsController < ApplicationController
   end
 
   def metadata_modes
-    return head :unprocessable_content unless RecordMetadataValues.forcing_root?(@record)
+    return head :unprocessable_content unless RecordMetadataValues.forcing_parent?(@record)
 
     if RecordMetadataModeUpdate.new(@record, attributes: branch_mode_params).call
       redirect_to edit_record_child_qualification_path(@record), status: :see_other,
@@ -37,7 +37,7 @@ class RecordChildQualificationsController < ApplicationController
   end
 
   def prepare_branch_review
-    return unless RecordMetadataValues.forcing_root?(@record)
+    return unless RecordMetadataValues.forcing_parent?(@record)
 
     submitted_modes = branch_mode_params
     @branch_modes = RecordMetadataValues::MODE_ATTRIBUTES.transform_values do |attribute|

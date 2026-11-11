@@ -2,6 +2,8 @@
 
 # These read-only values preserve every explicit association.
 class RecordMetadataValues
+  include RecordMetadataBranchModes
+
   REFERENCES = { countries: :long_name, genders: :name }.freeze
 
   MODE_ATTRIBUTES = { genders: :descendant_genre_mode, countries: :descendant_country_mode }.freeze
@@ -9,6 +11,14 @@ class RecordMetadataValues
 
   def self.forcing_root?(record)
     record&.root? && (record.record_kind_series? || record.record_kind_collection?)
+  end
+
+  def self.forcing_parent?(record)
+    return true if forcing_root?(record)
+    return false unless record&.record_kind_season?
+
+    series = record.parent
+    series&.record_kind_series? && series.root?
   end
 
   def self.forceable?(field, values)
@@ -40,6 +50,16 @@ class RecordMetadataValues
     values(record, field)
   end
 
+  def preview_values(record, field, root:, mode:)
+    effective_values(record, field, overrides: { root.id => mode })
+  end
+
+  def series_imposes?(season, field)
+    return false unless season.record_kind_season?
+
+    imposed_values(forcing_root(season), field, {}).present?
+  end
+
   def ancestors(record)
     record.ancestor_ids.reverse.filter_map { |id| @by_id[id] }
   end
@@ -58,34 +78,6 @@ class RecordMetadataValues
   end
 
   private
-
-  def effective_values(record, field)
-    root = forcing_root(record)
-    mode = root&.public_send(MODE_ATTRIBUTES.fetch(field)) || 'current'
-    values_for_mode(record, field, mode, root)
-  end
-
-  def additive_values(record, field, common)
-    parent = @by_id[record.parent_id]
-    seasonal = parent&.record_kind_season? ? explicit(parent, field) : []
-    (values(record, field) + seasonal + common).uniq(&:id)
-  end
-
-  def forcing_root(record)
-    return record if self.class.forcing_root?(record)
-
-    parent = @by_id[record.parent_id]
-    case record.record_kind
-    when 'standalone_video' then parent if parent&.record_kind_collection? && parent.root?
-    when 'season' then parent if parent&.record_kind_series? && parent.root?
-    when 'episode' then episode_forcing_root(parent)
-    end
-  end
-
-  def episode_forcing_root(parent)
-    parent = @by_id[parent.parent_id] if parent&.record_kind_season?
-    parent if parent&.record_kind_series? && parent.root?
-  end
 
   def values(record, association)
     if record.record_kind_collection?

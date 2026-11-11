@@ -2,8 +2,8 @@
 
 class RecordMetadataModeUpdate
   INVALID_VALUES = {
-    genders: 'choisis un ou deux genres connus sur la série ou la collection, ou désactive la règle',
-    countries: 'choisis au moins un pays connu sur la série ou la collection, ou désactive la règle'
+    genders: 'choisis un ou deux genres connus sur la fiche parente, ou désactive la règle',
+    countries: 'choisis au moins un pays connu sur la fiche parente, ou désactive la règle'
   }.freeze
 
   def initialize(record, attributes:)
@@ -35,7 +35,7 @@ class RecordMetadataModeUpdate
 
   def valid_mode?(metadata, field, mode)
     return true if mode == 'current'
-    return false unless RecordMetadataValues.forcing_root?(@record) && RecordMetadataValues::MODES.key?(mode)
+    return false unless RecordMetadataValues.forcing_parent?(@record) && RecordMetadataValues::MODES.key?(mode)
     return true if mode == 'add'
 
     RecordMetadataValues.forceable?(field, metadata.explicit(@record, field).uniq(&:id))

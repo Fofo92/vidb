@@ -1,5 +1,5 @@
 <section class="card card-body mb-3" data-branch-metadata>
-  <h2 class="h5">Genres et pays de toute la branche</h2>
+  <h2 class="h5"><%= @record.record_kind_season? ? 'Genres et pays des épisodes de cette saison' : 'Genres et pays de toute la branche' %></h2>
   <p class="small mb-2">Cette règle s’applique à tous les enfants concernés, actuels et futurs, même sans les cocher.
     Leurs valeurs propres restent enregistrées.</p>
   <% if @branch_mode_errors.present? %>
@@ -18,7 +18,10 @@
                         { selected: @branch_modes.fetch(field) }, class: 'form-select form-select-sm' %>
         <p class="small text-muted mb-0">
           Parent : <%= target[:names].presence || 'Non renseigné' %> ·
-          Règle active : <%= RecordMetadataValues::MODES.fetch(@record.public_send(attribute)) %>
+          Règle enregistrée : <%= RecordMetadataValues::MODES.fetch(@record.public_send(attribute)) %>
+          <% if target[:overridden] %>
+            · <strong>La <%= link_to 'série', record_path(@record.parent) %> impose ce champ à toute la branche.</strong>
+          <% end %>
         </p>
       </div>
     <% end %>

@@ -1,5 +1,7 @@
 require 'test_helper'
 
+# These integration scenarios intentionally keep each complete user journey together.
+# rubocop:disable Metrics/ClassLength, Metrics/BlockLength
 class RecordChildMetadataModesTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
@@ -126,4 +128,54 @@ class RecordChildMetadataModesTest < ActionDispatch::IntegrationTest
     assert_equal [original.id], series.reload.gender_ids
     assert_equal [original], episode.reload.effective_genders
   end
+  test 'a season can impose both fields locally while series forcing takes precedence by field' do
+    language = LanguageVersion.find_or_create_by!(short_name: 'VF') { |row| row.long_name = 'Français' }
+    series = Record.create!(french_title: 'Série avec règle', record_kind: 'series', language_version: language)
+    season = series.children.create!(french_title: 'Saison locale', record_kind: 'season', language_version: language)
+    episode = season.children.create!(french_title: 'Épisode local', record_kind: 'episode', language_version: language)
+    other = series.children.create!(french_title: 'Épisode hors saison', record_kind: 'episode',
+                                    language_version: language)
+    series_genre = Gender.create!(name: 'Genre série priorité')
+    season_genre = Gender.create!(name: 'Genre saison priorité')
+    own_genre = Gender.create!(name: 'Genre épisode priorité')
+    country = Country.create!(short_name: 'NZ', long_name: 'Nouvelle-Zélande branche test')
+    series.genders = [series_genre]
+    season.genders = [season_genre]
+    season.countries = [country]
+    episode.genders = [own_genre]
+    other.genders = [own_genre]
+
+    get edit_record_url(season)
+    assert_response :success
+    assert_select 'select[name="record[descendant_genre_mode]"]'
+    assert_select 'select[name="record[descendant_country_mode]"]'
+
+    patch record_url(season), params: { record: { descendant_genre_mode: 'add' } }
+    assert_redirected_to record_path(season)
+    assert_equal 'add', season.reload.descendant_genre_mode
+    assert_equal [season_genre, own_genre], episode.reload.effective_genders
+
+    modes = { descendant_genre_mode: 'parent', descendant_country_mode: 'parent' }
+    get edit_record_child_qualification_url(season), params: modes
+    assert_select 'strong', text: '1 fiche(s) changeraient'
+    assert_equal [season_genre, own_genre], episode.effective_genders
+
+    patch metadata_modes_record_child_qualification_url(season), params: modes
+    assert_redirected_to edit_record_child_qualification_path(season)
+    assert_equal [season_genre], episode.reload.effective_genders
+    assert_equal [country], episode.effective_countries
+    assert_equal [own_genre], other.reload.effective_genders
+
+    patch metadata_modes_record_child_qualification_url(series), params: { descendant_genre_mode: 'parent' }
+    assert_redirected_to edit_record_child_qualification_path(series)
+    assert_equal [series_genre], episode.reload.effective_genders
+    assert_equal [series_genre], other.reload.effective_genders
+
+    get edit_record_child_qualification_url(season)
+    assert_response :success
+    assert_select "strong a[href='#{record_path(series)}']", text: 'série', count: 1
+    assert_equal [country], episode.effective_countries
+    assert_equal [own_genre.id], episode.gender_ids
+  end
 end
+# rubocop:enable Metrics/ClassLength, Metrics/BlockLength

@@ -21,7 +21,12 @@ class RecordMetadataInheritanceReview
   def branch_children(root)
     children = @metadata.children(root)
     return children.select(&:record_kind_standalone_video?) if root.record_kind_collection?
+    return children.select(&:record_kind_episode?) if root.record_kind_season?
 
+    series_children(children)
+  end
+
+  def series_children(children)
     seasons = children.select(&:record_kind_season?)
     children.select(&:record_kind_episode?) + seasons +
       seasons.flat_map { |season| @metadata.children(season).select(&:record_kind_episode?) }
@@ -31,7 +36,8 @@ class RecordMetadataInheritanceReview
     FIELDS.to_h do |field, attribute|
       values = @metadata.explicit(@root, field).uniq(&:id)
       blocked = @modes.fetch(field) == 'parent' && !RecordMetadataValues.forceable?(field, values)
-      [field, { names: names(values, attribute), blocked: blocked }]
+      overridden = @metadata.series_imposes?(@root, field)
+      [field, { names: names(values, attribute), blocked: blocked, overridden: overridden }]
     end
   end
 
@@ -44,7 +50,7 @@ class RecordMetadataInheritanceReview
   def child_row(record)
     changes = FIELDS.each_with_object({}) do |(field, attribute), result|
       current = @metadata.public_send(field, record)
-      proposed = @metadata.values_for_mode(record, field, @modes.fetch(field))
+      proposed = @metadata.preview_values(record, field, root: @root, mode: @modes.fetch(field))
       next if current.map(&:id).sort == proposed.map(&:id).sort
 
       result[field] = { current: names(current, attribute), proposed: names(proposed, attribute) }
