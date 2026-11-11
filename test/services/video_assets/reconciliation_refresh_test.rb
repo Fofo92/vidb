@@ -40,6 +40,15 @@ class ReconciliationRefreshTest < ActiveSupport::TestCase
     end
   end
 
+  test 'language qualification runs after successful imports and is included in the journal' do
+    Dir.mktmpdir do |directory|
+      sweep = -> { { processed: 1, copies: [{ video_asset_id: 123, status: 'qualified' }] } }
+      journal = ->(report:) { report.fetch(:automatic_languages) }
+      result = refresh(directory, language_sweep: sweep, journal: journal).call
+      assert_equal 1, result[:processed]
+    end
+  end
+
   test 'concurrent refreshes do not start a second scan' do
     Dir.mktmpdir do |directory|
       File.open(File.join(directory, 'refresh.lock'), File::RDWR | File::CREAT, 0o600) do |lock|
@@ -63,9 +72,9 @@ class ReconciliationRefreshTest < ActiveSupport::TestCase
 
   private
 
-  def refresh(directory, scanner: -> { { format: 'vidb.video_library_inventory', version: 1, roots: ['/videos'], generated_at: Time.current.iso8601, entries: [] } }, guard: -> {}, journal: ->(**) { {} })
+  def refresh(directory, scanner: -> { { format: 'vidb.video_library_inventory', version: 1, roots: ['/videos'], generated_at: Time.current.iso8601, entries: [] } }, guard: -> {}, journal: ->(**) { {} }, language_sweep: -> { { processed: 0, copies: [] } })
     reporter = ->(_inventory) { { counts: { 'confirmed' => 1 } } }
     VideoAssets::ReconciliationRefresh.new(directory: directory, scanner: scanner,
-                                          guard: guard, reporter: reporter, journal: journal)
+                                          guard: guard, reporter: reporter, journal: journal, language_sweep: language_sweep)
   end
 end

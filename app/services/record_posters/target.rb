@@ -7,6 +7,12 @@ module RecordPosters
       new(record).call
     end
 
+    def self.series_ids(series)
+      linked = CatalogueEpisodeLink.where(provider: 'tmdb', record_id: series.descendants.select(:id))
+                                   .distinct.pluck(:external_series_id)
+      (linked + Evidence.ids(series, 'tv')).compact.map(&:to_s).uniq
+    end
+
     def initialize(record)
       @record = record
     end
@@ -23,13 +29,7 @@ module RecordPosters
     private
 
     def series_target(series)
-      ids = CatalogueEpisodeLink.where(provider: 'tmdb', record_id: series.descendants.select(:id))
-                                .distinct.pluck(:external_series_id)
-      evidence = series.year_evidence.to_h
-      ids << evidence['tmdb_series_id']
-      ids << evidence['external_series_id'] if evidence['provider'] == 'tmdb'
-      ids.concat(Evidence.ids(series, 'tv'))
-      id = unique_id(ids)
+      id = unique_id(self.class.series_ids(series))
       { type: 'tv', id: id } if id
     end
 

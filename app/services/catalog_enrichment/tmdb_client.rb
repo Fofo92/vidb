@@ -9,19 +9,20 @@ module CatalogEnrichment
   class TmdbClient
     class Error < StandardError; end
 
-    def initialize(cache_dir:, token: ENV.fetch('TMDB_READ_ACCESS_TOKEN', nil), api_key: ENV.fetch('TMDB_API_KEY', nil),
-                   transport: nil, refresh: false)
+    def initialize(cache_dir:, token: ENV.fetch('TMDB_READ_ACCESS_TOKEN', nil), api_key: ENV.fetch('TMDB_API_KEY', nil), # rubocop:disable Metrics/ParameterLists
+                   transport: nil, refresh: false, max_age: nil)
       @cache_dir = Pathname.new(cache_dir)
       @token = token
       @api_key = api_key
       @transport = transport || method(:request)
       @refresh = refresh
+      @max_age = max_age
     end
 
     def get(path, language: 'fr-FR')
       validate_path!(path, language)
       cache = @cache_dir.join("#{Digest::SHA256.hexdigest("#{path}:#{language}")}.json")
-      return JSON.parse(cache.read) unless @refresh || !cache.file?
+      return JSON.parse(cache.read) if cached?(cache)
 
       raise Error, 'Configure TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY' if @token.to_s.empty? && @api_key.to_s.empty?
 
@@ -31,6 +32,10 @@ module CatalogEnrichment
     end
 
     private
+
+    def cached?(cache)
+      !@refresh && cache.file? && (@max_age.nil? || cache.mtime >= Time.now - @max_age)
+    end
 
     def save_cache(cache, payload)
       @cache_dir.mkpath

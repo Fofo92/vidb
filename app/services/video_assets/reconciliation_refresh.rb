@@ -2,13 +2,14 @@
 
 module VideoAssets
   class ReconciliationRefresh
-    def initialize(directory:, scanner:, guard: nil, reporter: nil, journal: nil)
+    def initialize(directory:, scanner:, guard: nil, reporter: nil, journal: nil, language_sweep: nil) # rubocop:disable Metrics/ParameterLists
       @directory = Pathname.new(directory)
       @scanner = scanner
       @root = '/videos'
       @guard = guard || ReconciliationVolumeGuard.new(root: @root)
       @reporter = reporter || ->(inventory) { ReconciliationReport.new(inventory: inventory).call }
       @journal = journal || ReconciliationJournal.new(directory: directory, automatic: true)
+      @language_sweep = language_sweep || AutomaticLanguageSweep.new(directory: directory)
     end
 
     def call
@@ -27,12 +28,19 @@ module VideoAssets
       @guard.call
       inventory = @scanner.call.deep_symbolize_keys
       validate_inventory!(inventory)
+      report = observe(inventory)
+      import_exports(report)
+      @guard.call
+      report[:automatic_languages] = @language_sweep.call
+      @journal.call(report: report)
+    end
+
+    def observe(inventory)
       @guard.call
       presence = DiskPresence.new(guard: @guard).call(inventory)
       report = @reporter.call(inventory).merge(disk_presence: presence)
       @guard.call
-      import_exports(report)
-      @journal.call(report: report)
+      report
     end
 
     def import_exports(report)
