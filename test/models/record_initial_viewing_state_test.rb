@@ -22,11 +22,11 @@ class RecordInitialViewingStateTest < ActiveSupport::TestCase
     end
   end
 
-  test 'explicit seen and unknown states are preserved' do
+  test 'only an explicit true viewing state counts as seen' do
     assert_equal true, create_record(is_seen: true).effective_state(:is_seen)
     record = create_record(is_seen: nil)
     assert_nil record.seen_state_confirmed_at
-    assert_nil record.effective_state(:is_seen)
+    assert_equal false, record.effective_state(:is_seen)
   end
 
   test 'an existing confirmation is preserved at creation' do
@@ -39,7 +39,7 @@ class RecordInitialViewingStateTest < ActiveSupport::TestCase
     record.update_columns(is_seen: false, seen_state_confirmed_at: nil)
     record.update!(abstract: 'Résumé enrichi')
     assert_nil record.reload.seen_state_confirmed_at
-    assert_nil record.effective_state(:is_seen)
+    assert_equal false, record.effective_state(:is_seen)
   end
 
   test 'attaching an export preserves a seen record' do
@@ -48,12 +48,12 @@ class RecordInitialViewingStateTest < ActiveSupport::TestCase
     assert_equal true, record.reload.effective_state(:is_seen)
   end
 
-  test 'attaching an export preserves a legacy unknown record' do
+  test 'attaching an export keeps a legacy record unseen' do
     record = create_record
     record.update_columns(is_seen: false, seen_state_confirmed_at: nil)
     VideoAsset.create!(record: record, last_known_path: '/videos/new-export-unknown.mkv')
     assert_nil record.reload.seen_state_confirmed_at
-    assert_nil record.effective_state(:is_seen)
+    assert_equal false, record.effective_state(:is_seen)
   end
 
   private

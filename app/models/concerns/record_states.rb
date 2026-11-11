@@ -32,6 +32,7 @@ module RecordStates
 
   def effective_state(field)
     raise ArgumentError, 'Unsupported state' unless FIELDS.include?(field)
+    return is_seen == true if field == :is_seen
 
     assets = video_assets.to_a
     observed = asset_state(field, assets)
@@ -69,8 +70,6 @@ module RecordStates
   end
 
   def unverified_negative?(field, value)
-    return false if field == :is_seen && seen_state_confirmed_at.present?
-
     value == false && field != :is_checked && is_checked != true
   end
 

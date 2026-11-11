@@ -46,12 +46,12 @@ class RecordStatesUpdatesTest < ActionDispatch::IntegrationTest
     assert_includes response.parsed_body.fetch("summary"), "2/2"
   end
 
-  test "unknown clears a previously confirmed seen choice" do
+  test "unknown viewing is rejected and preserves a seen choice" do
     update_state(@season, field: "is_seen", value: "yes", child_id: @episode.id)
     update_state(@season, field: "is_seen", value: "unknown", child_id: @episode.id)
-    assert_response :success
-    assert_nil @episode.reload.effective_state(:is_seen)
-    assert_nil @episode.seen_state_confirmed_at
+    assert_response :unprocessable_content
+    assert_equal true, @episode.reload.effective_state(:is_seen)
+    assert_not_nil @episode.seen_state_confirmed_at
   end
 
   test "an unseen column choice confirms each episode independently of checking" do
@@ -64,9 +64,9 @@ class RecordStatesUpdatesTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "legacy unchecked false remains unknown" do
+  test "legacy unchecked false is unseen" do
     @episode.update!(is_seen: false)
-    assert_nil @episode.reload.effective_state(:is_seen)
+    assert_equal false, @episode.reload.effective_state(:is_seen)
   end
 
   test "recorded and available cannot be changed by this endpoint" do
@@ -104,7 +104,8 @@ class RecordStatesUpdatesTest < ActionDispatch::IntegrationTest
     get record_url(@season)
     assert_response :success
     assert_select "th[data-state-column='is_seen'] [data-value='yes']", count: 1
-    assert_select "td[data-state-column='is_seen'] button[data-child-id='#{@episode.id}']", count: 3
+    assert_select "td[data-state-column='is_seen'] button[data-child-id='#{@episode.id}']", count: 1
+    assert_select "[data-state-column='is_seen'] [data-value='unknown']", count: 0
     assert_select "[data-state-column='is_checked']", count: 0
     assert_select "[data-state-column='is_available'] button", count: 0
   end

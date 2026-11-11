@@ -7,7 +7,9 @@
     <% count = counts.fetch(field) %>
     <div data-state="<%= field %>">
       <span class="record-state-label"><%= label %> :</span> <span class="record-state-value"><%= count[:yes] %>/<%= count[:total] %></span>
-      <% if count[:unknown].positive? %>
+      <% if field == :is_seen && count[:no].positive? %>
+        <span class="record-state-unseen">— <%= count[:no] %> non vu(s)</span>
+      <% elsif count[:unknown].positive? %>
         <span class="record-state-unknown">— <%= count[:unknown] %> inconnu(s)</span>
       <% end %>
     </div>

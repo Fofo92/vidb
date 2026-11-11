@@ -24,6 +24,7 @@ class RecordStateUpdate
   def validate_choice!
     raise ArgumentError, "Propriété non modifiable ici." unless FIELDS.include?(@field)
     raise ArgumentError, "Valeur invalide." unless VALUES.key?(@value)
+    raise ArgumentError, "Choisis vu ou non vu." if @field == "is_seen" && @value == "unknown"
   end
 
   def targets
@@ -41,6 +42,6 @@ class RecordStateUpdate
     result = { @field => VALUES.fetch(@value) }
     return result unless @field == "is_seen"
 
-    result.merge(seen_state_confirmed_at: @value == "unknown" ? nil : Time.current)
+    result.merge(seen_state_confirmed_at: Time.current)
   end
 end

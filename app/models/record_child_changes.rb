@@ -100,15 +100,14 @@ class RecordChildChanges
   def update_states
     values = @values.slice("is_seen", "is_checked")
     return if values.empty?
+    raise ArgumentError, "Choisis vu ou non vu." if values["is_seen"] == "unknown"
 
     attributes = values.transform_values do |value|
       raise ArgumentError, "État invalide." unless STATES.key?(value)
 
       STATES.fetch(value)
     end
-    if values.key?("is_seen")
-      attributes["seen_state_confirmed_at"] = values["is_seen"] == "unknown" ? nil : Time.current
-    end
+    attributes["seen_state_confirmed_at"] = Time.current if values.key?("is_seen")
     @record.state_leaves.each { |leaf| leaf.update!(attributes) }
   end
 

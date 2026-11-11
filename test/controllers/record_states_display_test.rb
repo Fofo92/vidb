@@ -15,10 +15,10 @@ class RecordStatesDisplayTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test 'series and season counters use episodes and show unknown states' do
+  test 'series counters count an unset viewing state as unseen' do
     get record_url(@root)
     assert_response :success
-    assert_select "[data-record-state-summary='#{@root.id}'] [data-state='is_seen']", text: /0\/1.*1 inconnu/m
+    assert_select "[data-record-state-summary='#{@root.id}'] [data-state='is_seen']", text: /0\/1.*1 non vu/m
   end
 
   test 'container edit offers counters rather than scalar state controls' do

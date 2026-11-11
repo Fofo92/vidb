@@ -18,17 +18,30 @@ class RecordStatesTest < ActiveSupport::TestCase
     counts = @series.state_counts
     assert_equal 2, counts[:is_seen][:total]
     assert_equal 1, counts[:is_seen][:yes]
-    assert_equal 1, counts[:is_seen][:unknown]
+    assert_equal 1, counts[:is_seen][:no]
+    assert_equal 0, counts[:is_seen][:unknown]
     assert_equal 0, counts[:is_available][:yes]
     assert_equal '2020-2022', @series.display_range_of_years
     assert_equal '2020-2022', @season.display_range_of_years
   end
 
-  test 'unverified false remains unknown but checked false is known negative' do
+  test 'unseen does not depend on editorial verification or confirmation' do
     @first.update!(is_seen: false, is_checked: false)
-    assert_nil @first.effective_state(:is_seen)
+    assert_equal false, @first.effective_state(:is_seen)
     @first.update!(is_checked: true)
     assert_equal false, @first.effective_state(:is_seen)
+  end
+
+  test 'a complete seventeen episode branch has seventeen unseen leaves by default' do
+    15.times do |index|
+      create_record("Épisode #{index + 3}", parent: @season, record_kind: 'episode',
+                    rank: index + 3, is_seen: index.even? ? nil : false)
+    end
+    assert_equal({ yes: 0, no: 17, unknown: 0, total: 17 }, @series.state_counts[:is_seen])
+    assert_equal true, @series.reload.is_seen
+
+    @first.update!(is_seen: true)
+    assert_equal({ yes: 1, no: 16, unknown: 0, total: 17 }, @series.reload.state_counts[:is_seen])
   end
 
   test 'available implies recorded and historical recording cannot be cleared' do

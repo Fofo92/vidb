@@ -151,12 +151,12 @@ class RecordChildrenUpdateTest < ActiveSupport::TestCase
     assert_equal 2019, @first.year_evidence["year"]
   end
 
-  test "unknown viewing clears confirmation and copy updates reach season leaves" do
+  test "unknown viewing is rejected and copy updates reach season leaves" do
     asset = create_asset(@first)
     assert operation([@first], fields: ["is_seen"], is_seen: "no").call
-    assert operation([@first], fields: ["is_seen"], is_seen: "unknown").call
-    assert_nil @first.reload.seen_state_confirmed_at
-    assert_nil @first.effective_state(:is_seen)
+    assert_not operation([@first], fields: ["is_seen"], is_seen: "unknown").call
+    assert_not_nil @first.reload.seen_state_confirmed_at
+    assert_equal false, @first.effective_state(:is_seen)
     assert operation([@season], { fields: ["copy_language_version_id"], copy_language_version_id: @vost.id },
                      parent: @series).call
     assert_equal @vost.id, asset.reload.language_version_id

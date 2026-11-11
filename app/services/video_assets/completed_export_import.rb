@@ -34,7 +34,7 @@ module VideoAssets
     end
 
     def confirm_default_unseen(record)
-      return unless record.effective_state(:is_seen).nil?
+      return if record.is_seen == true || record.seen_state_confirmed_at.present?
 
       # Import must not revalidate unrelated legacy catalogue metadata.
       now = Time.current

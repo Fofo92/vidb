@@ -49,7 +49,7 @@ class CompletedExportImportTest < ActiveSupport::TestCase
 
   test 'a successful export confirms an unknown viewing state as unseen' do
     @record.update_columns(is_seen: nil, seen_state_confirmed_at: nil)
-    assert_nil @record.reload.effective_state(:is_seen)
+    assert_equal false, @record.reload.effective_state(:is_seen)
 
     VideoAssets::CompletedExportImport.new(@observation, @export).call
 
@@ -62,7 +62,7 @@ class CompletedExportImportTest < ActiveSupport::TestCase
 
   test 'a legacy unconfirmed negative becomes confirmed unseen after export' do
     @record.update_columns(is_seen: false, is_checked: false, seen_state_confirmed_at: nil)
-    assert_nil @record.reload.effective_state(:is_seen)
+    assert_equal false, @record.reload.effective_state(:is_seen)
 
     VideoAssets::CompletedExportImport.new(@observation, @export).call
 

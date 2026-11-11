@@ -13,7 +13,8 @@ module RecordChildQualificationsHelper
     when "country_ids" then @countries
     when "medium_ids", "copy_medium_id" then @media
     when "language_version_id", "copy_language_version_id" then @languages
-    when "is_seen", "is_checked" then [["Oui", "yes"], ["Non", "no"], ["Inconnu", "unknown"]]
+    when "is_seen" then [["Oui", "yes"], ["Non", "no"]]
+    when "is_checked" then [["Oui", "yes"], ["Non", "no"], ["Inconnu", "unknown"]]
     else []
     end
   end
