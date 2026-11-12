@@ -22,6 +22,9 @@ module VideoAssets
     private
 
     def replacement_for(asset, by_path, by_name)
+      # A qualified copy carries information that must survive reconciliation.
+      return if asset.condition_details.present?
+
       same_path = by_path[asset.last_known_path]
       return same_path if same_path && copy_key(same_path) == copy_key(asset)
 

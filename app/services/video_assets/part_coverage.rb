@@ -8,6 +8,13 @@ module VideoAssets
       recorded?(present, expected_parts: expected_parts)
     end
 
+    # Preserve physical availability separately from known content truncation.
+    # Unknown integrality retains legacy coverage semantics; it is not a verification.
+    def self.integral_available?(assets, expected_parts:)
+      candidates = assets.reject(&:content_incomplete?)
+      available?(candidates, expected_parts: expected_parts)
+    end
+
     def self.recorded?(assets, expected_parts:)
       return true if assets.any? { |asset| asset.broadcast_part_number.nil? }
       return false if expected_parts <= 1

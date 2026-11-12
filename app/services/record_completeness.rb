@@ -32,8 +32,8 @@ class RecordCompleteness
     @records.each do |record|
       next if result.key?(record.id)
 
-      present = VideoAssets::PartCoverage.available?(record.video_assets.to_a,
-                                                     expected_parts: record.broadcast_part_count)
+      present = VideoAssets::PartCoverage.integral_available?(record.video_assets.to_a,
+                                                              expected_parts: record.broadcast_part_count)
       add_to_ancestors(result, record, present)
     end
   end

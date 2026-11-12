@@ -61,6 +61,9 @@ Rails.application.routes.draw do
     resource :contents, only: %i[edit update], controller: "dvd_contents"
   end
   resources :records do
+    resources :copies, only: [] do
+      resource :condition, only: %i[edit update], controller: 'record_copy_conditions'
+    end
     resources :copy_relinks, only: %i[new create], controller: 'record_copy_relinks'
     resources :copy_removals, only: %i[new create], controller: 'record_copy_removals'
     resource :live, only: :show, controller: "record_live"

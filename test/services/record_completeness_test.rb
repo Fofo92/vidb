@@ -2,7 +2,11 @@ require 'test_helper'
 
 class RecordCompletenessTest < ActiveSupport::TestCase
   Item = Struct.new(:id, :record_kind, :ancestor_ids, :video_assets, :broadcast_part_count, :is_available)
-  Copy = Struct.new(:status, :broadcast_part_number) do
+  Copy = Struct.new(:status, :broadcast_part_number, :incomplete) do
+    def content_incomplete?
+      incomplete == true
+    end
+
     def status_present?
       status == 'present'
     end

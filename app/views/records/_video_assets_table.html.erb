@@ -17,8 +17,15 @@
               <%= { "present" => "Présente", "missing" => "Introuvable", "deleted" => "Supprimée" }.fetch(asset.status) %>
               <% if asset.status_present? && asset.technical_details.dig('copy_preference', 'preferred') == true %>
                 <span class="badge text-bg-primary d-block mt-1" data-preferred-copy>Copie privilégiée</span>
-                <small class="d-block text-muted">Qualité visuelle non évaluée</small>
+                <% if asset.effective_condition.fetch('damage', 'unknown') == 'unknown' %>
+                  <small class="d-block text-muted">Qualité visuelle non évaluée</small>
+                <% end %>
               <% end %>
+              <div class="small mt-1" data-copy-condition>
+                <% copy_condition_lines(asset).each do |line| %>
+                  <span class="d-block"><%= line %></span>
+                <% end %>
+              </div>
               <% if asset.broadcast_part_number %>
                 <small class="d-block">Partie <%= asset.broadcast_part_number %>/<%= record.broadcast_part_count %></small>
               <% end %>
@@ -62,6 +69,8 @@
               </details>
             </td>
             <td class="text-end text-nowrap">
+              <%= link_to 'Qualifier la copie', edit_record_copy_condition_path(record, asset),
+                          class: 'btn btn-sm btn-outline-secondary' %>
               <% if asset.status_missing? && asset.technical_details['copy_removal_pending'].blank? %>
                 <%= link_to new_copy_retirement_path(video_asset_ids: [asset.id]),
                             class: 'btn btn-sm btn-outline-secondary', title: 'Retirer cette ancienne référence…',
