@@ -2,12 +2,15 @@ require 'uri'
 
 module EncoderProjects
   class TmdbSeriesClient < CatalogEnrichment::TmdbClient
-    def search(title:)
-      raise ArgumentError, 'Titre de série invalide' unless valid_title?(title)
+    MAX_SEARCH_PAGES = 20
 
-      query = URI.encode_www_form(query: title.strip, include_adult: false, page: 1)
+    def search(title:, page: 1)
+      raise ArgumentError, 'Titre de série invalide' unless valid_title?(title)
+      raise ArgumentError, 'Page de recherche invalide' unless valid_page?(page)
+
+      query = URI.encode_www_form(query: title.strip, include_adult: false, page: page)
       payload = get("search/tv?#{query}")
-      unless payload['results'].is_a?(Array) && payload['page'] == 1
+      unless payload['results'].is_a?(Array) && payload['page'] == page
         raise Error,
               'Réponse de recherche de série invalide'
       end
@@ -19,6 +22,10 @@ module EncoderProjects
 
     def valid_title?(title)
       title.is_a?(String) && title.strip.present? && title.bytesize <= 300 && !title.match?(/[[:cntrl:]]/)
+    end
+
+    def valid_page?(page)
+      page.is_a?(Integer) && page.between?(1, MAX_SEARCH_PAGES)
     end
 
     def validate_path!(path, language)
@@ -33,8 +40,12 @@ module EncoderProjects
     def valid_query?(query)
       pairs = URI.decode_www_form(query.to_s)
       values = pairs.to_h
-      pairs.size == 3 && values.keys.sort == %w[include_adult page query] && values['page'] == '1' &&
+      pairs.size == 3 && values.keys.sort == %w[include_adult page query] && valid_query_page?(values['page']) &&
         values['include_adult'] == 'false' && valid_title?(values['query'])
+    end
+
+    def valid_query_page?(page)
+      page.to_s.match?(/\A[1-9]\d*\z/) && valid_page?(page.to_i)
     end
 
     def request_arguments(path, language)
@@ -47,7 +58,7 @@ module EncoderProjects
     def parse_payload(body)
       payload = JSON.parse(body)
       valid = payload.is_a?(Hash) && (payload['id'].is_a?(Integer) ||
-                                    (payload['results'].is_a?(Array) && payload['page'] == 1))
+                                    (payload['results'].is_a?(Array) && valid_page?(payload['page'])))
       raise Error, 'Réponse TMDB de série invalide' unless valid
 
       payload

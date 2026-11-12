@@ -33,10 +33,10 @@ module RecordPosters
     private
 
     def candidates(record)
-      response = @client.search(title: record.french_title)
-      return [] unless complete_search?(response)
+      snapshot = SeriesSearchSnapshot.new(client: @client).call(title: record.french_title)
+      return [] unless snapshot.fetch(:complete)
 
-      response.fetch('results').uniq { |row| row.fetch('id') }.select { |row| title_matches?(record, row) }
+      snapshot.fetch(:results).select { |row| title_matches?(record, row) }
     end
 
     def local_episodes(record)
@@ -68,12 +68,6 @@ module RecordPosters
     def unique_ranks?(records)
       ranks = records.map(&:rank)
       ranks.all? { |number| number.is_a?(Integer) && number.positive? } && ranks.uniq.size == ranks.size
-    end
-
-    def complete_search?(response)
-      rows = response.fetch('results')
-      response['page'] == 1 && response['total_pages'] == 1 && rows.size <= 20 &&
-        response['total_results'] == rows.size
     end
 
     def title_matches?(record, candidate)

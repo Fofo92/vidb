@@ -22,8 +22,26 @@ class EncoderProjects::TmdbSeriesClientTest < ActiveSupport::TestCase
       transport = ->(*) { raise 'unexpected network request' }
       client = EncoderProjects::TmdbSeriesClient.new(cache_dir: directory, token: 'fake', transport: transport)
       assert_raises(ArgumentError) { client.search(title: '') }
-      assert_raises(ArgumentError) { client.get('search/tv?query=Film&include_adult=false&page=2') }
+      assert_raises(ArgumentError) { client.get('search/tv?query=Film&include_adult=false&page=21') }
       assert_raises(ArgumentError) { client.get('movie/7') }
+    end
+  end
+
+  test 'reads a requested later page and rejects an unexpected response page' do
+    Dir.mktmpdir do |directory|
+      requested = []
+      transport = lambda do |uri, _headers|
+        number = URI.decode_www_form(uri.query).to_h.fetch('page').to_i
+        requested << number
+        Struct.new(:code, :body).new('200', JSON.generate('page' => number, 'results' => []))
+      end
+      client = EncoderProjects::TmdbSeriesClient.new(cache_dir: directory, token: 'fake', transport: transport)
+      assert_equal 2, client.search(title: 'Série', page: 2)['page']
+      assert_equal [2], requested
+      [0, 21, '2'].each { |number| assert_raises(ArgumentError) { client.search(title: 'Série', page: number) } }
+      wrong = ->(*) { Struct.new(:code, :body).new('200', JSON.generate('page' => 1, 'results' => [])) }
+      client = EncoderProjects::TmdbSeriesClient.new(cache_dir: directory, token: 'fake', transport: wrong, refresh: true)
+      assert_raises(CatalogEnrichment::TmdbClient::Error) { client.search(title: 'Série', page: 2) }
     end
   end
   test 'fetches an exact episode through the authenticated client' do

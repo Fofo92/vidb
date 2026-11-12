@@ -16,6 +16,8 @@ class RecordPosters::SeriesTargetTest < ActiveSupport::TestCase
     @original = @remote.each_with_index.map { |episode, index| episode.merge('name' => %w[First Second][index]) }
     @pages = 1
     @calls = []
+    @search_calls = []
+    @search_pages = nil
   end
 
   test 'a preexisting series is identified by bilingual episodes numbers and years without writes' do
@@ -82,15 +84,35 @@ class RecordPosters::SeriesTargetTest < ActiveSupport::TestCase
     assert_nil resolver.call(@series)
   end
 
+  test 'a candidate on a later search page can be corroborated by episodes' do
+    @pages = 2
+    unrelated = 20.times.map { |n| { 'id' => n + 100, 'name' => "Autre série #{n}" } }
+    @search_pages = { 1 => unrelated, 2 => @results }
+    assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
+    assert_equal [1, 2], @search_calls
+  end
+
+  test 'a supported homonym on a later page prevents automatic selection' do
+    @pages = 2
+    @search_pages = { 1 => @results, 2 => [@results.first.merge('id' => 800)] }
+    assert_nil resolver.call(@series)
+    assert_equal [1, 2], @search_calls
+  end
+
   private
 
   def resolver
     client = Object.new
-    client.define_singleton_method(:search) do |title:|
-      { 'results' => @test_results, 'page' => 1, 'total_pages' => @test_pages, 'total_results' => @test_results.size }
+    client.define_singleton_method(:search) do |title:, page: 1|
+      @test_search_calls << page
+      rows = @test_search_pages ? @test_search_pages.fetch(page) : @test_results
+      total = @test_search_pages ? @test_search_pages.values.sum(&:size) : @test_results.size
+      { 'results' => rows, 'page' => page, 'total_pages' => @test_pages, 'total_results' => total }
     end
     client.instance_variable_set(:@test_results, @results)
     client.instance_variable_set(:@test_pages, @pages)
+    client.instance_variable_set(:@test_search_pages, @search_pages)
+    client.instance_variable_set(:@test_search_calls, @search_calls)
     calls, french, original = @calls, @remote, @original
     client.define_singleton_method(:get) do |path, language: 'fr-FR'|
       calls << [path, language]

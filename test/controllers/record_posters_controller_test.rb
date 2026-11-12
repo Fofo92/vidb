@@ -57,4 +57,13 @@ class RecordPostersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_url
     assert_not RecordPoster.exists?(record: @record)
   end
+
+  test "a preexisting series without a TMDB reference can request automatic artwork recovery" do
+    @record.update!(record_kind: 'series', french_title: 'Ancienne série sans référence')
+    assert_nil RecordPosters::Target.call(@record)
+    get record_url(@record)
+    assert_response :success
+    assert_select "[data-record-poster-controls] form[action='#{fetch_record_poster_path(@record)}']", count: 1
+    assert_includes response.body, 'Récupérer depuis TMDB'
+  end
 end
