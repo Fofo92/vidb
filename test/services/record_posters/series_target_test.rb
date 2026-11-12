@@ -32,6 +32,53 @@ class RecordPosters::SeriesTargetTest < ActiveSupport::TestCase
     assert_nil resolver.call(@series)
   end
 
+  test 'generic original labels do not contradict informative French titles and preserve local originals' do
+    @original.each_with_index { |row, index| row['name'] = "Episode #{%w[One Two][index]}" }
+    before = @season.children.order(:rank).pluck(:original_title)
+    assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
+    assert_equal before, @season.children.order(:rank).pluck(:original_title)
+    assert_equal 0, CatalogueEpisodeLink.count
+  end
+
+  test 'numeric or absent original labels use the already corroborated French evidence' do
+    @original.each_with_index { |row, index| row['name'] = "Episode #{index + 1}" }
+    assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
+    @original.each { |row| row['name'] = nil }
+    assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
+  end
+
+  test 'a generic original label with a conflicting number remains rejected' do
+    @original.first['name'] = 'Episode Two'
+    assert_nil resolver.call(@series)
+  end
+
+  test 'generic local original labels are not treated as conflicting editorial titles' do
+    @season.children.order(:rank).each_with_index do |episode, index|
+      episode.update!(original_title: "Episode #{index + 1}")
+    end
+    assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
+  end
+
+  test 'generic originals never excuse a different informative French title' do
+    @original.first['name'] = 'Episode One'
+    @remote.first['name'] = 'Une autre intrigue'
+    assert_nil resolver.call(@series)
+  end
+
+  test 'numbered labels in both languages never identify a series' do
+    @season.children.order(:rank).each_with_index do |episode, index|
+      episode.update!(french_title: "Episode #{%w[One Two][index]}")
+      @remote[index]['name'] = @original[index]['name'] = episode.french_title
+    end
+    assert_nil resolver.call(@series)
+  end
+
+  test 'homonymous series remain ambiguous even when original labels are generic' do
+    @results << @results.first.merge('id' => 800)
+    @original.each_with_index { |row, index| row['name'] = "Episode #{%w[One Two][index]}" }
+    assert_nil resolver.call(@series)
+  end
+
   test 'incomplete search results never select the first candidate' do
     @pages = 2
     assert_nil resolver.call(@series)

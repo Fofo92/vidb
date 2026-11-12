@@ -51,9 +51,17 @@ module RecordPosters
       return false unless french['id'] == original['id'] && french['air_date'] == original['air_date']
       return false unless year_matches?(french['air_date'], episode.fetch('year'))
       return false unless title_matches?(episode.fetch('french_title'), french['name'])
-      return true if episode['original_title'].blank?
 
-      title_matches?(episode['original_title'], original['name'])
+      original_title_matches?(episode, original['name'])
+    end
+
+    def original_title_matches?(episode, source)
+      local = episode['original_title']
+      numbers = [local, source].filter_map { |title| GenericEpisodeTitle.number(title) }
+      return numbers.all? { |number| number == episode.fetch('rank') } if numbers.any?
+      return true if local.blank? || source.blank?
+
+      title_matches?(local, source)
     end
 
     def year_matches?(date, year)
@@ -63,7 +71,8 @@ module RecordPosters
     end
 
     def title_matches?(local, source)
-      return false if local.blank? || local.match?(/\A(?:Épisode|Episode)\s*\d+\z/i)
+      return false if local.blank? || !GenericEpisodeTitle.number(local).nil?
+      return false unless GenericEpisodeTitle.number(source).nil?
 
       self.class.key(local) == self.class.key(source)
     end
