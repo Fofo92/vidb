@@ -17,4 +17,11 @@ class CopyConditionsHelperTest < ActiveSupport::TestCase
     assert_includes lines, 'Plus sévèrement détériorée (dd)'
     assert_includes lines, 'Marqueurs à qualifier'
   end
+
+  test 'summary stays compact while exact seconds remain visible' do
+    asset = Copy.new({ 'integrality' => 'incomplete', 'damage' => 'light', 'retained_duration_seconds' => 2371 })
+    assert_equal 'Incomplète · d · 39 min 31 s', copy_condition_summary(asset)
+    assert_includes copy_condition_lines(asset), 'Durée conservée : 39 min 31 s'
+  end
+
 end

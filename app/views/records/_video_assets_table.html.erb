@@ -21,11 +21,12 @@
                   <small class="d-block text-muted">Qualité visuelle non évaluée</small>
                 <% end %>
               <% end %>
-              <div class="small mt-1" data-copy-condition>
+              <details class="small mt-1" data-copy-condition>
+                <summary><%= copy_condition_summary(asset) %></summary>
                 <% copy_condition_lines(asset).each do |line| %>
                   <span class="d-block"><%= line %></span>
                 <% end %>
-              </div>
+              </details>
               <% if asset.broadcast_part_number %>
                 <small class="d-block">Partie <%= asset.broadcast_part_number %>/<%= record.broadcast_part_count %></small>
               <% end %>

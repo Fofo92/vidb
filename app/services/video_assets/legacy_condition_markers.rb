@@ -4,7 +4,6 @@ module VideoAssets
   # Interpret only Pascal's explicit lowercase markers, never directory names or Roman numerals.
   class LegacyConditionMarkers
     TOKEN = /\((dd|d|i|début\s+[^()]+|fin\s+[^()]+)\)/
-    MINUTES = /\A(\d+)\s*(?:['’′]|min(?:utes?)?|mn)\z/
 
     def self.call(path)
       new(path).call
@@ -51,10 +50,8 @@ module VideoAssets
       match = token.match(/\A(début|fin)\s+(.+)\z/)
       return unless match
 
-      duration = match[2].match(MINUTES)
-      minutes = duration && Integer(duration[1], 10)
       { part: match[1] == 'début' ? 'beginning' : 'end',
-        seconds: minutes&.positive? && minutes <= 1440 ? minutes * 60 : nil }
+        seconds: RetainedDuration.parse(match[2]) }
     end
   end
 end

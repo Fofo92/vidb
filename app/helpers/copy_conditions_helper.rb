@@ -15,8 +15,21 @@ module CopyConditionsHelper
     part = details.fetch('retained_portion', 'unknown')
     lines << PORTION_LABELS.fetch(part) unless part == 'unknown'
     seconds = details['retained_duration_seconds']
-    lines << "Durée conservée : #{seconds / 60} min" if seconds
+    lines << "Durée conservée : #{retained_duration_label(seconds)}" if seconds
     lines << 'Marqueurs à qualifier' if details['needs_review']
     lines
+  end
+
+  def retained_duration_label(seconds)
+    minutes, remainder = seconds.divmod(60)
+    remainder.zero? ? "#{minutes} min" : "#{minutes} min #{remainder} s"
+  end
+
+  def copy_condition_summary(asset)
+    details = asset.effective_condition
+    integrity = { 'unknown' => 'À vérifier', 'complete' => 'Intégrale', 'incomplete' => 'Incomplète' }
+    damage = { 'light' => 'd', 'severe' => 'dd' }[details['damage']]
+    duration = retained_duration_label(details['retained_duration_seconds']) if details['retained_duration_seconds']
+    [integrity.fetch(details.fetch('integrality', 'unknown')), damage, duration].compact.join(' · ')
   end
 end

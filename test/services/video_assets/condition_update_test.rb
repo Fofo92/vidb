@@ -45,5 +45,16 @@ module VideoAssets
       end
       assert_equal before, @asset.reload.condition_details
     end
+    test 'retained seconds survive a manual qualification and invalid remainders are refused' do
+      update('integrality' => 'incomplete', 'damage' => 'unknown', 'retained_portion' => 'end',
+             'retained_duration_minutes' => '39', 'retained_duration_remainder' => '31')
+      assert_equal 2371, @asset.reload.condition_details['retained_duration_seconds']
+      before = @asset.condition_details.deep_dup
+      assert_raises(ArgumentError) do
+        update('integrality' => 'incomplete', 'retained_duration_minutes' => '39', 'retained_duration_remainder' => '60')
+      end
+      assert_equal before, @asset.reload.condition_details
+    end
+
   end
 end

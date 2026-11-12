@@ -12,7 +12,7 @@ L'état est porté par `VideoAsset.condition_details` (JSONB), indépendamment d
 
 Les états par défaut sont **intégralité inconnue** et **détérioration inconnue**. Aucun marqueur ne certifie l'intégralité ou l'absence de défaut. Les noms de dossiers et les chiffres romains majuscules ne sont pas interprétés.
 
-Les durées sont des minutes entières explicitement suivies de `'`, `’`, `′`, `min`, `mn` ou `minutes` (1 à 1440). Une durée sans unité ou des indications contradictoires sont signalées à qualifier. Elles ne sont pas importées automatiquement. Le lecteur de couverture reconnaît néanmoins le caractère incomplet annoncé par le marqueur.
+Les durées sont comprises entre 1 seconde et 24 heures. Les minutes portent une unité explicite (`'`, `’`, `′`, `min`, `mn`, `minutes`) ; elles peuvent être suivies de secondes, par exemple `39'31` = 2 371 secondes. La notation heures/minutes `1h09` = 4 140 secondes est également reconnue. Les minutes après `h` et les secondes doivent rester entre 0 et 59. Une durée sans unité ou des indications contradictoires sont signalées à qualifier. Elles ne sont pas importées automatiquement. Le lecteur de couverture reconnaît néanmoins le caractère incomplet annoncé par le marqueur.
 
 ## Effet sur les compteurs
 
@@ -23,6 +23,8 @@ Les durées sont des minutes entières explicitement suivies de `'`, `’`, `′
 - Aucune durée manquante n'est calculée à partir d'une durée intégrale incertaine.
 
 ## Qualification manuelle
+
+Le formulaire garde séparément les minutes et les secondes, sans arrondi lors d’un enregistrement.
 
 Le tableau des copies affiche l'intégralité, la détérioration, la partie et la durée conservées. « Qualifier la copie » ouvre un formulaire authentifié, limité à une copie de la fiche. Le formulaire protège contre les modifications concurrentes et conserve la provenance des anciens marqueurs, les qualifications successives et l'utilisateur.
 

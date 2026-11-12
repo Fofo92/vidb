@@ -17,14 +17,14 @@ class RecordCopyConditionsController < ApplicationController
   rescue ActiveRecord::RecordInvalid => e
     show_error(e.record.errors.full_messages, :unprocessable_content)
   rescue ArgumentError
-    show_error(['La durée conservée doit être un nombre entier de minutes, entre 1 et 1440.'], :unprocessable_content)
+    show_error(['Durée conservée invalide : valeurs entières, maximum 24 h.'], :unprocessable_content)
   end
 
   private
 
   def condition_params
     params.require(:copy_condition).permit(:fingerprint, :integrality, :damage, :retained_portion,
-                                           :retained_duration_minutes, :note).to_h
+                                           :retained_duration_minutes, :retained_duration_remainder, :note).to_h
   end
 
   def load_copy

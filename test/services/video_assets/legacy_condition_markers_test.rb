@@ -45,5 +45,12 @@ module VideoAssets
       assert_equal({}, parse('Titre'))
       assert_equal({}, LegacyConditionMarkers.call('/videos/Série (d)/Film.mkv'))
     end
+    test 'minute second and hour minute markers preserve exact retained durations' do
+      assert_equal 2371, parse("Film (fin 39'31)")['retained_duration_seconds']
+      assert_equal 4140, parse('Film (fin 1h09)')['retained_duration_seconds']
+      refute parse("Film (fin 39'31)")['needs_review']
+      assert parse("Film (fin 39'60)")['needs_review']
+    end
+
   end
 end

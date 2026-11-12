@@ -32,8 +32,9 @@ module VideoAssets
     def document
       before = @asset.effective_condition.deep_dup
       values = @attributes.slice('integrality', 'damage', 'retained_portion', 'note')
-      minutes = @attributes['retained_duration_minutes'].presence
-      values['retained_duration_seconds'] = minutes ? Integer(minutes, 10) * 60 : nil
+      values['retained_duration_seconds'] = RetainedDuration.from_form(
+        minutes: @attributes['retained_duration_minutes'], seconds: @attributes['retained_duration_remainder']
+      )
       values['needs_review'] = false
       event = { 'origin' => 'manual', 'user_id' => @user.id, 'at' => Time.current.iso8601(9),
                 'before' => before.except('evidence'), 'after' => values.deep_dup }

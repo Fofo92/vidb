@@ -55,4 +55,18 @@ class RecordCopyConditionsControllerTest < ActionDispatch::IntegrationTest
     patch record_copy_condition_url(@record, @asset), params: { copy_condition: values }
     assert_redirected_to new_user_session_url
   end
+
+  test 'editing an imported duration retains its seconds' do
+    @asset.update!(condition_details: { 'integrality' => 'incomplete', 'retained_portion' => 'end',
+                                      'retained_duration_seconds' => 2371 })
+    get edit_record_copy_condition_url(@record, @asset)
+    assert_response :success
+    assert_select 'input[name="copy_condition[retained_duration_minutes]"][value="39"]'
+    assert_select 'input[name="copy_condition[retained_duration_remainder]"][value="31"]'
+    patch record_copy_condition_url(@record, @asset),
+          params: { copy_condition: values.merge(retained_duration_minutes: '39', retained_duration_remainder: '31') }
+    assert_redirected_to record_url(@record)
+    assert_equal 2371, @asset.reload.condition_details['retained_duration_seconds']
+  end
+
 end
