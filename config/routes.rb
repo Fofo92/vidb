@@ -69,6 +69,9 @@ Rails.application.routes.draw do
     resource :live, only: :show, controller: "record_live"
     resource :poster, only: %i[show update destroy], controller: "record_posters" do
       post :fetch, on: :member
+      get :review, on: :member
+      post :preview, on: :member
+      post :confirm, on: :member
     end
     resource :states, only: :update, controller: "record_states"
     resource :hierarchy_placement,

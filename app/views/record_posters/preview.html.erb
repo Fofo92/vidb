@@ -1,0 +1,21 @@
+<div class="container py-3" data-poster-film-preview>
+  <%= link_to "Retour aux propositions", review_record_poster_path(@record), class: "btn btn-outline-secondary btn-sm mb-3" %>
+  <h1 class="h3">Confirmer la pochette</h1>
+  <p>Pour ta fiche : <strong><%= @record.french_title.presence || @record.original_title %></strong>
+    <% if @record.year.present? %> — <%= @record.year %><% end %></p>
+  <div class="row g-3 align-items-start">
+    <div class="col-sm-auto">
+      <%= image_tag "https://image.tmdb.org/t/p/w342#{@confirmation.fetch('poster_path')}",
+                    alt: "Pochette de #{@confirmation['title']}", width: 240, class: "img-fluid rounded" %>
+    </div>
+    <div class="col">
+      <h2 class="h4"><%= @confirmation['title'] %></h2>
+      <p><%= @confirmation['original_title'] %> — <%= @confirmation['release_date'].presence || "Date inconnue" %></p>
+      <p><%= @confirmation['overview'].presence || "Aucune présentation disponible." %></p>
+      <p>Vérifie qu’il s’agit de la bonne œuvre et de la bonne version.
+        Seules la pochette et sa référence seront enregistrées ; le titre, l’année et le synopsis de ta fiche seront conservés.</p>
+      <%= button_to "Confirmer cette pochette", confirm_record_poster_path(@record),
+                    params: { confirmation_token: @confirmation.fetch('token') }, class: "btn btn-primary" %>
+    </div>
+  </div>
+</div>

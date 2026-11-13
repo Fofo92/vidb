@@ -1,0 +1,46 @@
+<div class="container py-3" data-poster-film-review>
+  <%= link_to "Retour à la fiche", record_path(@record), class: "btn btn-outline-secondary btn-sm mb-3" %>
+  <h1 class="h3">Choisir une pochette pour <%= @record.french_title.presence || @record.original_title %></h1>
+  <p class="alert alert-info"><%= @review.fetch(:message) %></p>
+  <p>La confirmation enregistrera uniquement la pochette et sa référence. Le contenu de ta fiche restera inchangé.</p>
+
+  <div class="row g-3">
+    <section class="col-lg-5" aria-labelledby="local-film-title">
+      <h2 id="local-film-title" class="h5">Ta fiche</h2>
+      <p><strong><%= @record.french_title.presence || @record.original_title %></strong>
+        <% if @record.year.present? %> — <%= @record.year %><% end %></p>
+      <% if @record.original_title.present? %><p><%= @record.original_title %></p><% end %>
+      <p><%= @record.abstract.presence || "Synopsis non renseigné." %></p>
+    </section>
+    <section class="col-lg-7" aria-labelledby="tmdb-candidates-title">
+      <h2 id="tmdb-candidates-title" class="h5">Propositions TMDB</h2>
+      <% @review.fetch(:candidates).each do |candidate| %>
+        <article class="card mb-3" data-poster-film-candidate="<%= candidate[:id] %>">
+          <div class="card-body">
+            <h3 class="h5"><%= candidate[:title] %></h3>
+            <p><%= candidate[:original_title] %> — <%= candidate[:release_date].presence || "Date inconnue" %></p>
+            <% evidence = candidate.fetch(:evidence) %>
+            <p class="small text-muted">
+              Titre : <%= evidence[:poster_title_matches] || evidence[:title_matches] ? "concordant" : "variante à vérifier" %> ·
+              Année : <%= evidence[:year_compatible] ? "compatible" : "différente ou inconnue" %>
+            </p>
+            <p><%= candidate[:overview].presence || "Aucune présentation disponible." %></p>
+            <%= button_to "Voir cette pochette", preview_record_poster_path(@record),
+                          params: { tmdb_url: "https://www.themoviedb.org/movie/#{candidate[:id]}" },
+                          class: "btn btn-outline-primary btn-sm" %>
+          </div>
+        </article>
+      <% end %>
+    </section>
+  </div>
+
+  <section class="border-top pt-3 mt-3" aria-labelledby="tmdb-direct-link-title">
+    <h2 id="tmdb-direct-link-title" class="h5">Tu connais la référence TMDB ?</h2>
+    <%= form_with url: preview_record_poster_path(@record), method: :post do |form| %>
+      <%= form.label :tmdb_url, "Lien de la fiche du film sur TMDB", class: "form-label" %>
+      <%= form.url_field :tmdb_url, required: true, maxlength: 1000, class: "form-control mb-2",
+                         placeholder: "https://www.themoviedb.org/movie/…" %>
+      <%= form.submit "Vérifier et prévisualiser", class: "btn btn-primary" %>
+    <% end %>
+  </section>
+</div>

@@ -9,6 +9,9 @@
     <% if record.record_kind_series? || RecordPosters::Target.call(record) || RecordPosters::FilmTarget.searchable?(record) %>
       <%= button_to "Récupérer depuis TMDB", fetch_record_poster_path(record), class: "btn btn-outline-primary btn-sm" %>
     <% end %>
+    <% if RecordPosters::FilmConfirmation.supported?(record) %>
+      <%= link_to "Choisir une référence TMDB", review_record_poster_path(record), class: "btn btn-outline-primary btn-sm" %>
+    <% end %>
     <% if record.record_poster&.image&.attached? %>
       <%= button_to "Retirer cette pochette", record_poster_path(record), method: :delete,
                     class: "btn btn-outline-secondary btn-sm" %>

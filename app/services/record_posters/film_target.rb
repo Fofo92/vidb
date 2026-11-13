@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RecordPosters
-  # Reuse the catalogue's film identity policy, rather than introduce a second matcher.
+  # Reuse catalogue evidence, with additional artwork-only contextual corroboration.
   class FilmTarget
     def self.searchable?(record)
       return false unless %w[standalone_video undetermined].include?(record.record_kind)
@@ -15,8 +15,10 @@ module RecordPosters
       titles.any? && titles.all? { |title| title.bytesize <= 300 && !title.match?(/[[:cntrl:]]/) }
     end
 
-    def initialize(client: nil, comparison: CatalogEnrichment::FilmIdentityComparison.new)
-      client ||= CatalogEnrichment::TmdbFilmClient.new(cache_dir: Rails.root.join('tmp/poster-film-cache'))
+    def initialize(client: nil, comparison: FilmPosterComparison.new)
+      client ||= CatalogEnrichment::TmdbFilmClient.new(
+        cache_dir: Rails.root.join('tmp/poster-film-cache'), max_age: 6.hours
+      )
       @snapshot = CatalogEnrichment::FilmSearchSnapshot.new(client: client)
       @comparison = comparison
     end
