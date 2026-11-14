@@ -9,7 +9,7 @@ module RecordPosters
 
     def self.number(title)
       key = title.to_s.unicode_normalize(:nfkd).downcase.gsub(/[^\p{Alnum}]/, '')
-      match = key.match(/\Aepisode([a-z]+|\d+)\z/)
+      match = key.match(/\Aepisode([a-z]+|\d+)\z/) || key.match(/\Ateil(\d+)\z/)
       return unless match
 
       suffix = match[1]

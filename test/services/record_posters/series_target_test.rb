@@ -40,6 +40,23 @@ class RecordPosters::SeriesTargetTest < ActiveSupport::TestCase
     assert_equal 0, CatalogueEpisodeLink.count
   end
 
+  test 'German numbered parts corroborate informative French titles without changing records' do
+    @original.each_with_index { |row, index| row['name'] = "Teil #{index + 1}" }
+    before = @series.subtree.order(:id).map(&:attributes)
+    assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
+    assert_equal before, @series.subtree.order(:id).map(&:attributes)
+    assert_equal 0, CatalogueEpisodeLink.count
+  end
+
+  test 'German numbered parts cannot excuse conflicting numbers or French titles' do
+    @original.each_with_index { |row, index| row['name'] = "Teil #{index + 1}" }
+    @original.first['name'] = 'Teil 2'
+    assert_nil resolver.call(@series)
+    @original.first['name'] = 'Teil 1'
+    @remote.first['name'] = 'Une autre intrigue'
+    assert_nil resolver.call(@series)
+  end
+
   test 'numeric or absent original labels use the already corroborated French evidence' do
     @original.each_with_index { |row, index| row['name'] = "Episode #{index + 1}" }
     assert_equal({ type: 'tv', id: 700 }, resolver.call(@series))
