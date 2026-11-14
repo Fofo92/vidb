@@ -3,7 +3,7 @@
 class RecordPostersController < ApplicationController
   before_action :authenticate_user!
   before_action :set_record
-  before_action :require_film_review, only: %i[review preview confirm]
+  before_action :require_film_review, only: %i[review preview preview_image confirm]
 
   def show
     poster = RecordPosters::Display.call(@record)
@@ -46,6 +46,15 @@ class RecordPostersController < ApplicationController
     @confirmation = RecordPosters::FilmConfirmation.new.preview(@record, url: params[:tmdb_url])
   rescue RecordPosters::FilmConfirmation::Error, CatalogEnrichment::TmdbClient::Error => e
     redirect_to review_record_poster_path(@record), status: :see_other, alert: e.message
+  end
+
+  def preview_image
+    bytes = RecordPosters::FilmConfirmation.new.preview_image(@record, token: params[:confirmation_token])
+    image = RecordPosters::Store.image_attributes(bytes)
+    response.headers['Cache-Control'] = 'no-store'
+    send_data bytes, type: image.fetch(:content_type), disposition: 'inline'
+  rescue RecordPosters::FilmConfirmation::Error, RecordPosters::ImageDownload::Error, RecordPosters::Store::Error
+    head :not_found
   end
 
   def confirm

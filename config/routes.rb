@@ -71,6 +71,7 @@ Rails.application.routes.draw do
       post :fetch, on: :member
       get :review, on: :member
       post :preview, on: :member
+      get :preview_image, on: :member
       post :confirm, on: :member
     end
     resource :states, only: :update, controller: "record_states"

@@ -37,15 +37,25 @@ module RecordPosters
     end
 
     def confirm(record, token:)
-      data = @verifier.verified(token, purpose: PURPOSE) if token.is_a?(String) && token.bytesize <= 16_384
-      raise Error, 'Confirmation invalide ou expirée : vérifie à nouveau la proposition.' unless data.is_a?(Hash)
-
-      validate_confirmation!(record, data)
+      data = verified_data(record, token)
       bytes = @download.call(data.fetch('poster_path'))
       store_confirmed(record, data, bytes)
     end
 
+    def preview_image(record, token:)
+      data = verified_data(record, token)
+      @download.call(data.fetch('poster_path'))
+    end
+
     private
+
+    def verified_data(record, token)
+      data = @verifier.verified(token, purpose: PURPOSE) if token.is_a?(String) && token.bytesize <= 16_384
+      raise Error, 'Confirmation invalide ou expirée : vérifie à nouveau la proposition.' unless data.is_a?(Hash)
+
+      validate_confirmation!(record, data)
+      data
+    end
 
     def confirmation_data(record, movie)
       { 'record_id' => record.id, 'snapshot' => snapshot(record), 'tmdb_movie_id' => movie.fetch('id'),

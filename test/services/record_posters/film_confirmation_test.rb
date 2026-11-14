@@ -30,6 +30,19 @@ class RecordPosters::FilmConfirmationTest < ActiveSupport::TestCase
     assert_equal before, @record.reload.attributes
   end
 
+  test 'the signed image preview downloads without storing and rejects a forged token' do
+    before = @record.attributes
+    token = @service.preview(@record, url: @url).fetch('token')
+    assert_no_difference('RecordPoster.count') do
+      assert_equal @png, @service.preview_image(@record, token: token)
+    end
+    assert_equal before, @record.reload.attributes
+    assert_raises(RecordPosters::FilmConfirmation::Error) do
+      @service.preview_image(@record, token: "#{token}x")
+    end
+    assert_equal 1, @downloads.size
+  end
+
   test 'explicit confirmation attaches only artwork and retains its movie reference' do
     before = @record.attributes
     token = @service.preview(@record, url: @url).fetch('token')

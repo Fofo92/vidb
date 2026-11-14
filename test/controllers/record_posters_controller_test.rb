@@ -85,7 +85,7 @@ class RecordPostersControllerTest < ActionDispatch::IntegrationTest
     reviewer.define_singleton_method(:call) { |_record| { message: 'Synopsis local absent.', candidates: [] } }
     RecordPosters::FilmReview.stub(:new, -> { reviewer }) { get review_record_poster_url(@record) }
     assert_response :success
-    assert_select 'input[name=tmdb_url]', count: 1
+    assert_select 'form[data-turbo=false] input[name=tmdb_url]', count: 1
     assert_select '[data-poster-film-review]', count: 1
   end
 
@@ -103,6 +103,12 @@ class RecordPostersControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select '[data-poster-film-preview]', count: 1
       token = css_select('input[name=confirmation_token]').first['value']
+      image_url = css_select('[data-poster-film-preview] img').first['src']
+      assert_includes image_url, 'preview_image'
+      assert_no_difference('RecordPoster.count') { get image_url }
+      assert_response :success
+      assert_equal 'image/png', response.media_type
+      assert_equal @png, response.body.b
       post confirm_record_poster_url(@record), params: { confirmation_token: token }
     end
     assert_redirected_to record_url(@record)
@@ -119,11 +125,20 @@ class RecordPostersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'an invalid image preview token cannot download or save artwork' do
+    assert_no_difference('RecordPoster.count') do
+      get preview_image_record_poster_url(@record), params: { confirmation_token: 'tampered' }
+    end
+    assert_response :not_found
+  end
+
   test 'comparison preview and confirmation require authentication' do
     sign_out @user
     get review_record_poster_url(@record)
     assert_redirected_to new_user_session_url
     post preview_record_poster_url(@record), params: { tmdb_url: 'https://www.themoviedb.org/movie/616037' }
+    assert_redirected_to new_user_session_url
+    get preview_image_record_poster_url(@record), params: { confirmation_token: 'token' }
     assert_redirected_to new_user_session_url
     post confirm_record_poster_url(@record), params: { confirmation_token: 'token' }
     assert_redirected_to new_user_session_url
@@ -134,7 +149,7 @@ class RecordPostersControllerTest < ActionDispatch::IntegrationTest
     reviewer.define_singleton_method(:call) { |_record| raise CatalogEnrichment::TmdbClient::Error, 'Unavailable' }
     RecordPosters::FilmReview.stub(:new, -> { reviewer }) { get review_record_poster_url(@record) }
     assert_response :success
-    assert_select 'input[name=tmdb_url]', count: 1
+    assert_select 'form[data-turbo=false] input[name=tmdb_url]', count: 1
     @record.update!(record_kind: 'series')
     get review_record_poster_url(@record)
     assert_redirected_to record_url(@record)

@@ -27,7 +27,7 @@
             <p><%= candidate[:overview].presence || "Aucune présentation disponible." %></p>
             <%= button_to "Voir cette pochette", preview_record_poster_path(@record),
                           params: { tmdb_url: "https://www.themoviedb.org/movie/#{candidate[:id]}" },
-                          class: "btn btn-outline-primary btn-sm" %>
+                          form: { data: { turbo: false } }, class: "btn btn-outline-primary btn-sm" %>
           </div>
         </article>
       <% end %>
@@ -36,7 +36,7 @@
 
   <section class="border-top pt-3 mt-3" aria-labelledby="tmdb-direct-link-title">
     <h2 id="tmdb-direct-link-title" class="h5">Tu connais la référence TMDB ?</h2>
-    <%= form_with url: preview_record_poster_path(@record), method: :post do |form| %>
+    <%= form_with url: preview_record_poster_path(@record), method: :post, data: { turbo: false } do |form| %>
       <%= form.label :tmdb_url, "Lien de la fiche du film sur TMDB", class: "form-label" %>
       <%= form.url_field :tmdb_url, required: true, maxlength: 1000, class: "form-control mb-2",
                          placeholder: "https://www.themoviedb.org/movie/…" %>

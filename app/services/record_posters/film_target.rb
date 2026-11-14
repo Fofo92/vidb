@@ -19,7 +19,7 @@ module RecordPosters
       client ||= CatalogEnrichment::TmdbFilmClient.new(
         cache_dir: Rails.root.join('tmp/poster-film-cache'), max_age: 6.hours
       )
-      @snapshot = CatalogEnrichment::FilmSearchSnapshot.new(client: client)
+      @snapshot = FilmSearch.new(client: client)
       @comparison = comparison
     end
 

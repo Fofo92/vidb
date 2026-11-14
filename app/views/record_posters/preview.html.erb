@@ -5,7 +5,7 @@
     <% if @record.year.present? %> — <%= @record.year %><% end %></p>
   <div class="row g-3 align-items-start">
     <div class="col-sm-auto">
-      <%= image_tag "https://image.tmdb.org/t/p/w342#{@confirmation.fetch('poster_path')}",
+      <%= image_tag preview_image_record_poster_path(@record, confirmation_token: @confirmation.fetch('token')),
                     alt: "Pochette de #{@confirmation['title']}", width: 240, class: "img-fluid rounded" %>
     </div>
     <div class="col">
