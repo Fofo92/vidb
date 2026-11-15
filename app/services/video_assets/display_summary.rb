@@ -2,8 +2,9 @@
 
 module VideoAssets
   class DisplaySummary
-    def initialize(record:, records:, assets:)
+    def initialize(record:, records:, assets:, dvd_record_ids: [])
       @record = record
+      @dvd_supports = records.map(&:id).intersect?(dvd_record_ids) ? ['DVD'] : []
       parents = records.filter_map(&:parent_id)
       @leaves = records.reject { |node| parents.include?(node.id) || node.metadata_container? }
       leaf_ids = @leaves.map(&:id)
@@ -30,7 +31,8 @@ module VideoAssets
     end
 
     def supports
-      qualifications(:medium, fallback_values(:medium).map(&:short_name), 'Support catalogue')
+      qualifications(:medium, fallback_values(:medium).map(&:short_name), 'Support catalogue',
+                     additional: @dvd_supports)
     end
 
     def languages
@@ -52,9 +54,7 @@ module VideoAssets
 
     delegate :present?, to: :@assets, prefix: :copies
 
-    def summary_supports
-      summary_names(:medium)
-    end
+    def summary_supports = summary_names(:medium, additional: @dvd_supports)
 
     def summary_languages
       summary_names(:language_version)
@@ -62,14 +62,14 @@ module VideoAssets
 
     private
 
-    def summary_names(association)
+    def summary_names(association, additional: [])
       copies = @assets.group_by(&:record_id)
       values = @leaves.flat_map do |leaf|
         present = copies.fetch(leaf.id, [])
         present.empty? ? leaf_values(leaf, association) : present.filter_map { |asset| asset.public_send(association) }
       end
       names = values.map(&:short_name).select { |name| RecordMetadataValues.known?(name) }
-      names.uniq.sort.join(', ').presence || '—'
+      (names | additional).sort.join(', ').presence || '—'
     end
 
     def measured_duration_label(ranges)
@@ -109,14 +109,14 @@ module VideoAssets
       ['00h00', 'Inconnue'].include?(duration) ? 'Durée inconnue' : "#{duration} (catalogue)"
     end
 
-    def qualifications(association, fallback, label)
-      return catalogue_qualification(fallback, label) if @assets.empty?
+    def qualifications(association, fallback, label, additional: [])
+      return catalogue_qualification(fallback | additional, label) if @assets.empty?
 
       names = @assets.filter_map { |asset| asset.public_send(association)&.short_name }.uniq.sort
       unknown = @assets.any? { |asset| asset.public_send(association).nil? }
       names << 'non renseigné' if unknown
       names << "couverture #{@assets.map(&:record_id).uniq.size}/#{@leaves.size}" if incomplete?
-      names.join(', ')
+      (names | additional).join(', ')
     end
 
     def catalogue_qualification(values, label)

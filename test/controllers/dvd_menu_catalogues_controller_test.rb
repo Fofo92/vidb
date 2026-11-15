@@ -20,13 +20,15 @@ class DvdMenuCataloguesControllerTest < ActionDispatch::IntegrationTest
     other = create_record('Autre série', 'series')
     other_season = create_record('Saison 2', 'season', parent: other, rank: 2)
     create_record('Aux portes de la mort', 'episode', parent: other_season, rank: 16)
-    DvdEdition.create!(ean: '5050582454376', record: series)
+    edition = DvdEdition.create!(ean: '5050582454376', record: series)
 
     assert_no_difference ['Record.count', 'DvdEdition.count', 'DvdContent.count', 'VideoAsset.count'] do
       request_catalogue
     end
     assert_response :success
     assert_equal 'Code Quantum', response.parsed_body.fetch('series_title')
+    assert_equal edition.id, response.parsed_body.fetch('dvd_edition_id')
+    assert_equal edition.ean, response.parsed_body.fetch('ean')
     assert_equal [[episode.id, 2, 16]], response.parsed_body.fetch('episodes').map { |row|
       row.values_at('record_id', 'season', 'episode')
     }
@@ -87,6 +89,35 @@ class DvdMenuCataloguesControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_equal [episode.id], response.parsed_body.fetch('episodes').pluck('record_id')
     end
+  end
+
+  test 'DVD menu selection records only the selected episode and refuses another edition' do
+    series = create_record('Code Quantum 1989', 'series')
+    season = create_record('Saison 2', 'season', parent: series, rank: 2)
+    episode = create_record('Jimmy', 'episode', parent: season, rank: 8)
+    other = create_record('Code Quantum 2022', 'series')
+    edition = DvdEdition.create!(ean: '5050582454376', record: series)
+    wrong = DvdEdition.create!(ean: '3384442021449', record: other)
+    project = { project_id: '4d013c0a-7b54-4a67-aef2-7e1af7f6d410',
+                project_path: '/videos/Jimmy.json', output_path: '/videos/Jimmy.mkv',
+                source_paths: ['/commun/to_be_cut/DVD/title.mkv'] }
+    EncoderProjects::Settings.stub(:read, @config) do
+      assert_no_difference('DvdContent.count') do
+        post '/encoder_projects/dvd_menu_selection',
+             params: { record_id: episode.id, dvd_edition_id: wrong.id, project: project },
+             as: :json, headers: encoder_headers
+        assert_response :unprocessable_content
+      end
+      2.times do
+        post '/encoder_projects/dvd_menu_selection',
+             params: { record_id: episode.id, dvd_edition_id: edition.id, project: project },
+             as: :json, headers: encoder_headers
+        assert_response :success
+      end
+    end
+    assert_equal [episode.id], edition.dvd_contents.pluck(:record_id)
+    assert_includes episode.reload.media.pluck(:short_name), 'DVD'
+    assert_empty wrong.dvd_contents
   end
 
   private

@@ -18,6 +18,7 @@ class DvdScansController < ApplicationController
 
     record = Record.find(params[:record_id])
     edition = DvdEdition.create_or_find_by!(ean: ean) { |entry| entry.record = record }
+    DvdOwnership.mark_support!(edition.record)
     redirect_to dvd_scan_path(ean: ean), notice: attachment_notice(edition, record), status: :see_other
   end
 

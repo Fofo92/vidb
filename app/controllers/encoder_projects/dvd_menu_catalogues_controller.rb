@@ -20,7 +20,7 @@ module EncoderProjects
       series = selected_series
       return head :unprocessable_content unless series.record_kind_series?
 
-      render json: DvdMenuCatalogue.new(series).call
+      render json: catalogue_payload(series)
     rescue ActiveRecord::RecordNotFound
       head :not_found
     rescue ArgumentError => e
@@ -33,13 +33,26 @@ module EncoderProjects
       project = ProjectRequest.new(project_params).data
       record = Record.where(record_kind: 'episode').find(params[:record_id])
       url = @configuration.fetch('url')
-      LocalRecordSelection.call(user: @operator, url: url, project: project, record: record)
+      DvdMenuSelection.call(user: @operator, url: url, project: project, record: record,
+                            edition_id: params[:dvd_edition_id])
       render json: Identification.new(user: @operator, url: url).call(project)
     rescue ArgumentError, KeyError, ActiveRecord::RecordNotFound, ActiveRecord::SoleRecordExceeded => e
       render json: { error: e.message }, status: :unprocessable_content
     end
 
     private
+
+    def catalogue_payload(series)
+      edition = selected_edition
+      DvdMenuCatalogue.new(series).call.merge(dvd_edition_id: edition&.id, ean: edition&.ean)
+    end
+
+    def selected_edition
+      return DvdPreparation.find(params[:preparation_id]).dvd_edition if params[:preparation_id].present?
+      return DvdEdition.find_by!(ean: params[:ean]) if params[:ean].present?
+
+      nil
+    end
 
     def project_params
       params.require(:project).permit(:project_id, :project_path, :output_path, :language_hint, source_paths: []).to_h

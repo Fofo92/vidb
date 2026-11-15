@@ -2,6 +2,8 @@ class DvdEdition < ApplicationRecord
   belongs_to :record
   has_many :dvd_contents, dependent: :destroy
 
+  after_save :mark_dvd_support
+
   validate do
     errors.add(:ean, "doit être un EAN-13 valide") unless self.class.valid_ean?(ean)
   end
@@ -11,5 +13,11 @@ class DvdEdition < ApplicationRecord
 
     weighted_sum = ean.bytes.each_with_index.sum { |digit, index| (digit - 48) * (index.even? ? 1 : 3) }
     (weighted_sum % 10).zero?
+  end
+
+  private
+
+  def mark_dvd_support
+    DvdOwnership.mark_support!(record)
   end
 end
