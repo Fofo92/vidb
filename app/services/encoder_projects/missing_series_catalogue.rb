@@ -61,6 +61,7 @@ module EncoderProjects
       references = { 'genres_text' => row.fetch('genres', []).pluck('name').join(', '),
                      'country_codes' => row.fetch('origin_country', []) }
       { 'tmdb_id' => row.fetch('id'), 'french_title' => row.fetch('name'),
+        'original_language_evidence' => SeriesOriginalLanguage.new.evidence_for(row),
         'original_title' => row['original_name'].to_s, 'year' => row['first_air_date'].to_s[/\A\d{4}/]&.to_i,
         'source' => { 'provider' => 'tmdb', 'url' => "https://www.themoviedb.org/tv/#{row.fetch('id')}" },
         'gender_ids' => @references.genres(references) || [], 'country_ids' => @references.countries(references),

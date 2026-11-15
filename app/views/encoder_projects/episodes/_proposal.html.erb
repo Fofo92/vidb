@@ -1,7 +1,7 @@
 <% submitted = @submitted || {} %>
-<% language = proposal['language_version'].presence %>
-<% language = @scope.dig('project', 'language_hint').presence || 'IND' if language.blank? || language == 'IND' %>
-<% language = submitted['language_version'] if submitted['language_version'].present? %>
+<% series = @series.find { |record| record.id.to_s == proposal['series_id'].to_s } %>
+<% language = EncoderProjects::PlannedLanguage.call(proposal: proposal, project: @scope.fetch('project'),
+                                                  submitted: submitted, series: series) %>
 <% values = proposal.merge((@submitted || {}).slice('title', 'original_title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
 <section class="card my-2 encoder-proposal-card"><div class="card-body">
 <%= render 'encoder_projects/artwork', proposal: proposal %>

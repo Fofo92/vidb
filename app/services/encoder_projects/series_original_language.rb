@@ -39,10 +39,19 @@ module EncoderProjects
       data = client.get("tv/#{id}")
       return UNKNOWN unless data['id'] == id && matching?(data, series)
 
-      evidence(data, series)
+      evidence_for(data, year: series.year)
     rescue CatalogEnrichment::TmdbClient::Error, IOError, SystemCallError, Timeout::Error,
            JSON::ParserError, KeyError, ArgumentError, TypeError
       UNKNOWN
+    end
+
+    def evidence_for(data, year: nil)
+      language = data['original_language']
+      return UNKNOWN unless unambiguous?(data, language)
+
+      { 'status' => language == 'fr' ? 'french' : 'foreign', 'language' => language,
+        'provider' => 'tmdb', 'scope' => 'series', 'url' => "https://www.themoviedb.org/tv/#{data.fetch('id')}",
+        'title' => data['name'], 'year' => year }
     end
 
     private
@@ -66,15 +75,6 @@ module EncoderProjects
       return false unless local.intersect?(remote)
 
       series.year.blank? || row['first_air_date'].to_s.first(4) == series.year.to_s
-    end
-
-    def evidence(data, series)
-      language = data['original_language']
-      return UNKNOWN unless unambiguous?(data, language)
-
-      { 'status' => language == 'fr' ? 'french' : 'foreign', 'language' => language,
-        'provider' => 'tmdb', 'scope' => 'series', 'url' => "https://www.themoviedb.org/tv/#{data.fetch('id')}",
-        'title' => data['name'], 'year' => series.year }
     end
 
     def unambiguous?(data, language)
