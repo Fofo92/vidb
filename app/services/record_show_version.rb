@@ -4,13 +4,15 @@ require 'digest'
 
 # Fingerprint the visible tree and its associations, including changes that do not touch Record.
 class RecordShowVersion
-  def initialize(record)
+  def initialize(record, user: nil)
+    @user = user
     @scope = record.root.subtree.reorder(:id)
   end
 
   def call
     Record.uncached do
-      data = ['record-show-v1', @scope.pluck(*Record.column_names), qualifications, copies, posters, references]
+      data = ['record-show-v1', @scope.pluck(*Record.column_names),
+              qualifications, copies, posters, references, ratings]
       Digest::SHA256.hexdigest(ActiveSupport::JSON.encode(data))
     end
   end
@@ -32,6 +34,13 @@ class RecordShowVersion
     owners = RecordPoster.where(record_id: @scope.select(:id))
     images = ActiveStorage::Attachment.where(record_type: 'RecordPoster', record_id: owners.select(:id), name: 'image')
     [owners.order(:id).pluck(*RecordPoster.column_names), images.order(:id).pluck(:id, :record_id, :blob_id)]
+  end
+
+  def ratings
+    return [] unless @user
+
+    RecordRating.where(user: @user, record_id: @scope.select(:id))
+                .order(:record_id).pluck(:record_id, :value, :updated_at)
   end
 
   def references

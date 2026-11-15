@@ -1,4 +1,5 @@
 <% content_for :head do %>
+  <%= stylesheet_link_tag "record_ratings", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "record_show", "data-turbo-track": "reload" %>
 <% end %>
 <% copies = record_copy_summary(@record) %>
@@ -83,6 +84,7 @@
           <% if countries.present? %>
             <div><dt>Pays de production</dt><dd><%= countries %></dd></div>
           <% end %>
+          <div><dt>Avis</dt><dd><%= render "records/rating", record: @record %></dd></div>
         </dl>
 
         <% if @record.abstract.present? %>
@@ -168,6 +170,7 @@
         <th>Année</th>
         <th>Durée</th>
         <th>Genre</th>
+        <th>Avis</th>
         <th>Pays</th>
         <th>Version</th>
         <th>Support</th>

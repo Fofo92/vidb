@@ -4,9 +4,10 @@ class RecordIndexFilter
   REFERENCES = { "country_id" => :countries, "gender_id" => :genders }.freeze
   attr_reader :tree, :matched_ids
 
-  def initialize(parameters = {}, scope: Record.all)
+  def initialize(parameters = {}, scope: Record.all, user: nil)
     @parameters = parameters.to_h.stringify_keys
     @scope = scope
+    @user = user
   end
 
   def call
@@ -38,7 +39,7 @@ class RecordIndexFilter
 
       scope = scope.where(id: matching_reference_ids(association, integer(@parameters[field])))
     end
-    scope = scalar_filters(scope)
+    scope = rating_filter(scalar_filters(scope))
     scope = copy_filter(scope, "language_version_id") if @parameters["language_version_id"].present?
     scope = copy_filter(scope, "medium_id") if @parameters["medium_id"].present?
     audit_filter(scope)
@@ -51,6 +52,19 @@ class RecordIndexFilter
       scope = scope.where(id: RecordCompleteness.new.ids(@parameters['completeness']))
     end
     scope
+  end
+
+  def rating_filter(scope)
+    value = @parameters['rating']
+    return scope if value.blank?
+
+    ratings = RecordRating.where(user: @user)
+    return scope.where.not(id: ratings.select(:record_id)) if value == 'unrated'
+
+    number = integer(value)
+    raise ActiveRecord::RecordNotFound, 'Avis invalide' unless number.between?(1, 5)
+
+    scope.where(id: ratings.where(value: number).select(:record_id))
   end
 
   def reference_records

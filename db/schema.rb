@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -172,7 +172,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.index ["reconciliation_case_id"], name: "idx_case_reviews_case"
     t.index ["rule_key", "rule_version", "case_key"], name: "idx_case_reviews_identity", unique: true
     t.index ["user_id"], name: "index_reconciliation_case_reviews_on_user_id"
-    t.check_constraint "decision::text = ANY (ARRAY['approved'::character varying, 'deferred'::character varying, 'rejected'::character varying]::text[])", name: "case_reviews_decision_check"
+    t.check_constraint "decision::text = ANY (ARRAY['approved'::character varying::text, 'deferred'::character varying::text, 'rejected'::character varying::text])", name: "case_reviews_decision_check"
   end
 
   create_table "reconciliation_cases", force: :cascade do |t|
@@ -244,6 +244,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.index ["record_id"], name: "index_record_posters_on_record_id", unique: true
   end
 
+  create_table "record_ratings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "record_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "value", null: false
+    t.index ["record_id"], name: "index_record_ratings_on_record_id"
+    t.index ["user_id", "record_id"], name: "index_record_ratings_on_user_id_and_record_id", unique: true
+    t.check_constraint "value >= 1 AND value <= 5", name: "record_ratings_value_check"
+  end
+
   create_table "records", force: :cascade do |t|
     t.text "abstract"
     t.jsonb "abstract_provenance", default: {}, null: false
@@ -274,8 +285,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.index ["country_id"], name: "index_records_on_country_id"
     t.index ["language_version_id"], name: "index_records_on_language_version_id"
     t.check_constraint "broadcast_part_count > 0", name: "records_broadcast_part_count_check"
-    t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying, 'standalone_video'::character varying, 'collection'::character varying, 'series'::character varying, 'season'::character varying, 'episode'::character varying]::text[])", name: "records_record_kind_check"
-    t.check_constraint "year_basis::text = ANY (ARRAY['unknown'::character varying, 'first_release'::character varying, 'production'::character varying]::text[])", name: "records_year_basis_check"
+    t.check_constraint "record_kind::text = ANY (ARRAY['undetermined'::character varying::text, 'standalone_video'::character varying::text, 'collection'::character varying::text, 'series'::character varying::text, 'season'::character varying::text, 'episode'::character varying::text])", name: "records_record_kind_check"
+    t.check_constraint "year_basis::text = ANY (ARRAY['unknown'::character varying::text, 'first_release'::character varying::text, 'production'::character varying::text])", name: "records_year_basis_check"
   end
 
   create_table "tv_broadcast_observations", force: :cascade do |t|
@@ -389,7 +400,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.check_constraint "duplicate_programme_count >= 0", name: "tv_guide_imports_duplicate_programme_count_check"
     t.check_constraint "programme_count >= 0", name: "tv_guide_imports_programme_count_check"
     t.check_constraint "source_programme_count >= 0", name: "tv_guide_imports_source_programme_count_check"
-    t.check_constraint "status::text = ANY (ARRAY['running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "tv_guide_imports_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['running'::character varying::text, 'succeeded'::character varying::text, 'failed'::character varying::text])", name: "tv_guide_imports_status_check"
   end
 
   create_table "tv_guide_sources", force: :cascade do |t|
@@ -419,7 +430,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.index ["recording_intent_id"], name: "index_tv_kaffeine_schedule_links_on_recording_intent_id", unique: true
     t.check_constraint "duration_seconds >= 1 AND duration_seconds <= 86399", name: "tv_kaffeine_schedule_links_duration_check"
     t.check_constraint "kaffeine_key >= 1 AND kaffeine_key <= '4294967295'::bigint", name: "tv_kaffeine_schedule_links_key_check"
-    t.check_constraint "origin::text = ANY (ARRAY['created_by_vidb'::character varying, 'preexisting'::character varying]::text[])", name: "tv_kaffeine_schedule_links_origin_check"
+    t.check_constraint "origin::text = ANY (ARRAY['created_by_vidb'::character varying::text, 'preexisting'::character varying::text])", name: "tv_kaffeine_schedule_links_origin_check"
     t.check_constraint "repeat_mask >= 0 AND repeat_mask <= 127", name: "tv_kaffeine_schedule_links_repeat_check"
   end
 
@@ -441,7 +452,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.check_constraint "programme_ends_at > programme_starts_at", name: "tv_recording_intents_programme_interval_check"
     t.check_constraint "requested_padding_after_seconds >= 0", name: "tv_recording_intents_requested_padding_after_seconds_check"
     t.check_constraint "requested_padding_before_seconds >= 0", name: "tv_recording_intents_requested_padding_before_seconds_check"
-    t.check_constraint "status::text = ANY (ARRAY['selected'::character varying, 'cancelled'::character varying]::text[])", name: "tv_recording_intents_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['selected'::character varying::text, 'cancelled'::character varying::text])", name: "tv_recording_intents_status_check"
   end
 
   create_table "users", force: :cascade do |t|
@@ -480,7 +491,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
     t.check_constraint "duration_minutes IS NULL OR duration_minutes > 0", name: "video_assets_duration_check"
     t.check_constraint "jsonb_typeof(condition_details) = 'object'::text", name: "video_assets_condition_object"
     t.check_constraint "status::text <> 'present'::text OR NULLIF(btrim(last_known_path), ''::text) IS NOT NULL", name: "video_assets_present_path_check"
-    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'missing'::character varying, 'deleted'::character varying]::text[])", name: "video_assets_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['present'::character varying::text, 'missing'::character varying::text, 'deleted'::character varying::text])", name: "video_assets_status_check"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -497,6 +508,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_103000) do
   add_foreign_key "reconciliation_rule_decisions", "users"
   add_foreign_key "reconciliation_runs", "users"
   add_foreign_key "record_posters", "records"
+  add_foreign_key "record_ratings", "records"
+  add_foreign_key "record_ratings", "users"
   add_foreign_key "records", "countries"
   add_foreign_key "records", "language_versions"
   add_foreign_key "tv_broadcast_observations", "tv_guide_channels", column: "guide_channel_id"

@@ -6,6 +6,7 @@ class Record < ApplicationRecord
   belongs_to :language_version
   has_many :video_assets, inverse_of: :record
   has_many :dvd_contents, dependent: :destroy
+  has_many :ratings, class_name: 'RecordRating', inverse_of: :record, dependent: :destroy
   has_one :record_poster, dependent: :destroy
   has_and_belongs_to_many :media
   has_and_belongs_to_many :genders,

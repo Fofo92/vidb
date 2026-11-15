@@ -1,4 +1,5 @@
 <% content_for :head do %>
+  <%= stylesheet_link_tag "record_ratings", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "record_index", "data-turbo-track": "reload" %>
 <% end %>
 <div class="d-flex flex-row justify-content-between align-items-center">
@@ -8,6 +9,8 @@
   <% end %>
 </div>
 <%= render "filters" %>
+<%= render "genre_bar" %>
+<%= render "rating_bar" %>
 <% show_search_context = @result_count > @record_filter.matched_ids.size %>
 <% if show_search_context %>
   <p><strong><%= pluralize(@record_filter.matched_ids.size, "résultat", "résultats") %></strong> —
@@ -28,6 +31,7 @@
       <th><%= sort_link(@q, :year, "Année") %></th>
       <th><%= sort_link(@q, :length_in_mn, "Durée") %></th>
       <th>Genre(s)</th>
+      <th>Avis</th>
       <th>Pays</th>
       <th>Version</th>
       <th>Support(s)</th>
@@ -52,7 +56,8 @@
         </td>
         <td><%= render "records/year", record: record %></td>
         <td><%= copies.summary_duration %></td>
-        <td><%= record_metadata_values(record).genders(record).first(2).map(&:name).join(", ").presence || "—" %></td>
+        <td><%= record_index_genres(record_metadata_values(record).genders(record)) %></td>
+        <td><%= render "records/rating", record: record %></td>
         <td><%= record_metadata_values(record).countries(record).map(&:flag).join("") %></td>
         <td><%= copies.summary_languages %></td>
         <td><%= copies.summary_supports %></td>

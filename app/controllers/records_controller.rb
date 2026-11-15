@@ -3,16 +3,16 @@ class RecordsController < ApplicationController
 
   def index
     @q = Record.ransack(params[:q])
-    @record_filter = RecordIndexFilter.new(filter_params, scope: @q.result)
+    @record_filter = RecordIndexFilter.new(filter_params, scope: @q.result, user: current_user)
     results = @record_filter.call
     @result_count = results.count
-    @records = results.order(:french_title, :id).page(params[:page])
+    @records = results.includes(:ratings).order(:french_title, :id).page(params[:page])
   rescue ActiveRecord::RecordNotFound
     redirect_to records_path, alert: "Arbre introuvable ou critère invalide."
   end
 
   def show
-    @record_live_version = RecordShowVersion.new(@record).call
+    @record_live_version = RecordShowVersion.new(@record, user: current_user).call
     @record.reload
   end
 
@@ -81,7 +81,7 @@ class RecordsController < ApplicationController
   def filter_params
     params.fetch(:filters, ActionController::Parameters.new)
           .permit(:country_id, :gender_id, :language_version_id, :medium_id,
-                  :year, :record_kind, :tree_id, :display, :missing, :review, :completeness)
+                  :year, :record_kind, :tree_id, :display, :missing, :review, :completeness, :rating)
   end
 
   def set_record

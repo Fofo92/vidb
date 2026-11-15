@@ -1,0 +1,11 @@
+<nav class="record-rating-bar" aria-label="Filtrer par avis">
+  <strong class="small">Avis</strong>
+  <% selected = record_filter_value(:rating).to_s %>
+  <% record_rating_filter_options.each do |label, value| %>
+    <% active = selected == value.to_s %>
+    <%= link_to label, record_rating_filter_path(value),
+                class: "btn btn-sm #{active ? 'btn-primary' : 'btn-outline-secondary'}",
+                data: { rating_filter: value || 'all', turbo: true },
+                aria: { current: active ? 'true' : nil, label: value.to_s.match?(/\A[1-5]\z/) ? "Avis : #{value}/5" : label } %>
+  <% end %>
+</nav>

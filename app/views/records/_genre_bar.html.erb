@@ -1,0 +1,15 @@
+<nav class="record-genre-bar" aria-label="Filtrer par genre">
+  <% selected = record_filter_value(:gender_id).to_s %>
+  <%= link_to 'Tous', record_genre_filter_path(nil),
+              class: "btn btn-sm #{selected.blank? ? 'btn-primary' : 'btn-outline-secondary'}",
+              data: { genre_filter: 'all', turbo: true }, aria: { current: selected.blank? ? 'true' : nil } %>
+  <% record_filter_options(:gender_id).each do |name, id| %>
+    <% active = selected == id.to_s %>
+    <%= link_to record_genre_filter_path(id),
+                class: "btn btn-sm #{active ? 'btn-primary' : 'btn-outline-secondary'}",
+                data: { genre_filter: id, turbo: true }, aria: { current: active ? 'true' : nil } do %>
+      <span class="record-genre-bar-symbol" aria-hidden="true"><%= record_genre_symbol(name) if name.parameterize.in?(%w[comedie drame]) || RecordGenreIconsHelper::GENRE_ICONS.key?(name.parameterize) %></span>
+      <span><%= name %></span>
+    <% end %>
+  <% end %>
+</nav>

@@ -1,4 +1,4 @@
-      <% record.children.order(:rank).each do |record| %>
+      <% record.children.includes(:ratings).order(:rank).each do |record| %>
         <% copies = record_copy_summary(record) %>
         <tr data-record-live-child="<%= record.id %>">
           <td><%= record.id %></td>
@@ -12,6 +12,7 @@
           <td><%= render "records/year", record: record %></td>
           <td data-copy-duration="<%= record.id %>" title="Durée"><%= copies.summary_duration %></td>
           <td><%= record_metadata_values(record).genders(record).first(2).map(&:name).join(", ").presence || "—" %></td>
+          <td><%= render "records/rating", record: record %></td>
           <td><%= record_metadata_values(record).countries(record).map(&:flag).join("") %></td>
           <td data-copy-languages="<%= record.id %>"><%= copies.summary_languages %></td>
           <td data-copy-supports="<%= record.id %>"><%= copies.summary_supports %></td>

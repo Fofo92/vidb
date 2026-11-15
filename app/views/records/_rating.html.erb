@@ -1,0 +1,20 @@
+<%= turbo_frame_tag dom_id(record, :rating), class: 'record-rating', title: record_rating_label(record) do %>
+  <% value = current_record_rating(record)&.value %>
+  <%= form_with url: record_rating_path(record), method: :patch, class: 'record-rating-stars',
+                data: { turbo_frame: dom_id(record, :rating) }, aria: { label: "Avis pour #{record.complete_title}" } do %>
+    <% (1..5).each do |number| %>
+      <button type="submit" name="rating[value]" value="<%= number %>"
+              class="record-rating-star <%= 'is-filled' if number <= value.to_i %>"
+              title="<%= number %>/5" aria-label="Attribuer <%= number %>/5"
+              aria-pressed="<%= value == number %>"><span aria-hidden="true">★</span></button>
+    <% end %>
+    <% if value %>
+      <button type="submit" name="rating[value]" value="" class="record-rating-clear"
+              title="Effacer l’avis" aria-label="Effacer l’avis">×</button>
+    <% end %>
+  <% end %>
+  <span class="visually-hidden" role="status" aria-live="polite"><%= record_rating_label(record) %></span>
+  <% if local_assigns[:error].present? %>
+    <span class="small text-danger" role="alert"><%= local_assigns[:error] %></span>
+  <% end %>
+<% end %>

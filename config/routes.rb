@@ -74,6 +74,7 @@ Rails.application.routes.draw do
       get :preview_image, on: :member
       post :confirm, on: :member
     end
+    resource :rating, only: :update, controller: "record_ratings"
     resource :states, only: :update, controller: "record_states"
     resource :hierarchy_placement,
              controller: "record_hierarchy_placements",

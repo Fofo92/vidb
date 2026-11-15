@@ -65,7 +65,7 @@ class RecordLiveControllerTest < ActionDispatch::IntegrationTest
     versions = %w[before after]
     reader = Object.new
     reader.define_singleton_method(:call) { versions.shift }
-    RecordShowVersion.stub(:new, ->(_record) { reader }) do
+    RecordShowVersion.stub(:new, ->(_record, user:) { assert_equal @user, user; reader }) do
       get record_live_url(@record), as: :json
       assert_response :conflict
     end
@@ -85,12 +85,13 @@ class RecordLiveControllerTest < ActionDispatch::IntegrationTest
   test 'the rendered owner is reloaded if it changes before fingerprinting' do
     build = RecordShowVersion.method(:new)
     first = true
-    factory = lambda do |record|
+    factory = lambda do |record, user:|
+      assert_equal @user, user
       if first
         @record.update_columns(french_title: 'Saison corrigée avant lecture')
         first = false
       end
-      build.call(record)
+      build.call(record, user: user)
     end
     RecordShowVersion.stub(:new, factory) do
       get record_live_url(@record), as: :json
