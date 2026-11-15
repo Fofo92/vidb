@@ -17,7 +17,8 @@ module RecordFiltersHelper
 
   def record_filter_parent(record)
     links = record.ancestors.map do |parent|
-      link_to(parent.complete_title, records_path(filters: { tree_id: parent.id }))
+      link_to(parent.id, records_path(filters: { tree_id: parent.id }),
+              title: parent.complete_title, aria: { label: "Parent #{parent.id} : #{parent.complete_title}" })
     end
     safe_join(links, " / ")
   end

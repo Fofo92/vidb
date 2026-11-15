@@ -1,3 +1,6 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "record_index", "data-turbo-track": "reload" %>
+<% end %>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <h1 class="justify-content-between">Liste des <%= pluralize(Record.count, "enregistrement") %></h1>
   <%= link_to new_record_path, class: "btn btn-primary fa-xl" do %>
@@ -16,7 +19,8 @@
 <div style="font-size: 1rem;">
   <%= paginate @records, window: 2 %>
 </div>
-<table class="table table-striped table-sm">
+<div class="table-responsive">
+<table class="table table-striped table-sm record-index-table">
   <thead style="position: sticky">
     <tr>
       <th><%= sort_link(@q, :id, "#") %></th>
@@ -43,7 +47,8 @@
       <tr data-record-state-row="<%= record.id %>">
         <td><%= record.id %></td>
         <td>
-          <%= link_to record.complete_title, record_path(record) %>
+          <%= link_to record.complete_title, record_path(record),
+                      class: "record-index-title", title: record.complete_title %>
         </td>
         <td><%= render "records/year", record: record %></td>
         <td><%= copies.summary_duration %></td>
@@ -52,7 +57,7 @@
         <td><%= copies.summary_languages %></td>
         <td><%= copies.summary_supports %></td>
         <td><%= record.rank || "n/a" %></td>
-        <td><%= record_filter_parent(record) %></td>
+        <td class="record-index-parents"><%= record_filter_parent(record) %></td>
         <% if show_search_context %>
           <% matched = @record_filter.matched_ids.include?(record.id) %>
           <td data-search-role="<%= matched ? "match" : "context" %>"
@@ -77,6 +82,7 @@
     <% end %>
   </tbody>
 </table>
+</div>
 <div style="font-size: 1rem;">
   <%= paginate @records, window: 2 %>
 </div>

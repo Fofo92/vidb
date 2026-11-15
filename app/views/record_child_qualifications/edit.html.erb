@@ -1,5 +1,6 @@
+<div class="child-qualifications">
 <h1>Qualifier les enfants</h1>
-<p data-child-qualification-parent>
+<p class="small mb-2" data-child-qualification-parent>
   <strong>Parent :</strong> <%= link_to @record.complete_title, record_path(@record) %>
 </p>
 
@@ -22,19 +23,21 @@
     <%= hidden_field_tag "record_child_qualification[common][fields][]", "" %>
     <%= hidden_field_tag "record_child_qualification[parent_snapshot]",
                          RecordChildQualificationSnapshot.token(@record) %>
-    <section class="card card-body mb-3">
-      <h2 class="h5">Valeurs communes à la sélection</h2>
-      <p class="small">Coche « Appliquer » pour chaque champ à modifier. Les autres valeurs sont conservées.</p>
+    <section class="card card-body mb-2">
+      <h2 class="h5">Valeurs communes</h2>
+      <p class="small mb-2">Coche « Appliquer » pour modifier un champ.</p>
       <%= render "fields", prefix: "record_child_qualification[common]", key: "common",
                            child: nil, values: @common_values %>
     </section>
 
-    <p class="small">
-      Les corrections par enfant sont prioritaires sur les valeurs communes.
-      Les états et les valeurs des copies s’appliquent aussi aux épisodes sous les enfants sélectionnés.
-      Les genres et pays affichés tiennent compte des règles de la branche ; le formulaire modifie les valeurs propres.
-      Enregistré et disponible sont calculés à partir des copies.
-    </p>
+    <details class="small mb-2">
+      <summary>Règles d’application</summary>
+      <p class="mb-1">
+        Les corrections individuelles priment. Les états et valeurs des copies concernent aussi les épisodes descendants.
+        Genres et pays : affichage selon la branche, modification des valeurs propres.
+        Enregistré et disponible sont calculés à partir des copies.
+      </p>
+    </details>
     <div class="d-flex gap-2 mb-2">
       <button type="button" class="btn btn-outline-secondary btn-sm"
               data-action="child-qualification#selectAll">Tout sélectionner</button>
@@ -60,7 +63,7 @@
         <%= hidden_field_tag "record_child_qualification[snapshots][#{child.id}]",
                              RecordChildQualificationSnapshot.token(child) %>
         <details <%= "open" if @row_values.dig(child.id.to_s, "fields").present? %>>
-          <summary>Corriger cet enfant</summary>
+          <summary>Corriger</summary>
           <%= render "fields", prefix: "record_child_qualification[rows][#{child.id}]",
                                key: "child_#{child.id}", child: child,
                                values: @row_values.fetch(child.id.to_s, {}) %>
@@ -68,7 +71,7 @@
       </section>
     <% end %>
 
-    <%= submit_tag "Qualifier la sélection", class: "btn btn-primary",
+    <%= submit_tag "Qualifier la sélection", class: "btn btn-primary btn-sm",
                    data: { turbo_submits_with: "Enregistrement…" } %>
   <% end %>
 <% else %>
@@ -76,3 +79,5 @@
 <% end %>
 
 <%= link_to "Retour à la fiche", record_path(@record), class: "d-inline-block mt-3" %>
+
+</div>

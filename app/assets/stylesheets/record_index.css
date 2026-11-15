@@ -1,0 +1,18 @@
+/* Keep catalogue rows compact without reducing the text size. */
+.record-index-table th,
+.record-index-table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.record-index-title {
+  display: block;
+  max-width: clamp(12rem, 28vw, 30rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-index-parents {
+  font-variant-numeric: tabular-nums;
+}

@@ -26,7 +26,7 @@ class RecordChildMetadataModesTest < ActionDispatch::IntegrationTest
         params: { descendant_genre_mode: 'parent', descendant_country_mode: 'current' }
 
     assert_response :success
-    assert_select 'strong', text: '1 fiche(s) changeraient'
+    assert_select '[data-branch-metadata] strong', text: '1 modification(s)'
     assert_select '[data-metadata-review] tbody tr', count: 1 do |rows|
       assert_equal [own.name, common.name], rows.first.css('td').to_a.values_at(2, 3).map(&:text)
     end
@@ -157,7 +157,7 @@ class RecordChildMetadataModesTest < ActionDispatch::IntegrationTest
 
     modes = { descendant_genre_mode: 'parent', descendant_country_mode: 'parent' }
     get edit_record_child_qualification_url(season), params: modes
-    assert_select 'strong', text: '1 fiche(s) changeraient'
+    assert_select '[data-branch-metadata] strong', text: '1 modification(s)'
     assert_equal [season_genre, own_genre], episode.effective_genders
 
     patch metadata_modes_record_child_qualification_url(season), params: modes

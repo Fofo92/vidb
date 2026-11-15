@@ -1,0 +1,51 @@
+.child-qualifications {
+  .card-body {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .h5 {
+    margin-bottom: 0.4rem;
+    font-size: 1.05rem;
+  }
+
+  .child-qualification-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem 0.75rem;
+  }
+
+  .child-qualification-field {
+    min-width: 0;
+
+    > .d-flex {
+      gap: 0.4rem;
+    }
+
+    .small {
+      white-space: nowrap;
+    }
+
+    select[multiple] {
+      height: 4.75rem;
+      min-height: 0;
+    }
+  }
+
+  .child-qualification-year {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  @media (min-width: 640px) {
+    .child-qualification-fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 992px) {
+    .child-qualification-fields {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}

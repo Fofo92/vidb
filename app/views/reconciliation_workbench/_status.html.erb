@@ -10,6 +10,7 @@
             <% unless run.terminal? %><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span><% end %>
             <strong><%= labels.fetch(run.status) %> · demande n° <%= run.id %></strong>
             <span class="text-muted small"> — <%= run.created_at.in_time_zone('Europe/Paris').strftime('%d/%m à %H:%M') %></span>
+            <% if run.terminal? %><details class="small mt-1"><summary>Bilan</summary><% end %>
             <p class="mb-0 mt-1 small"><%= run.mode == 'apply' ? 'Application des règles approuvées' : 'Actualisation des propositions' %>.</p>
             <% if run.status == 'queued' %><p class="mb-0 mt-1">La demande est enregistrée. Le service n’a pas encore commencé son traitement ; inutile de valider à nouveau.</p><% end %>
             <% queued = runs.count { |entry| entry.status == 'queued' } %>
@@ -24,6 +25,7 @@
             <% if presence.values.any?(&:positive?) %>
               <p class="mb-0 mt-1 small">Contrôle disque : <%= presence['missing'].to_i %> copies devenues introuvables · <%= presence['restored'].to_i %> copies retrouvées · <%= presence['retired'].to_i %> références redondantes retirées. Historique conservé.</p>
             <% end %>
+            <% if run.terminal? %></details><% end %>
           </div>
           <% unless run.terminal? %>
             <%= button_to "Arrêter après l’opération en cours", stop_reconciliation_workbench_path(run_id: run.id), class: "btn btn-outline-secondary btn-sm", form: { data: { turbo_frame: '_top' } } %>

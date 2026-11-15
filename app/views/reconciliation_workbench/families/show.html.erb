@@ -1,15 +1,23 @@
-<div class="container py-4">
-  <%= link_to "← Les familles", reconciliation_workbench_path(axis: @rule.axis), class: "small" %>
-  <p class="mt-2"><%= link_to "Choisir les propositions à consolider", reconciliation_workbench_reviews_path(axis: @rule.axis), class: "btn btn-outline-primary btn-sm" %></p>
-  <h1 class="h3 mt-3"><%= @rule.title %></h1>
-  <p class="lead"><%= @rule.proposal %></p>
-  <div class="bg-light border rounded p-3 mb-3">
-    <p class="mb-1"><strong>Limites de la règle :</strong> <%= @rule.limits %></p>
-    <p class="mb-0"><strong><%= @total %> propositions actuelles.</strong>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "reconciliation_family", "data-turbo-track": "reload" %>
+<% end %>
+<div class="container workbench-family-page">
+  <nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+    <%= link_to "← Les familles", reconciliation_workbench_path(axis: @rule.axis), class: "small" %>
+    <%= link_to "Consolider par lot", reconciliation_workbench_reviews_path(axis: @rule.axis), class: "btn btn-outline-primary btn-sm" %>
+  </nav>
+  <h1 class="h3"><%= @rule.title %></h1>
+  <details class="small mb-2">
+    <summary>Portée et limites</summary>
+    <p class="mb-1"><%= @rule.proposal %></p>
+    <p class="mb-0"><%= @rule.limits %></p>
+  </details>
+  <div class="bg-light border rounded p-2 mb-2 small">
+    <p class="mb-0"><strong><%= @total %> propositions.</strong>
       <% if @rule.recurring %>
-        La validation autorise aussi les futurs cas équivalents de cette version de la règle.
+        Validation : cas actuels et futurs équivalents, pour cette version de la règle.
       <% else %>
-        La validation couvre uniquement les propositions actuelles de toutes les pages de cette famille.
+        Validation : propositions actuelles, toutes les pages de cette famille.
       <% end %>
     </p>
   </div>
@@ -17,20 +25,25 @@
     <% payload = item.payload %>
     <% arbitration = @rule.key == ReconciliationWorkbench::Rules::PREFERENCE.key && payload.fetch('samples', []).size >= 2 %>
     <% suggestion = ReconciliationWorkbench::CopySuggestion.call(payload) if arbitration %>
-    <article class="card mb-3">
+    <article class="card mb-2">
       <div class="card-body">
         <h2 class="h5"><%= payload['record_id'] ? link_to(payload['title'], record_path(payload['record_id'])) : payload['title'] %></h2>
         <% if payload['comparison'] %>
-          <p>Comparaison automatique : <%= payload['comparison']['reason'] %></p>
-          <p class="small text-muted">Qualité visuelle non évaluée. Les anciennes copies restent présentes ; aucun fichier n’est supprimé.</p>
+          <% if payload['comparison']['reason'].present? && payload['comparison']['reason'] != item.error %>
+            <p class="small mb-1"><%= payload['comparison']['reason'] %></p>
+          <% end %>
+          <p class="small text-muted mb-2">Qualité visuelle non évaluée · Tous les fichiers sont conservés.</p>
           <% if payload.fetch('samples', []).empty? %>
             <ul class="small text-break"><% payload.fetch('copies', []).each do |_id, path| %><li><%= path %></li><% end %></ul>
           <% end %>
           <% if arbitration %>
-            <p class="small">Choisis la copie à privilégier, puis confirme les choix de cette page en bas. La suggestion tient compte de la date, de la taille, des pistes, de la durée et de la définition ; elle ne garantit pas les langues ni la qualité visuelle.</p>
+            <details class="small mb-2"><summary>Critères de suggestion</summary>
+              <p class="mb-0">Date, taille, pistes, durée et définition. Langues et qualité visuelle à vérifier.
+                Confirme les choix en bas de page.</p>
+            </details>
             <label class="small d-block mb-2">
               <%= radio_button_tag "choices[#{item.id}]", 'defer', suggestion.nil?, form: 'copy-arbitration' %>
-              Laisser cet épisode à examiner
+              Décider plus tard
             </label>
           <% end %>
           <% if payload['manual_review'] %>
@@ -38,14 +51,15 @@
             <% if payload['manual_review']['comment'].present? %><p><%= payload['manual_review']['comment'] %></p><% end %>
           <% end %>
           <div class="table-responsive"><table class="table table-sm" data-copy-comparison>
-            <thead><tr><th>Copie</th><th>Date du fichier</th><th>Taille</th><th>Audio</th><th>Sous-titres</th><th>Choix proposé</th></tr></thead>
+            <thead><tr><th>Copie</th><th class="workbench-copy-nowrap">Date</th><th class="workbench-copy-nowrap">Taille</th><th>Audio</th><th><abbr title="Sous-titres">ST</abbr></th><th>Choix</th></tr></thead>
             <tbody>
               <% payload.fetch('samples', []).each do |sample| %>
                 <% capabilities = payload.dig('comparison', 'capabilities', sample['asset_id'].to_s) || {} %>
                 <tr>
-                  <td class="text-break">
-                    <%= sample['path'] %>
-                    <details class="small mt-1"><summary>Durée, définition et détail des pistes</summary>
+                  <td class="workbench-copy-path">
+                    <span title="<%= sample['path'] %>"><%= File.basename(sample['path'].to_s) %></span>
+                    <details class="small mt-1"><summary>Chemin et pistes</summary>
+                      <p class="text-break mb-1"><%= sample['path'] %></p>
                       <p class="mb-1">Durée mesurée : <%= sample.dig('measurement', 'measured_duration_seconds') || 'À mesurer' %> secondes.</p>
                       <ul>
                         <% Array(sample.dig('measurement', 'technical_details', 'streams')).each do |stream| %>
@@ -54,8 +68,8 @@
                       </ul>
                     </details>
                   </td>
-                  <td><%= Time.iso8601(sample['modified_at']).in_time_zone('Europe/Paris').strftime('%d/%m/%Y') %></td>
-                  <td><%= number_to_human_size(sample.dig('measurement', 'byte_size')) %></td>
+                  <td class="workbench-copy-nowrap"><%= Time.iso8601(sample['modified_at']).in_time_zone('Europe/Paris').strftime('%d/%m/%Y') %></td>
+                  <td class="workbench-copy-nowrap"><%= number_to_human_size(sample.dig('measurement', 'byte_size')) %></td>
                   <td>
                     <%= Array(capabilities['audio']).map(&:first).uniq.join(', ').presence || workbench_track_languages(sample, 'audio') %>
                     <% Array(capabilities['language_assumptions']).each do |assumption| %>
@@ -65,11 +79,11 @@
                   <td><%= Array(capabilities['subtitles']).map(&:first).uniq.join(', ').presence || workbench_track_languages(sample, 'subtitle') %></td>
                   <td>
                     <% if arbitration %>
-                      <label>
+                      <label class="workbench-copy-choice">
                         <%= radio_button_tag "choices[#{item.id}]", sample['asset_id'], suggestion == sample['asset_id'], form: 'copy-arbitration' %>
-                        Privilégier cette copie
+                        Privilégier
                       </label>
-                      <% if suggestion == sample['asset_id'] %><span class="badge bg-secondary">Suggestion à confirmer</span><% end %>
+                      <% if suggestion == sample['asset_id'] %><span class="badge bg-secondary">Suggestion</span><% end %>
                     <% else %>
                       <%= (payload.dig('manual_review', 'preferred_asset_id') || payload['comparison']['preferred_asset_id']) == sample['asset_id'] ? 'Privilégier' : 'Conserver' %>
                     <% end %>
@@ -111,7 +125,7 @@
       </div>
     </article>
   <% end %>
-  <nav class="d-flex gap-3 mb-4" aria-label="Pages des propositions">
+  <nav class="d-flex gap-3 mb-2" aria-label="Pages des propositions">
     <% if @page > 1 %><%= link_to "Page précédente", reconciliation_workbench_family_path(@rule.key, page: @page - 1) %><% end %>
     <span>Page <%= @page %> · <%= @total %> propositions au total</span>
     <% if @page * 30 < @total %><%= link_to "Page suivante", reconciliation_workbench_family_path(@rule.key, page: @page + 1) %><% end %>
@@ -120,15 +134,18 @@
     <%= render 'reconciliation_workbench/structure_backlog' %>
   <% end %>
   <% if @rule.key == ReconciliationWorkbench::Rules::PREFERENCE.key %>
-    <section class="card mb-3"><div class="card-body">
-      <h2 class="h5">Confirmer les choix de cette page</h2>
-      <p>Une confirmation pour tous les épisodes sélectionnés sur cette page. Les autres restent à examiner. Ces choix ne créent aucune règle automatique pour les futurs conflits et ne suppriment aucun fichier.</p>
-      <%= form_with url: arbitrate_reconciliation_workbench_family_path(@rule.key), method: :post, id: 'copy-arbitration' do |form| %>
+    <section class="card mb-2"><div class="card-body">
+      <h2 class="h5">Confirmer les copies</h2>
+      <p class="small">Choix de cette page uniquement. Les autres restent à examiner.
+        Aucune règle pour les futurs conflits, aucun fichier supprimé.</p>
+      <%= form_with url: arbitrate_reconciliation_workbench_family_path(@rule.key), method: :post, id: 'copy-arbitration', class: 'workbench-copy-confirmation' do |form| %>
         <%= form.hidden_field :scope_digest, value: @scope_digest %>
         <%= form.hidden_field :page, value: @page %>
-        <%= form.label :comment, "Justification commune (facultative)", class: 'form-label' %>
-        <%= form.text_area :comment, rows: 2, class: 'form-control mb-3' %>
-        <%= form.submit 'Confirmer les choix et lancer leur application', class: 'btn btn-primary', disabled: @total.zero? %>
+        <div>
+          <%= form.label :comment, "Commentaire facultatif", class: 'form-label small mb-1' %>
+          <%= form.text_area :comment, rows: 1, class: 'form-control form-control-sm' %>
+        </div>
+        <%= form.submit 'Confirmer et appliquer', class: 'btn btn-primary btn-sm', disabled: @total.zero? %>
       <% end %>
     </div></section>
   <% end %>
@@ -136,20 +153,20 @@
     <p>Choisis une seule fiche par projet dans la file de consolidation. Une validation globale de cette famille est désactivée.</p>
   <% else %>
   <section class="card"><div class="card-body">
-    <h2 class="h5">Validation de la règle de cette famille</h2>
+    <h2 class="h5">Valider la règle</h2>
     <% if @scope.where(status: 'blocked').exists? %>
       <p class="small text-muted">Pour réexaminer une fiche modifiée, diffère la famille puis actualise les propositions. Tu pourras examiner leur nouvel état avant une nouvelle validation.</p>
     <% end %>
     <%= form_with url: decision_reconciliation_workbench_family_path(@rule.key), method: :post do |form| %>
       <%= form.hidden_field :scope_digest, value: @scope_digest %>
-      <%= form.label :comment, "Ton avis ou la règle à préciser", class: "form-label" %>
-      <%= form.text_area :comment, value: @decision&.comment, rows: 2, class: "form-control mb-3" %>
+      <%= form.label :comment, "Commentaire", class: "form-label small mb-1" %>
+      <%= form.text_area :comment, value: @decision&.comment, rows: 1, class: "form-control form-control-sm mb-2" %>
       <div class="d-flex flex-wrap gap-2">
-        <%= form.button "Valider et lancer les règles approuvées", name: 'decision', value: 'approved', disabled: @total.zero?, class: "btn btn-primary", data: { turbo_submits_with: 'Enregistrement de la validation…' } %>
-        <%= form.button "À préciser", name: 'decision', value: 'deferred', class: "btn btn-outline-secondary" %>
-        <%= form.button "Écarter cette règle", name: 'decision', value: 'rejected', class: "btn btn-outline-danger" %>
+        <%= form.button "Valider et lancer les règles approuvées", name: 'decision', value: 'approved', disabled: @total.zero?, class: "btn btn-primary btn-sm", data: { turbo_submits_with: 'Enregistrement de la validation…' } %>
+        <%= form.button "À préciser", name: 'decision', value: 'deferred', class: "btn btn-outline-secondary btn-sm" %>
+        <%= form.button "Écarter cette règle", name: 'decision', value: 'rejected', class: "btn btn-outline-danger btn-sm" %>
       </div>
-      <p class="small text-muted mt-2 mb-0">Une validation sur cet axe n’approuve aucune règle de l’autre axe. Les règles déjà approuvées peuvent continuer à s’appliquer.</p>
+      <p class="small text-muted mt-2 mb-0">Validation limitée à cet axe. Les autres règles approuvées restent actives.</p>
     <% end %>
   </div></section>
   <% end %>

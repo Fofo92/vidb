@@ -1,19 +1,19 @@
 <% if progress.any? %>
   <% active, history = progress.partition { |entry| entry[:counts].values.sum.positive? } %>
-  <section class="border rounded p-3 mt-3" aria-label="Suivi des familles validées">
-    <h2 class="h5">Validations enregistrées et application</h2>
+  <section class="border rounded p-2 mt-2" aria-label="Suivi des familles validées">
+    <h2 class="h5">Validations</h2>
     <% if active.any? %>
-      <p class="small">Suivi automatique des propositions autorisées en attente, en cours ou bloquées.</p>
+      <p class="small">Propositions autorisées en attente, en cours ou bloquées.</p>
       <% active.each do |entry| %>
         <%= render 'reconciliation_workbench/application_progress_entry', entry: entry %>
       <% end %>
     <% else %>
-      <p class="mb-2">Aucune proposition autorisée en attente, en cours ou bloquée.</p>
+      <p class="small mb-1">Aucune proposition autorisée en attente, en cours ou bloquée.</p>
     <% end %>
     <% if history.any? %>
       <details data-application-history class="mt-2">
-        <summary>Historique : <%= history.size %> familles validées sans proposition autorisée en cours</summary>
-        <p class="small mt-2">Les décisions et les preuves d’application restent consultables. Les règles récurrentes restent actives pour les futurs cas équivalents.</p>
+        <summary>Historique · <%= history.size %> familles validées</summary>
+        <p class="small mt-2">Décisions et preuves conservées. Les règles récurrentes restent actives.</p>
         <% history.each do |entry| %>
           <%= render 'reconciliation_workbench/application_progress_entry', entry: entry %>
         <% end %>

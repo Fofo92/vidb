@@ -16,6 +16,16 @@
   <span class="record-show-sr-only" role="status" aria-live="polite" data-record-live-target="status"></span>
 
   <section class="record-show-overview" data-record-overview aria-labelledby="record-title">
+    <nav class="record-show-actions" aria-label="Actions sur cette fiche">
+      <%= link_to "Filtrer cet arbre", records_path(filters: { tree_id: @record.id }), class: "btn btn-outline-secondary btn-sm" %>
+      <%= link_to "Déplacer", edit_record_hierarchy_placement_path(@record), class: "btn btn-outline-secondary btn-sm" %>
+      <%= link_to edit_record_path(@record), class: "btn btn-outline-primary btn-sm", title: "Modifier la fiche", aria: { label: "Modifier la fiche" } do %>
+        <i class="fa-regular fa-edit" aria-hidden="true"></i>
+      <% end %>
+      <%= link_to new_record_path, class: "btn btn-outline-primary btn-sm", title: "Nouvelle fiche", aria: { label: "Nouvelle fiche" } do %>
+        <i class="fa-regular fa-square-plus" aria-hidden="true"></i>
+      <% end %>
+    </nav>
     <div class="record-show-artwork" data-record-live-region="artwork">
       <% if poster %>
         <%= render "records/poster", record: @record, poster: poster, large: true %>
@@ -30,16 +40,6 @@
     <div class="record-show-content">
       <section class="record-show-editorial" data-record-information data-record-live-region="information">
         <header class="record-show-heading">
-          <nav class="record-show-actions" aria-label="Actions sur cette fiche">
-            <%= link_to "Filtrer cet arbre", records_path(filters: { tree_id: @record.id }), class: "btn btn-outline-secondary btn-sm" %>
-            <%= link_to "Déplacer", edit_record_hierarchy_placement_path(@record), class: "btn btn-outline-secondary btn-sm" %>
-            <%= link_to edit_record_path(@record), class: "btn btn-outline-primary btn-sm", title: "Modifier la fiche", aria: { label: "Modifier la fiche" } do %>
-              <i class="fa-regular fa-edit" aria-hidden="true"></i>
-            <% end %>
-            <%= link_to new_record_path, class: "btn btn-outline-primary btn-sm", title: "Nouvelle fiche", aria: { label: "Nouvelle fiche" } do %>
-              <i class="fa-regular fa-square-plus" aria-hidden="true"></i>
-            <% end %>
-          </nav>
           <div class="record-show-context">
             <nav class="record-show-breadcrumbs" aria-label="Arborescence vidb" data-record-breadcrumbs>
               <ol>
