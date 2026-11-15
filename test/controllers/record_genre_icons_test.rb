@@ -33,7 +33,11 @@ class RecordGenreIconsTest < ActionDispatch::IntegrationTest
       assert_select 'i.fa-masks-theater', count: 1
       assert_select 'svg', count: 0
     end
-    assert_select "[data-record-state-row='#{@text.id}'] .record-genre-icons", text: 'Thriller'
+    assert_select "[data-record-state-row='#{@text.id}'] .record-genre-icons[role=img]" do |nodes|
+      assert_equal 'Thriller', nodes.first['title']
+      assert_equal 'Thriller', nodes.first['aria-label']
+      assert_select 'svg[data-genre-symbol=thriller][aria-hidden=true]', count: 1
+    end
   end
 
   test 'a genre button preserves search sort and year while returning to the first page' do

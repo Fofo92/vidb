@@ -60,6 +60,9 @@ Rails.application.routes.draw do
   resources :dvd_editions, only: [] do
     resource :contents, only: %i[edit update], controller: "dvd_contents"
   end
+  resource :record_search, only: :show, controller: "record_search" do
+    get :results
+  end
   resources :records do
     resources :copies, only: [] do
       resource :condition, only: %i[edit update], controller: 'record_copy_conditions'

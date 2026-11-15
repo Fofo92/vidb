@@ -1,0 +1,13 @@
+<%= turbo_frame_tag 'global_record_search_results', target: '_top', class: 'record-live-results' do %>
+  <% if @error %><p class="small text-danger mt-2" role="alert"><%= @error %></p><% end %>
+  <p class="small mt-2 mb-1"><strong><%= @total %></strong> résultat(s)</p>
+  <ul class="record-search-preview">
+    <% @records.each do |record| %>
+      <li>
+        <%= link_to record.complete_title, record_path(record, search_context: record_search_context_token) %>
+        <span class="record-search-preview-year"><%= record.year %></span>
+      </li>
+    <% end %>
+  </ul>
+  <%= link_to 'Voir la liste complète', @results_url, class: 'btn btn-outline-primary btn-sm' %>
+<% end %>

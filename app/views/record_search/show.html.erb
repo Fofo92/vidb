@@ -1,0 +1,7 @@
+<%= turbo_frame_tag 'global_record_search', target: '_top' do %>
+  <h2 class="h6 mb-2">Rechercher dans la vidéothèque</h2>
+  <%= render 'records/filters', prefix: 'global_' %>
+  <%= turbo_frame_tag 'global_record_search_results', target: '_top', class: 'record-live-results' do %>
+    <p class="small text-muted mt-2 mb-0">Les résultats apparaîtront pendant la saisie.</p>
+  <% end %>
+<% end %>

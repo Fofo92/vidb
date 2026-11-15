@@ -2,6 +2,7 @@
   <% value = current_record_rating(record)&.value %>
   <%= form_with url: record_rating_path(record), method: :patch, class: 'record-rating-stars',
                 data: { turbo_frame: dom_id(record, :rating) }, aria: { label: "Avis pour #{record.complete_title}" } do %>
+    <%= hidden_field_tag :search_context, record_search_context_token, id: nil if record_search_context_token %>
     <% (1..5).each do |number| %>
       <button type="submit" name="rating[value]" value="<%= number %>"
               class="record-rating-star <%= 'is-filled' if number <= value.to_i %>"

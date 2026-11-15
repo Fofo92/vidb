@@ -1,4 +1,6 @@
 class RecordsController < ApplicationController
+  include RecordSearchNavigation
+
   before_action :set_record, only: %i[new_child show edit update destroy]
 
   def index
@@ -6,7 +8,7 @@ class RecordsController < ApplicationController
     @record_filter = RecordIndexFilter.new(filter_params, scope: @q.result, user: current_user)
     results = @record_filter.call
     @result_count = results.count
-    @records = results.includes(:ratings).order(:french_title, :id).page(params[:page])
+    @records = paginate_records(results)
   rescue ActiveRecord::RecordNotFound
     redirect_to records_path, alert: "Arbre introuvable ou critère invalide."
   end
@@ -40,6 +42,7 @@ class RecordsController < ApplicationController
     @record = Record.new(record_params)
 
     if @record.save
+      invalidate_record_search
       redirect_after_create
     else
       template = @record.parent ? :new_child : :new
@@ -54,9 +57,10 @@ class RecordsController < ApplicationController
   def update
     @metadata_forcing_parent = RecordMetadataValues.forcing_parent?(@record)
     if save_record_update
+      invalidate_record_search
       redirect_to(
-        record_path(@record),
-        notice: "L'enregistrement a été mis à jour avec succès."
+        search_return_path || record_path(@record),
+        notice: "L'enregistrement a été mis à jour avec succès.", status: :see_other
       )
     else
       render :edit, status: :unprocessable_content
@@ -66,7 +70,8 @@ class RecordsController < ApplicationController
   def destroy
     parent = @record.parent
     @record.destroy
-    redirect_to parent ? record_path(parent) : records_path
+    invalidate_record_search
+    redirect_to search_return_path || (parent ? record_path(parent) : records_path), status: :see_other
   end
 
   private
@@ -115,11 +120,11 @@ class RecordsController < ApplicationController
   def redirect_after_create
     return redirect_to dvd_scan_path(ean: @dvd_ean, record_id: @record.id), status: :see_other if @dvd_ean
 
-    destination = @record.parent || @record
+    destination = search_return_path || record_path(@record.parent || @record)
 
     redirect_to(
-      record_path(destination),
-      notice: "L'enregistrement a été créé avec succès."
+      destination,
+      notice: "L'enregistrement a été créé avec succès.", status: :see_other
     )
   end
 end

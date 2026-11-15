@@ -1,0 +1,14 @@
+<details class="record-search-menu" data-controller="record-search-menu"
+         data-record-search-menu-url-value="<%= record_search_menu_path %>"
+         data-action="toggle->record-search-menu#toggle">
+  <summary class="btn btn-outline-secondary btn-sm" title="Rechercher dans la vidéothèque"
+           aria-label="Rechercher dans la vidéothèque">
+    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+  </summary>
+  <div class="record-search-panel">
+    <%= turbo_frame_tag 'global_record_search', src: record_search_menu_path,
+                        loading: :lazy, target: '_top', data: { record_search_menu_target: 'frame' } do %>
+      <p class="small mb-0">Chargement de la recherche…</p>
+    <% end %>
+  </div>
+</details>

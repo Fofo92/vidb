@@ -1,0 +1,53 @@
+<svg class="record-genre-symbol" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true" focusable="false" data-genre-symbol="<%= symbol %>">
+  <% if symbol == 'magic' %>
+<path d="M6 27 23 10" stroke-width="4"/>
+  <path d="m20 13 3-3" stroke="#dce1e5" stroke-width="4"/>
+  <path d="m8 3 1.6 4.4L14 9l-4.4 1.6L8 15l-1.6-4.4L2 9l4.4-1.6Z" fill="currentColor" stroke="none"/>
+  <path d="m25 1 1.2 3.8L30 6l-3.8 1.2L25 11l-1.2-3.8L20 6l3.8-1.2Z" fill="currentColor" stroke="none"/>
+  <path d="M27 19v6m-3-3h6"/>
+  <% elsif symbol == 'history' %>
+<path d="M2 20c6 0 8-6 10-12 3-3 5-3 8 0 2 6 4 12 10 12l-3 5c-7 2-15 2-22 0Z" fill="currentColor" stroke="none"/>
+  <path d="M6 23h20" stroke="#dce1e5" stroke-width="1.4"/>
+  <circle cx="13" cy="13" r="2" fill="#dce1e5" stroke="none"/>
+  <circle cx="13" cy="13" r=".8" fill="currentColor" stroke="none"/>
+  <% elsif symbol == 'spy' %>
+<path d="m5 11 3-8c5 2 11 2 16 0l3 8Z" fill="currentColor" stroke="none"/>
+  <path d="M3 13h26" stroke-width="3"/>
+  <path d="M19 17h11v4c-3 4-8 4-11 0Z" fill="currentColor" stroke="none"/>
+  <circle cx="10" cy="22" r="8"/>
+  <path d="m16 28 5 3" stroke-width="3"/>
+  <path d="M4 22q6-9 12 0-6 9-12 0Z" stroke-width="1.4"/>
+  <circle cx="10" cy="22" r="2.1" fill="currentColor" stroke="none"/>
+  <% elsif symbol == 'roman' %>
+  <path d="M13 2q8-2 8 5l3 3-3 1v4h-5l-1 4-7-5 4-4q-4-6 1-8Z" fill="currentColor" stroke="none"/>
+  <path d="m12 5 2 1m0-3 2 2m1-3 1 2m2-1-1 2" stroke="#dce1e5" stroke-width="1.2"/>
+  <path d="M9 16Q5 18 3 30h26q-2-10-8-13l-6 5Z" fill="currentColor" stroke="none"/>
+  <path d="M9 17q2 7 15 9M7 22q3 6 13 8m-2-6q0 4 5 6" stroke="#dce1e5" stroke-width="1.5"/>
+  <% elsif symbol == 'police' %>
+<path d="m16 2 5 3 6 1-1 12c-1 6-5 10-10 12C11 28 7 24 6 18L5 6l6-1Z"/>
+  <text x="16" y="12" text-anchor="middle" font-size="5.2" font-family="DejaVu Sans,sans-serif" font-weight="bold" fill="currentColor" stroke="none">POLICE</text>
+  <path d="m16 15 1.6 3.3 3.6.5-2.6 2.6.6 3.6L16 23.3 12.8 25l.6-3.6-2.6-2.6 3.6-.5Z" fill="currentColor" stroke="none"/>
+  <% elsif symbol == 'theatre' %>
+<path d="M3 4q13-5 26 0v25l-7-3H10l-7 3Z" fill="#e4e7eb" stroke="none"/>
+  <path d="M3 4q13-5 26 0M8 5Q9 15 4 24m20-19q-1 10 4 19M3 29l7-3m19 3-7-3" stroke="#a7afb8" stroke-width="1.2"/>
+  <path d="M6 7q5-2 10 0l-1 9q-1 5-4 6-4-1-5-6Z" fill="#f8f9fa" stroke-width="1.4"/>
+  <path d="M18 9q5-2 10 0l-1 9q-1 5-4 6-4-1-5-6Z" fill="currentColor" stroke="none"/>
+  <path d="m8 11 2-1m2 0 2 1m-5 4q2 4 4 0" stroke-width="1.2"/>
+  <path d="m20 13 2-1m2 0 2 1m-5 6q2-3 4 0" stroke="#f8f9fa" stroke-width="1.2"/>
+  <% elsif symbol == 'superhero' %>
+<path d="M1 10q5 3 9 0l2 5 2-8 2 4 2-4 2 8 2-5q4 3 9 0-2 8-6 10l1 5q-5-3-7 0l-3 5-3-5q-2-3-7 0l1-5Q3 18 1 10Z" fill="currentColor" stroke="none"/>
+  <% elsif symbol == 'thriller' %>
+  <path d="M3 2C1 10 5 16 16 23l6-6C16 10 10 5 3 2Z" fill="currentColor" stroke="none"/>
+  <path d="m21 18 9 8-4 5-10-8Z" fill="currentColor" stroke="none"/>
+  <path d="M6 4c5 5-1 7 4 13m7 6 5-5" stroke="#dce1e5" stroke-width="1.2"/>
+  <circle cx="25.5" cy="26.5" r="1.6" fill="#dce1e5" stroke="none"/>
+  <path d="M5 20c0 3-2 4-2 6a2 2 0 0 0 4 0c0-2-2-3-2-6Zm6 6c0 2-1.5 3-1.5 4a1.5 1.5 0 0 0 3 0c0-1-1.5-2-1.5-4Z" fill="#aa4242" stroke="none"/>
+  <% elsif symbol == 'biopic' %>
+<path d="M3 7q7-2 13 2 6-4 13-2v21q-7-2-13 2-6-4-13-2ZM16 9v21"/>
+  <circle cx="9.5" cy="14" r="2.5" fill="currentColor" stroke="none"/>
+  <path d="M5.5 23q4-8 8 0Z" fill="currentColor" stroke="none"/>
+  <path d="M20 13h5m-5 5h5m-5 5h5" stroke-width="1.5"/>
+  <% end %>
+</svg>

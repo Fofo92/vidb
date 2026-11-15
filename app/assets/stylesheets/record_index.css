@@ -23,22 +23,36 @@
   gap: .25rem;
   font-size: 1rem;
 }
-.record-genre-mask {
+.record-genre-mask,
+.record-genre-symbol {
   display: inline-block;
-  width: 1.05rem;
-  height: 1.2rem;
+  width: 1.25rem;
+  height: 1.25rem;
   flex-shrink: 0;
   vertical-align: middle;
 }
 .record-genre-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: .3rem;
   margin: .45rem 0 .65rem;
 }
+.record-genre-bar > strong { flex-shrink: 0; }
+.record-genre-buttons {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding: .15rem;
+}
 .record-genre-bar .btn {
   display: inline-flex;
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  justify-content: center;
   align-items: center;
   gap: .35rem;
   padding: .2rem .45rem;
@@ -46,3 +60,15 @@
 }
 .record-genre-bar-symbol:empty { display: none; }
 .record-genre-bar-symbol { display: inline-flex; align-items: center; }
+
+.record-genre-icons > .fa-solid {
+  display: inline-block;
+  width: 1.25rem;
+  text-align: center;
+  font-size: 1rem;
+}
+.record-genre-bar-symbol {
+  width: 1.25rem;
+  height: 1.25rem;
+  justify-content: center;
+}

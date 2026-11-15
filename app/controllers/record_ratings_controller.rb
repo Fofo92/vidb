@@ -2,6 +2,8 @@ class RecordRatingsController < ApplicationController
   def update
     @record = Record.find(params[:record_id])
     RecordRatingUpdate.call(record: @record, user: current_user, value: rating_value)
+    return render(template: 'record_ratings/refresh', formats: [:turbo_stream]) if refresh_search?
+
     return redirect_to record_path(@record), status: :see_other unless turbo_frame_request?
 
     render_rating
@@ -11,6 +13,10 @@ class RecordRatingsController < ApplicationController
   end
 
   private
+
+  def refresh_search?
+    turbo_frame_request? && RecordSearchContext.query(params[:search_context], user: current_user).present?
+  end
 
   def rating_value
     value = params.require(:rating).fetch(:value)

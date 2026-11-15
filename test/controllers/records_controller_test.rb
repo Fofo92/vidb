@@ -199,8 +199,8 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :success
-    assert_select "a[href='#{record_path(@record)}']", text: "Ancien titre"
-    assert_select "a[href='#{record_path(other_record)}']", count: 0
+    assert_select "[data-record-title-link='#{@record.id}']", text: "Ancien titre"
+    assert_select "[data-record-title-link='#{other_record.id}']", count: 0
   end
 
   test "searches records by french or original title" do
@@ -218,10 +218,10 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select(
-      "a[href='#{record_path(matching_record)}']",
+      "[data-record-title-link='#{matching_record.id}']",
       text: "Titre français distinct (The Hidden Film)"
     )
-    assert_select "a[href='#{record_path(@record)}']", count: 0
+    assert_select "[data-record-title-link='#{@record.id}']", count: 0
   end
 
   test "filters the index by country and keeps the selected criteria" do

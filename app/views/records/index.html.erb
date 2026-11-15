@@ -1,14 +1,20 @@
 <% content_for :head do %>
+  <meta name="turbo-refresh-scroll" content="preserve">
   <%= stylesheet_link_tag "record_ratings", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "record_index", "data-turbo-track": "reload" %>
 <% end %>
 <div class="d-flex flex-row justify-content-between align-items-center">
   <h1 class="justify-content-between">Liste des <%= pluralize(Record.count, "enregistrement") %></h1>
-  <%= link_to new_record_path, class: "btn btn-primary fa-xl" do %>
+  <%= link_to new_record_path(search_context: record_search_context_token), class: "btn btn-primary fa-xl", data: { record_new_link: true } do %>
     <i class="fa-regular fa-square-plus"></i>
   <% end %>
 </div>
 <%= render "filters" %>
+<%= turbo_frame_tag 'record_search_results', target: '_top', class: 'd-block record-live-results',
+                    data: { turbo_action: 'replace' } do %>
+  <span hidden data-live-search-context
+        data-new-record-url="<%= new_record_path(search_context: record_search_context_token) %>"
+        data-search-menu-url="<%= record_search_menu_path %>"></span>
 <%= render "genre_bar" %>
 <%= render "rating_bar" %>
 <% show_search_context = @result_count > @record_filter.matched_ids.size %>
@@ -51,8 +57,8 @@
       <tr data-record-state-row="<%= record.id %>">
         <td><%= record.id %></td>
         <td>
-          <%= link_to record.complete_title, record_path(record),
-                      class: "record-index-title", title: record.complete_title %>
+          <%= link_to record.complete_title, record_path(record, search_context: record_search_context_token),
+                      data: { record_title_link: record.id }, class: "record-index-title", title: record.complete_title %>
         </td>
         <td><%= render "records/year", record: record %></td>
         <td><%= copies.summary_duration %></td>
@@ -72,10 +78,10 @@
         <% end %>
         <%= render "state_columns", record: record, header: false, interactive: false %>
         <td>
-          <%= link_to edit_record_path(record) do %>
+          <%= link_to edit_record_path(record, search_context: record_search_context_token) do %>
             <i class="fas fa-edit"></i>
           <% end %>
-          <%= link_to record_path(record),
+          <%= link_to record_path(record, search_context: record_search_context_token),
             data: {
               turbo_method: :delete,
               turbo_confirm: "Êtes-vous sûr ?"
@@ -91,3 +97,5 @@
 <div style="font-size: 1rem;">
   <%= paginate @records, window: 2 %>
 </div>
+
+<% end %>

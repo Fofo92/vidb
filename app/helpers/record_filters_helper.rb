@@ -15,6 +15,20 @@ module RecordFiltersHelper
     params.fetch(:filters, {})[field]
   end
 
+  def record_search_filter_count
+    fields = %i[country_id gender_id language_version_id medium_id year record_kind tree_id missing completeness]
+    count = fields.count { |field| record_filter_value(field).present? }
+    count += 1 if record_filter_value(:review) == '1'
+    count += 1 if %w[trees roots].include?(record_filter_value(:display))
+    count
+  end
+
+  def record_search_menu_path
+    query = RecordSearchContext.query(params[:search_context], user: current_user) || {}
+    query = request.query_parameters if controller_name == 'records' && action_name == 'index'
+    record_search_path(query.except('page'))
+  end
+
   def record_filter_parent(record)
     links = record.ancestors.map do |parent|
       link_to(parent.id, records_path(filters: { tree_id: parent.id }),
