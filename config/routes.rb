@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resource :montage, only: :show, controller: "montages"
   get "encoder_projects/preparations/:record_id", to: "encoder_projects/preparations#show", as: :encoder_project_preparation
   post "encoder_projects/launch_binding", to: "encoder_projects/launch_bindings#create"
   get "encoder_projects/local_records", to: "encoder_projects/local_records#show"

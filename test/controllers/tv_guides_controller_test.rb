@@ -129,9 +129,10 @@ class TvGuidesControllerTest < ActionDispatch::IntegrationTest
   test "offers the TV guide in the main navigation" do
     get tv_guide_url
     assert_response :success
+    assert_select "button#tvNavigation", text: "Programmation TV"
     assert_select(
-      "a[href='#{tv_guide_path}']",
-      text: "Programmes TV"
+      "ul[aria-labelledby='tvNavigation'] a[href='#{tv_guide_path}']",
+      text: "Planning"
     )
   end
 

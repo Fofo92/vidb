@@ -1,72 +1,56 @@
-<nav class="navbar navbar-expand-sm navbar-light navbar-lewagon">
+<nav class="navbar navbar-expand-md navbar-light navbar-lewagon" aria-label="Navigation principale">
   <div class="container-fluid">
-    <%= link_to root_path, class: "navbar-brand" do %>
-      <i class="fas fa-film" style="font-style: italic; font-size: 45px;"></i>
+    <%= link_to root_path, class: "navbar-brand", aria: { label: "Accueil" } do %>
+      <i class="fas fa-film" style="font-style: italic; font-size: 45px;" aria-hidden="true"></i>
     <% end %>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Afficher le menu">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto">
         <% if user_signed_in? %>
-
-          <li class="nav-item">
-            <%= link_to "Vidéothèque", records_path, class: "nav-link" %>
+          <li class="nav-item dropdown d-flex flex-wrap align-items-center">
+            <%= link_to "Vidéothèque", records_path, class: "nav-link pe-1" %>
+            <button type="button" class="nav-link dropdown-toggle dropdown-toggle-split ps-1"
+                    id="libraryNavigation" data-bs-toggle="dropdown" aria-expanded="false"
+                    aria-label="Menu Vidéothèque"></button>
+            <ul class="dropdown-menu navbar-library-menu" aria-labelledby="libraryNavigation">
+              <li><%= link_to "Catalogue", records_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Ajouter un DVD par scan", dvd_scan_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Scans DVD à identifier", dvd_preparations_path, class: "dropdown-item" %></li>
+            </ul>
           </li>
           <li class="nav-item">
-            <%= link_to "DVD à préparer", dvd_preparations_path, class: "nav-link" %>
+            <%= link_to "Montage", montage_path, class: "nav-link" %>
           </li>
-
-          <li class="nav-item">
-            <%= link_to "Programmes TV", tv_guide_path, class: "nav-link" %>
-          </li>
-
-          <li class="nav-item">
-            <%= link_to(
-              "Enregistrements TV",
-              tv_recording_intents_path,
-              class: "nav-link"
-            ) %>
-          </li>
-
-          <div class="nav-link dropdown">
-            <a id="navbarDropdown" data-bs-toggle="dropdown">
-            Données d'application</a>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <%= link_to "Genres cinématographiques", genders_path, class: "dropdown-item" %>
-              <%= link_to "Versions linguistiques", language_versions_path, class: "dropdown-item" %>
-              <%= link_to "Supports", media_path, class: "dropdown-item" %>
-            </div>
-          </div>
-          </li>
-          <div class="nav-link dropdown">
-            <a id="navbarDropdown" data-bs-toggle="dropdown">
-            Outils</a>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <%= link_to "Qualification et rapprochement", reconciliation_workbench_path, class: "dropdown-item" %>
-              <%= link_to "Inventaire et doublons", library_inventory_path, class: "dropdown-item" %>
-              <%= link_to "Crédits", credits_path, class: "dropdown-item" %>
-              <%#= link_to "Versions linguistiques", language_versions_path, class: "dropdown-item" %>
-              <%#= link_to "Supports", media_path, class: "dropdown-item" %>
-            </div>
-          </div>
-          </li>
-
           <li class="nav-item dropdown">
-          <a href="#" class="avatar" id="navbarDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <%#= image_tag "491836490_1745610806373606_7734622266692662522_n", class: "avatar", alt: "dropdown menu" %>
-          </a>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <%= link_to "Action", "#", class: "dropdown-item" %>
-              <%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item" %>
-            </div>
+            <button type="button" class="nav-link dropdown-toggle" id="tvNavigation"
+                    data-bs-toggle="dropdown" aria-expanded="false">Programmation TV</button>
+            <ul class="dropdown-menu" aria-labelledby="tvNavigation">
+              <li><%= link_to "Planning", tv_guide_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Enregistrements", tv_recording_intents_path, class: "dropdown-item" %></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <button type="button" class="nav-link dropdown-toggle" id="toolsNavigation"
+                    data-bs-toggle="dropdown" aria-expanded="false">Outils</button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="toolsNavigation">
+              <li><%= link_to "Inventaire et doublons", library_inventory_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Qualification et rapprochement", reconciliation_workbench_path, class: "dropdown-item" %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">Données d’application</h6></li>
+              <li><%= link_to "Genres cinématographiques", genders_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Versions linguistiques", language_versions_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Supports", media_path, class: "dropdown-item" %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><%= link_to "Crédits", credits_path, class: "dropdown-item" %></li>
+              <li><%= link_to "Se déconnecter", destroy_user_session_path,
+                              data: { turbo_method: :delete }, class: "dropdown-item" %></li>
+            </ul>
           </li>
         <% else %>
-          <li class="nav-item">
-            <%= link_to "Login", new_user_session_path, class: "nav-link" %>
-          </li>
+          <li class="nav-item"><%= link_to "Login", new_user_session_path, class: "nav-link" %></li>
         <% end %>
       </ul>
     </div>

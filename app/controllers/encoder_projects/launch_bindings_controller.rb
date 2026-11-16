@@ -6,6 +6,8 @@ module EncoderProjects
     def create
       raise ArgumentError, 'Demande limitée à 64 Ko' if request.raw_post.bytesize > 65_536
 
+      return render json: desktop_action if params[:desktop_token]
+
       launch = LaunchTicket.read(params.require(:launch_token), user: @operator, url: @configuration.fetch('url'))
       return render json: launch.slice('project_id', 'record_id', 'record_title') unless params[:project]
 
@@ -15,6 +17,13 @@ module EncoderProjects
     end
 
     private
+
+    def desktop_action
+      raise ArgumentError, 'Une commande de montage ne peut pas associer une fiche.' if
+        params[:project] || params[:launch_token]
+
+      DesktopTicket.read(params.require(:desktop_token), user: @operator, url: @configuration.fetch('url'))
+    end
 
     def bind_project(launch)
       data = params.require(:project).permit(:project_id, :project_path, :output_path,

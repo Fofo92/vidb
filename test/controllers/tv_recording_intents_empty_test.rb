@@ -21,8 +21,8 @@ class TvRecordingIntentsEmptyTest <
       text: "Aucun enregistrement n’est programmé."
     )
     assert_select(
-      "a[href='#{tv_recording_intents_path}']",
-      text: "Enregistrements TV"
+      "ul[aria-labelledby='tvNavigation'] a[href='#{tv_recording_intents_path}']",
+      text: "Enregistrements"
     )
   end
 end
