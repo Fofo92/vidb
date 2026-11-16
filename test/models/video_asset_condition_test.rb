@@ -37,7 +37,9 @@ class VideoAssetConditionTest < ActiveSupport::TestCase
     assert VideoAssets::PartCoverage.integral_available?([asset], expected_parts: 1)
     refute asset.integrality_verified?
     unmarked = copy('Autre')
-    assert_equal({}, unmarked.condition_details)
+    assert_equal 'complete', unmarked.condition_details['integrality']
+    assert_equal 'none', unmarked.condition_details['damage']
+    assert_equal %w[integrality damage], unmarked.condition_details['presumed_fields']
     refute unmarked.integrality_verified?
   end
 

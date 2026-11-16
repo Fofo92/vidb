@@ -3,7 +3,7 @@
 module VideoAssets
   # Interpret only Pascal's explicit lowercase markers, never directory names or Roman numerals.
   class LegacyConditionMarkers
-    TOKEN = /\((dd|d|i|début\s+[^()]+|fin\s+[^()]+)\)/
+    TOKEN = /\((dd|d|i|début(?:\s+[^()]+)?|fin(?:\s+[^()]+)?)\)/
 
     def self.call(path)
       new(path).call
@@ -35,7 +35,7 @@ module VideoAssets
     end
 
     def review_needed?(portions)
-      portions.any? { |item| item[:seconds].nil? } ||
+      portions.any? { |item| item[:duration_given] && item[:seconds].nil? } ||
         portions.map { |item| item.values_at(:part, :seconds) }.uniq.size > 1
     end
 
@@ -47,11 +47,11 @@ module VideoAssets
     end
 
     def portion(token)
-      match = token.match(/\A(début|fin)\s+(.+)\z/)
+      match = token.match(/\A(début|fin)(?:\s+(.+))?\z/)
       return unless match
 
       { part: match[1] == 'début' ? 'beginning' : 'end',
-        seconds: RetainedDuration.parse(match[2]) }
+        seconds: match[2] && RetainedDuration.parse(match[2]), duration_given: !match[2].nil? }
     end
   end
 end

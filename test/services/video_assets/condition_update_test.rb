@@ -28,10 +28,11 @@ module VideoAssets
     end
 
     test 'stale changes are refused instead of overwriting another qualification' do
+      before = @asset.reload.condition_details.deep_dup
       fingerprint = ConditionUpdate.fingerprint(@asset)
       @asset.update!(duration_minutes: 42)
       assert_raises(ConditionUpdate::Stale) { update({ 'integrality' => 'complete' }, fingerprint) }
-      assert_equal 'unknown', @asset.reload.condition_details['integrality']
+      assert_equal before, @asset.reload.condition_details
     end
 
     test 'contradictory or fractional duration is rejected without persisting history' do

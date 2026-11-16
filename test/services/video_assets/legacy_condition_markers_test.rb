@@ -23,6 +23,16 @@ module VideoAssets
       assert_equal 2460, parse('Film (fin 41’)')['retained_duration_seconds']
     end
 
+    test 'bare beginning and end markers do not require inventing a duration' do
+      { 'début' => 'beginning', 'fin' => 'end' }.each do |marker, part|
+        result = parse("Film (#{marker})")
+        assert_equal 'incomplete', result['integrality']
+        assert_equal part, result['retained_portion']
+        assert_nil result['retained_duration_seconds']
+        assert_equal false, result['needs_review']
+      end
+    end
+
     test 'i is incomplete without inventing a missing portion or duration' do
       result = parse('Film (i) (d)')
       assert_equal 'incomplete', result['integrality']

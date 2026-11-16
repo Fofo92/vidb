@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 0 && ( $# -ne 2 || "$1" != '--apply' ) ]]; then
+  printf '%s\n' 'Usage: bash bin/qualify-copy-conditions [--apply /chemin/plan.json]' >&2
+  exit 1
+fi
+
+sudo -u vidb /bin/sh -c '
+  set -e
+  set -a
+  . /etc/vidb/vidb.env
+  set +a
+  export RAILS_ENV=production
+  export PATH=/opt/rubies/4.0.6/bin:/usr/bin:/bin
+  export BUNDLE_DEPLOYMENT=1
+  export BUNDLE_PATH=/srv/vidb/shared/bundle
+  export BUNDLE_WITHOUT=development:test
+  if [ "$#" -eq 0 ]; then
+    export PGOPTIONS="-c default_transaction_read_only=on"
+  fi
+  cd /srv/vidb/current
+  exec bundle _2.7.1_ exec bin/rails runner script/qualify_copy_conditions.rb "$@"
+' sh "$@"

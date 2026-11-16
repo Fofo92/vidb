@@ -10,7 +10,7 @@ module CopyConditionsHelper
 
   def copy_condition_lines(asset)
     details = asset.effective_condition
-    lines = [INTEGRALITY_LABELS.fetch(details.fetch('integrality', 'unknown')),
+    lines = [copy_integrality_label(details),
              DAMAGE_LABELS.fetch(details.fetch('damage', 'unknown'))]
     part = details.fetch('retained_portion', 'unknown')
     lines << PORTION_LABELS.fetch(part) unless part == 'unknown'
@@ -27,9 +27,16 @@ module CopyConditionsHelper
 
   def copy_condition_summary(asset)
     details = asset.effective_condition
-    integrity = { 'unknown' => 'À vérifier', 'complete' => 'Intégrale', 'incomplete' => 'Incomplète' }
     damage = { 'light' => 'd', 'severe' => 'dd' }[details['damage']]
     duration = retained_duration_label(details['retained_duration_seconds']) if details['retained_duration_seconds']
-    [integrity.fetch(details.fetch('integrality', 'unknown')), damage, duration].compact.join(' · ')
+    [copy_integrality_label(details, compact: true), damage, duration].compact.join(' · ')
+  end
+
+  def copy_integrality_label(details, compact: false)
+    return 'Présumée complète' if details['integrality'] == 'complete' &&
+                                  Array(details['presumed_fields']).include?('integrality')
+    return 'À vérifier' if compact && details.fetch('integrality', 'unknown') == 'unknown'
+
+    INTEGRALITY_LABELS.fetch(details.fetch('integrality', 'unknown'))
   end
 end

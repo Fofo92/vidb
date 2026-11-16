@@ -8,6 +8,13 @@ class CopyConditionsHelperTest < ActiveSupport::TestCase
     assert_equal ['Intégralité non vérifiée', 'Détérioration non évaluée'], copy_condition_lines(Copy.new({}))
   end
 
+  test 'a convention is labelled as a presumption independently of manual confirmation' do
+    details = { 'integrality' => 'complete', 'damage' => 'none', 'presumed_fields' => %w[integrality damage] }
+    assert_equal 'Présumée complète', copy_condition_summary(Copy.new(details))
+    assert_includes copy_condition_lines(Copy.new(details)), 'Présumée complète'
+    assert_equal 'Intégrale', copy_condition_summary(Copy.new(details.except('presumed_fields')))
+  end
+
   test 'retained duration and the missing side remain explicit' do
     details = { 'integrality' => 'incomplete', 'damage' => 'severe', 'retained_portion' => 'beginning',
                 'retained_duration_seconds' => 2460, 'needs_review' => true }

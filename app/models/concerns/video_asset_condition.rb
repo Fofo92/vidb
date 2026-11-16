@@ -23,7 +23,16 @@ module VideoAssetCondition
   end
 
   def integrality_verified?
-    effective_condition['integrality'] == 'complete'
+    details = effective_condition
+    details['integrality'] == 'complete' && !Array(details['presumed_fields']).include?('integrality')
+  end
+
+  def copy_condition_valid?(details = condition_details)
+    details.is_a?(Hash) && condition_values_valid?(details) && condition_duration_valid?(details)
+  end
+
+  def condition_information_protected?
+    condition_details.present? && !VideoAssets::DefaultConditionDocument.only_presumptions?(condition_details)
   end
 
   private
@@ -31,13 +40,12 @@ module VideoAssetCondition
   def capture_initial_condition
     return if condition_details.present?
 
-    self.condition_details = VideoAssets::LegacyConditionMarkers.call(last_known_path)
+    markers = VideoAssets::LegacyConditionMarkers.call(last_known_path)
+    self.condition_details = VideoAssets::DefaultConditionDocument.for_asset(self) || markers
   end
 
   def validate_copy_condition
-    details = condition_details
-    valid = details.is_a?(Hash) && condition_values_valid?(details) && condition_duration_valid?(details)
-    errors.add(:condition_details, 'est invalide ou contradictoire') unless valid
+    errors.add(:condition_details, 'est invalide ou contradictoire') unless copy_condition_valid?
   end
 
   def condition_values_valid?(details)
@@ -45,7 +53,12 @@ module VideoAssetCondition
     choices.all? { |key, values| values.include?(details.fetch(key, 'unknown')) } &&
       details.fetch('note', '').is_a?(String) && details.fetch('note', '').length <= 2000 &&
       details.fetch('evidence', []).is_a?(Array) && details.fetch('evidence', []).all?(Hash) &&
-      [true, false].include?(details.fetch('needs_review', false))
+      [true, false].include?(details.fetch('needs_review', false)) && condition_presumptions_valid?(details)
+  end
+
+  def condition_presumptions_valid?(details)
+    fields = details.fetch('presumed_fields', [])
+    fields.is_a?(Array) && (fields - %w[integrality damage]).empty?
   end
 
   def condition_duration_valid?(details)
