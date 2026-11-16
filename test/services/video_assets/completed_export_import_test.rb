@@ -34,6 +34,32 @@ class CompletedExportImportTest < ActiveSupport::TestCase
     FileUtils.remove_entry(@directory)
   end
 
+  test 'a montage declaration qualifies only its new copy and survives a repeated import' do
+    other = VideoAsset.create!(record: @record, status: 'present', last_known_path: "#{@path}.old")
+    before = other.effective_condition.deep_dup
+    @receipt['copy_condition'] = {
+      'integrality' => 'incomplete', 'damage' => 'light', 'retained_portion' => 'unknown',
+      'note' => 'Coupure et images abîmées', 'declared_at' => Time.current.iso8601,
+      'source_paths' => ['/commun/source.m2t'], 'affected_source_paths' => ['/commun/source.m2t']
+    }
+    VideoAssets::CompletedExportImport.new(@observation, @export).call
+    asset = VideoAsset.find_by!(last_known_path: @path)
+    assert_equal true, asset.content_incomplete?
+    assert_equal 'light', asset.condition_details['damage']
+    assert_equal 'unknown', asset.condition_details['retained_portion']
+    assert_equal 'Coupure et images abîmées', asset.condition_details['note']
+    assert_equal 'video_encoder_montage', asset.condition_details.fetch('evidence').sole['origin']
+    assert_equal before, other.reload.effective_condition
+    assert_equal 'already_imported', VideoAssets::CompletedExportImport.new(@observation, @export).call[:status]
+  end
+
+  test 'an invalid declaration rolls back the import' do
+    @receipt['copy_condition'] = { 'damage' => 'invalid' }
+    assert_no_difference 'VideoAsset.count' do
+      assert_raises(ArgumentError) { VideoAssets::CompletedExportImport.new(@observation, @export).call }
+    end
+  end
+
   test 'imports another copy and fills duration without changing seen or abstract' do
     VideoAsset.create!(record: @record, status: 'present', last_known_path: "#{@path}_vf")
     assert_difference 'VideoAsset.count', 1 do

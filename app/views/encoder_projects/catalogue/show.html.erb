@@ -76,16 +76,25 @@
         <%= form.hidden_field :request_token, value: params[:request_token] %>
         <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: candidate) %>
         <div class="row g-2 my-2 encoder-reference-row">
-          <% if !@completion_record || @completion_record.effective_genders.empty? %>
-            <div class="col-md-6">
+          <% existing_genres = @completion_record&.effective_genders.to_a %>
+          <% selected_genres = existing_genres.any? ? existing_genres.map(&:id) : EncoderProjects::CatalogueReferences.genres(candidate) %>
+          <div class="col-md-6" data-controller="encoder-genre-review">
+            <% if existing_genres.any? %>
+              <p class="small mb-1">Genres enregistrés : <%= existing_genres.map(&:name).join(' · ') %></p>
+              <label class="form-check-label mb-1">
+                <%= check_box_tag :replace_genres, '1', false, data: { action: 'encoder-genre-review#toggle', encoder_genre_review_target: 'permission' } %>
+                Modifier les genres
+              </label>
+            <% end %>
+            <fieldset <%= 'disabled' if existing_genres.any? %> data-encoder-genre-review-target="fields">
               <% if Array(candidate['tmdb_genres']).any? %>
                 <p class="small mb-1">Genres TMDB : <%= Array(candidate['tmdb_genres']).join(' · ') %></p>
                 <p class="small text-muted">Choisis jusqu’à deux genres dans ta liste vidb. Les genres TMDB sont indiqués pour t’aider, y compris ceux absents de cette liste.</p>
               <% end %>
               <%= label_tag "film-genres-#{index}", 'Genres principaux (deux maximum)', class: 'form-label' %>
-              <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, EncoderProjects::CatalogueReferences.genres(candidate)), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(EncoderProjects::CatalogueReferences.genres(candidate)).first } %>
-            </div>
-          <% end %>
+              <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, selected_genres), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(selected_genres).first } %>
+            </fieldset>
+          </div>
           <% if !@completion_record || @completion_record.effective_countries.empty? %>
             <div class="col-md-6">
               <%= label_tag "film-countries-#{index}", 'Pays de production', class: 'form-label' %>

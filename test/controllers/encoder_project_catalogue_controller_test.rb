@@ -113,6 +113,54 @@ class EncoderProjectCatalogueControllerTest < ActionDispatch::IntegrationTest
     assert_equal original_binding, EncoderProjects::Binding.current(@project.fetch('project_id'))
   end
 
+  test 'completion shows the existing genre even when the external proposal suggests another' do
+    confirm
+    record = Record.find(EncoderProjects::Binding.current(@project.fetch('project_id')).fetch('record_id'))
+    project = @project.merge('completion_record_id' => record.id)
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project)
+    candidate = @candidate.merge('genres_text' => 'Comédie')
+    catalogue = Object.new
+    catalogue.define_singleton_method(:call) { |_query| [candidate] }
+    catalogue.define_singleton_method(:warnings) { [] }
+    EncoderProjects::FilmCatalogue.stub(:new, -> { catalogue }) do
+      get encoder_projects_catalogue_path, params: { request_token: token }
+    end
+    assert_response :success
+    assert_select 'input[name="replace_genres"][type="checkbox"]:not([checked])', count: 1
+    assert_select 'fieldset[disabled] select[name="gender_ids[]"] option[selected]', text: 'Drame'
+    assert_select 'select[name="gender_ids[]"] option[selected][value="' + @genre.id.to_s + '"]', count: 1
+  end
+
+  test 'only explicit permission replaces the existing genres during film completion' do
+    confirm
+    record = Record.find(EncoderProjects::Binding.current(@project.fetch('project_id')).fetch('record_id'))
+    binding = EncoderProjects::Binding.current(@project.fetch('project_id'))
+    project = @project.merge('completion_record_id' => record.id)
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project, candidate: @candidate)
+    comedy = Gender.find_or_create_by!(name: 'Comédie')
+    parameters = { proposal_token: token, gender_ids: [comedy.id], encoder_window: '1' }
+    post encoder_projects_catalogue_path, params: parameters
+    assert_equal [@genre.id], record.reload.gender_ids
+    post encoder_projects_catalogue_path, params: parameters.merge(replace_genres: '1')
+    assert_redirected_to record_path(record, encoder_prepared: 1)
+    assert_equal [comedy.id], record.reload.gender_ids
+    assert_equal true, record.genre_provenance['protected']
+    assert_equal @user.id, record.genre_provenance['user_id']
+    assert_equal 'Résumé de test.', record.abstract
+    assert_equal binding, EncoderProjects::Binding.current(@project.fetch('project_id'))
+  end
+
+  test 'explicit genre correction can clear an incorrect genre without changing countries' do
+    confirm
+    record = Record.find(EncoderProjects::Binding.current(@project.fetch('project_id')).fetch('record_id'))
+    project = @project.merge('completion_record_id' => record.id)
+    token = EncoderProjects::CatalogueScope.issue(user: @user, project: project, candidate: @candidate)
+    post encoder_projects_catalogue_path, params: { proposal_token: token, replace_genres: '1' }
+    assert_redirected_to record_path(record)
+    assert_empty record.reload.genders
+    assert_equal [@country.id], record.country_ids
+  end
+
   test 'a confirmed direct TMDB link can replace an associated film from another year' do
     old_film = @candidate.merge('french_title' => 'Hit Man', 'year' => 1991)
     confirm(EncoderProjects::CatalogueScope.issue(user: @user, project: @project, candidate: old_film))

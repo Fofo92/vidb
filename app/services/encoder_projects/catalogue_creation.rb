@@ -11,14 +11,14 @@ module EncoderProjects
       @url = url
     end
 
-    def call(scope:, gender_ids:, country_ids:, confirmed: false)
-      candidate = scope.fetch('candidate')
+    def call(scope:, gender_ids:, country_ids:, confirmed: false, replace_genres: false)
+      candidate, project = scope.fetch_values('candidate', 'project')
       validate!(candidate, gender_ids, country_ids)
-      project = scope.fetch('project')
       Record.transaction do
         lock_projects!
         if project['completion_record_id']
-          next ExistingFilmCompletion.new(user: @user).call(project, candidate, gender_ids, country_ids)
+          next ExistingFilmCompletion.new(user: @user).call(project, candidate, gender_ids, country_ids,
+                                                            replace_genres: replace_genres)
         end
 
         associate(scope, candidate, gender_ids, country_ids, confirmed: confirmed)

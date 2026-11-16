@@ -17,12 +17,12 @@ module EncoderProjects
       @user = user
     end
 
-    def call(project, candidate, gender_ids, country_ids)
+    def call(project, candidate, gender_ids, country_ids, replace_genres: false)
       record = self.class.bound_record!(project)
       record.with_lock do
         verify_candidate!(record, candidate)
         fill_identity(record, candidate)
-        fill_genres(record, candidate, gender_ids)
+        fill_genres(record, candidate, gender_ids, replace: replace_genres)
         record.countries = Country.find(country_ids) if country_ids.any? && record.effective_countries.empty?
         CatalogueSummaryImport.call(record, candidate) if record.abstract.blank?
       end
@@ -47,8 +47,8 @@ module EncoderProjects
       record.save! if record.changed?
     end
 
-    def fill_genres(record, candidate, ids)
-      return if ids.empty? || record.effective_genders.any? || record.genre_provenance.to_h['protected']
+    def fill_genres(record, candidate, ids, replace: false)
+      return if !replace && (ids.empty? || record.effective_genders.any? || record.genre_provenance.to_h['protected'])
 
       genres = Gender.find(ids)
       record.with_reviewed_genre_assignment { record.genders = genres }

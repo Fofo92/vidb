@@ -90,7 +90,8 @@ module VideoAssets
                          duration_minutes: [(@export[:seconds] / 60).round, 1].max,
                          observed_at: Time.current, medium: Medium.find_by!(short_name: 'HD'),
                          language_version: version && LanguageVersion.find_by!(short_name: version),
-                         container: details.dig('format', 'format_name'), technical_details: details)
+                         container: details.dig('format', 'format_name'), technical_details: details,
+                         **ExportCondition.call(receipt))
     end
 
     def language(details, receipt)
