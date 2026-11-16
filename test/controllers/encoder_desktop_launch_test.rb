@@ -25,7 +25,7 @@ class EncoderDesktopLaunchTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :success
-    assert_select 'a[href^="vidb-encoder://prepare?"]', text: 'Ouvrir video_encoder'
+    assert_select 'button[type="button"][data-encoder-launch-url-param^="vidb-encoder://prepare?"]', text: 'Ouvrir video_encoder'
   end
 
   test 'context resolution requires the bridge credential and the matching account' do
@@ -48,7 +48,7 @@ class EncoderDesktopLaunchTest < ActionDispatch::IntegrationTest
     EncoderProjects::Settings.stub(:read, @configuration) do
       get encoder_project_preparation_path(@record)
       assert_response :success
-      url = css_select('a[href^="vidb-encoder://prepare?"]').sole['href']
+      url = css_select('button[type="button"][data-encoder-launch-url-param^="vidb-encoder://prepare?"]').sole['data-encoder-launch-url-param']
       ticket = URI.decode_www_form(URI(url).query).to_h.fetch('ticket')
       post '/encoder_projects/launch_binding', params: { launch_token: ticket }, headers: @headers, as: :json
       assert_response :success

@@ -22,9 +22,11 @@ class MontagesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_select 'h1', 'Montage'
-    assert_select 'a[href^="vidb-encoder://desktop?"]', count: 4
-    assert_select 'div[aria-label="Commandes de montage"] a', text: 'Encoder un DVD'
-    assert_select 'div[aria-label="Commandes de montage"] a', text: 'Reprendre un projet'
+    assert_select 'a[href^="vidb-encoder:"]', count: 0
+    assert_select 'button[data-action="encoder-launch#open"][target]', count: 0
+    assert_select 'button[type="button"][data-encoder-launch-url-param^="vidb-encoder://desktop?"]', count: 4
+    assert_select 'div[aria-label="Commandes de montage"] button', text: 'Encoder un DVD'
+    assert_select 'div[aria-label="Commandes de montage"] button', text: 'Reprendre un projet'
   end
 
   test 'the main navigation separates catalogue scans montage television and shared tools' do
@@ -60,7 +62,7 @@ class MontagesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_select '.alert-warning', /autre compte/
-    assert_select 'a[href^="vidb-encoder://desktop?"]', count: 0
+    assert_select 'button[type="button"][data-encoder-launch-url-param^="vidb-encoder://desktop?"]', count: 0
     EncoderProjects::Settings.stub(:read, -> { raise ArgumentError, 'Passerelle non configurée' }) do
       get montage_path
     end
@@ -72,7 +74,7 @@ class MontagesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
     EncoderProjects::Settings.stub(:read, @configuration) do
       get montage_path
-      urls = css_select('div[aria-label="Commandes de montage"] a').map { |node| node['href'] }
+      urls = css_select('div[aria-label="Commandes de montage"] button').map { |node| node['data-encoder-launch-url-param'] }
       urls.each do |url|
         token = URI.decode_www_form(URI(url).query).to_h.fetch('ticket')
         assert_no_difference ['VideoAsset.count', 'ReconciliationCase.count'] do

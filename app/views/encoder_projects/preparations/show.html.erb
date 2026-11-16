@@ -1,7 +1,10 @@
 <h1 class="h4">Préparer un montage</h1>
 <p><%= @record.complete_title_with_parents %> · fiche <%= @record.id %></p>
 <p>Ouvre video_encoder sur ce poste, puis choisis la source. La fiche sera associée à la préparation du montage.</p>
-<%= link_to 'Ouvrir video_encoder', @launch_url, class: 'btn btn-primary', data: { turbo: false }, rel: 'noreferrer' %>
+<span data-controller="encoder-launch">
+  <%= button_tag 'Ouvrir video_encoder', type: 'button', class: 'btn btn-primary',
+                 data: { action: 'encoder-launch#open', encoder_launch_url_param: @launch_url } %>
+</span>
 <%= link_to 'Retour à la fiche', record_path(@record), class: 'btn btn-outline-secondary' %>
 <details class="mt-3">
   <summary>L’éditeur ne s’ouvre pas ?</summary>

@@ -2,11 +2,11 @@
 <% if @configuration_error %>
   <p class="alert alert-warning"><%= @configuration_error %></p>
 <% else %>
-  <div class="d-flex flex-wrap gap-2" aria-label="Commandes de montage">
-    <%= link_to 'Nouveau montage', @actions.fetch('new_montage'), class: 'btn btn-primary', data: { turbo: false }, rel: 'noreferrer' %>
-    <%= link_to 'Reprendre un projet', @actions.fetch('open_project'), class: 'btn btn-outline-primary', data: { turbo: false }, rel: 'noreferrer' %>
-    <%= link_to 'Encoder un DVD', @actions.fetch('encode_dvd'), class: 'btn btn-outline-primary', data: { turbo: false }, rel: 'noreferrer' %>
-    <%= link_to 'File d’encodage', @actions.fetch('show_queue'), class: 'btn btn-outline-secondary', data: { turbo: false }, rel: 'noreferrer' %>
+  <div class="d-flex flex-wrap gap-2" aria-label="Commandes de montage" data-controller="encoder-launch">
+    <%= button_tag 'Nouveau montage', type: 'button', class: 'btn btn-primary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('new_montage') } %>
+    <%= button_tag 'Reprendre un projet', type: 'button', class: 'btn btn-outline-primary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('open_project') } %>
+    <%= button_tag 'Encoder un DVD', type: 'button', class: 'btn btn-outline-primary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('encode_dvd') } %>
+    <%= button_tag 'File d’encodage', type: 'button', class: 'btn btn-outline-secondary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('show_queue') } %>
   </div>
   <p class="small text-muted mt-2">Ouvre video_encoder sur ce poste. Le lancement direct de l’application reste disponible.</p>
 <% end %>
