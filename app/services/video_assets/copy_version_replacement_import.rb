@@ -30,11 +30,8 @@ module VideoAssets
     def validate_archive!
       raise ArgumentError, 'Archive de remplacement invalide.' unless @change.is_a?(Hash) && valid_paths?
 
-      project = @change.fetch('archived_project_path')
-      manifest = read_manifest
-      old_project = @path.sub(/\.mkv\z/, '.json')
-      valid = manifest[old_project] == project && regular?(project) &&
-              Digest::SHA256.file(project).hexdigest == @change['source_project_sha256']
+      proof = CopyVersionReplacementProjectProof.new(@change, @path, @record.id)
+      valid = proof.valid?(read_manifest)
       raise ArgumentError, 'Ancien projet non récupérable ou différent du reçu.' unless valid
     end
 

@@ -111,4 +111,60 @@ class CopyVersionReplacementImportTest < ActiveSupport::TestCase
     assert_equal 'deleted', @source.reload.status
     assert_equal @target, @converted.reload.last_known_path
   end
+
+  def missing_project_with_receipt
+    change = @receipt['copy_version_replacement']
+    identity = change['source_identity']
+    modified = Time.at(Rational(identity['mtime_ns'], 1_000_000_000)).utc.iso8601(6)
+    previous_receipt = {
+      'format' => 'video_encoder.completed_export', 'version' => 1,
+      'project_path' => @target.sub(/\.mkv\z/, '.json'), 'output_path' => @target,
+      'project_sha256' => change['source_project_sha256'], 'byte_size' => identity['size'],
+      'modified_at' => modified, 'vidb' => { 'record_id' => @record.id }
+    }
+    suffix = '.video_encoder-export.json'
+    path = @archived + suffix
+    File.write(path, JSON.generate(previous_receipt))
+    File.unlink(@old_project)
+    change['source_project_missing_before_replacement'] = true
+    File.write(File.join(@archive, 'manifest.json'), JSON.generate(@target => @archived, @target + suffix => path))
+    path
+  end
+
+  test 'a missing original JSON is supported with its verified archived video and export receipt' do
+    path = missing_project_with_receipt
+    before = File.binread(@archived)
+    assert_no_difference 'VideoAsset.count' do
+      assert_equal 'relocated', import[:status]
+    end
+    assert_equal 'deleted', @source.reload.status
+    assert_equal @target, @converted.reload.last_known_path
+    assert_equal before, File.binread(@archived)
+    assert File.file?(path)
+    assert_not File.exist?(@old_project)
+  end
+
+  test 'a missing original JSON requires an archived receipt belonging to the same record' do
+    path = missing_project_with_receipt
+    original = JSON.parse(File.read(path))
+    [{ 'vidb' => { 'record_id' => @record.id + 1 } }, { 'project_sha256' => 'f' * 64 },
+     { 'byte_size' => 0 }, { 'modified_at' => '2000-01-01T00:00:00Z' }].each do |change|
+      File.write(path, JSON.generate(original.merge(change)))
+      assert_raises(ArgumentError) { import }
+      assert_equal @target, @source.reload.last_known_path
+      assert_equal @previous, @converted.reload.last_known_path
+    end
+  end
+
+  test 'a missing original JSON cannot be justified by a missing old receipt or missing video' do
+    path = missing_project_with_receipt
+    bytes = File.binread(path)
+    File.unlink(path)
+    assert_raises(ArgumentError) { import }
+    File.binwrite(path, bytes)
+    File.unlink(@archived)
+    @receipt['copy_version_replacement']['source_missing_before_replacement'] = true
+    assert_raises(ArgumentError) { import }
+    assert_equal @target, @source.reload.last_known_path
+  end
 end
