@@ -1,0 +1,8 @@
+<h1 class="h4">Changer de version</h1>
+<p><%= @record.complete_title_with_parents %></p>
+<p class="small">Choisis les pistes dans video_encoder. Le travail sera ajouté à la file et la copie actuelle conservée.</p>
+<div data-controller="encoder-launch" class="d-flex gap-2">
+  <%= button_tag 'Changer de version…', type: 'button', class: 'btn btn-primary',
+                 data: { action: 'encoder-launch#open', encoder_launch_url_param: @launch_url } %>
+  <%= link_to 'Retour à la fiche', record_path(@record), class: 'btn btn-outline-secondary' %>
+</div>

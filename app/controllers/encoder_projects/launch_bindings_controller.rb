@@ -9,7 +9,7 @@ module EncoderProjects
       return render json: desktop_action if params[:desktop_token]
 
       launch = LaunchTicket.read(params.require(:launch_token), user: @operator, url: @configuration.fetch('url'))
-      return render json: launch.slice('project_id', 'record_id', 'record_title') unless params[:project]
+      return render json: launch.slice('project_id', 'record_id', 'record_title', 'source_copy') unless params[:project]
 
       render json: bind_project(launch)
     rescue ArgumentError, KeyError, ActiveRecord::RecordNotFound, ActiveRecord::RecordInvalid => e
@@ -28,7 +28,16 @@ module EncoderProjects
     def bind_project(launch)
       data = params.require(:project).permit(:project_id, :project_path, :output_path,
                                              :language_hint, source_paths: []).to_h
+      validate_copy_source!(launch, data)
+      launch = launch.merge('project_id' => data['project_id']) if launch['source_copy']
       LaunchBinding.call(data: data, launch: launch, user: @operator, url: @configuration.fetch('url'))
+    end
+
+    def validate_copy_source!(launch, data)
+      return unless launch['source_copy']
+      return if data['source_paths'] == [launch.fetch('source_copy').fetch('path')]
+
+      raise ArgumentError, 'La copie source ne correspond plus à la demande vidb.'
     end
   end
 end

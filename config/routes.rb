@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "encoder_projects/copy_versions/:record_id/:id", to: "encoder_projects/copy_versions#show", as: :encoder_copy_version
   resource :montage, only: :show, controller: "montages"
   get "encoder_projects/preparations/:record_id", to: "encoder_projects/preparations#show", as: :encoder_project_preparation
   post "encoder_projects/launch_binding", to: "encoder_projects/launch_bindings#create"

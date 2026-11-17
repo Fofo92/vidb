@@ -5,7 +5,7 @@ require 'uri'
 module EncoderProjects
   class DesktopTicket
     PURPOSE = 'vidb-desktop-action'
-    ACTIONS = %w[new_montage open_project encode_dvd show_queue].freeze
+    ACTIONS = %w[new_montage open_project encode_dvd show_queue change_version].freeze
 
     def self.issue(action:, user:, url:)
       raise ArgumentError, 'Commande de montage inconnue' unless ACTIONS.include?(action)

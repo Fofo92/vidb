@@ -11,7 +11,7 @@ class MontagesControllerTest < ActionDispatch::IntegrationTest
     https!
   end
 
-  test 'montage requires login then offers the four actual desktop actions' do
+  test 'montage requires login then offers the five actual desktop actions' do
     get montage_path
     assert_redirected_to new_user_session_path
     sign_in @user
@@ -24,7 +24,7 @@ class MontagesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'h1', 'Montage'
     assert_select 'a[href^="vidb-encoder:"]', count: 0
     assert_select 'button[data-action="encoder-launch#open"][target]', count: 0
-    assert_select 'button[type="button"][data-encoder-launch-url-param^="vidb-encoder://desktop?"]', count: 4
+    assert_select 'button[type="button"][data-encoder-launch-url-param^="vidb-encoder://desktop?"]', count: 5
     assert_select 'div[aria-label="Commandes de montage"] button', text: 'Encoder un DVD'
     assert_select 'div[aria-label="Commandes de montage"] button', text: 'Reprendre un projet'
   end

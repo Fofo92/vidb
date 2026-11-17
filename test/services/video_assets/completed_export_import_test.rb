@@ -30,6 +30,43 @@ class CompletedExportImportTest < ActiveSupport::TestCase
     @export = { receipt: @receipt, details: @details, seconds: 2400, signature: [stat.size, stat.mtime, stat.ino] }
   end
 
+  test 'a confirmed burned-subtitle VOST creates a new copy and preserves the source and record states' do
+    vm = LanguageVersion.find_or_create_by!(short_name: 'VM') { |row| row.long_name = 'Multilingue' }
+    LanguageVersion.find_or_create_by!(short_name: 'VOST') { |row| row.long_name = 'Originale sous-titrée' }
+    @record.update!(language_version: vm, length_in_mn: 40)
+    source = VideoAsset.create!(record: @record, status: 'present', language_version: vm,
+                                last_known_path: "#{@path}.source.mkv",
+                                condition_details: { 'integrality' => 'incomplete', 'damage' => 'light',
+                                                     'note' => 'Début manquant' })
+    before = [source.attributes, @record.attributes]
+    @receipt['roles'] = ['original']
+    @receipt['version_change'] = { 'profile' => 'VOST', 'original_confirmed' => true,
+                                  'burned_french_confirmed' => true, 'source_path' => source.last_known_path }
+    @details['streams'].last['tags']['language'] = 'qaa'
+    assert_difference 'VideoAsset.count', 1 do
+      result = VideoAssets::CompletedExportImport.new(@observation, @export).call
+      assert_equal 'VOST', result[:language]
+    end
+    assert_equal before, [source.reload.attributes, @record.reload.attributes]
+    target = VideoAsset.find_by!(last_known_path: @path)
+    assert_equal 'VOST', target.language_version.short_name
+    assert_equal source.condition_details, target.condition_details
+    assert_equal 'already_imported', VideoAssets::CompletedExportImport.new(@observation, @export).call[:status]
+  end
+
+  test 'VOST is never inferred from the absence of subtitle streams and invalid declarations roll back' do
+    @receipt['roles'] = ['original']
+    @details['streams'].last['tags']['language'] = 'qaa'
+    assert_equal 'VO', VideoAssets::VersionChangeImport.language(@details, @receipt) ||
+                       VideoAssets::EncoderLanguageProposal.new(@details['streams'],
+                         { status: 'matched', original_role_complete: true }).call
+    @receipt['version_change'] = { 'profile' => 'VOST', 'original_confirmed' => true,
+                                  'burned_french_confirmed' => false }
+    assert_no_difference 'VideoAsset.count' do
+      assert_raises(ArgumentError) { VideoAssets::CompletedExportImport.new(@observation, @export).call }
+    end
+  end
+
   teardown do
     FileUtils.remove_entry(@directory)
   end

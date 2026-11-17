@@ -70,6 +70,10 @@
               </details>
             </td>
             <td class="text-end text-nowrap">
+              <% if asset.status_present? && asset.last_known_path.to_s.end_with?('.mkv') && EncoderProjects::LaunchTicket.supported?(record) %>
+                <%= link_to 'Changer de version…', encoder_copy_version_path(record, asset),
+                            class: 'btn btn-sm btn-outline-primary' %>
+              <% end %>
               <%= link_to 'Qualifier la copie', edit_record_copy_condition_path(record, asset),
                           class: 'btn btn-sm btn-outline-secondary' %>
               <% if asset.status_missing? && asset.technical_details['copy_removal_pending'].blank? %>

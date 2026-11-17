@@ -6,10 +6,12 @@ module EncoderProjects
   class LaunchTicket
     PURPOSE = 'vidb-desktop-montage'
 
-    def self.issue(record:, user:, url:)
+    def self.issue(record:, user:, url:, source_copy: nil)
       raise ArgumentError, 'Qualifie la fiche avant de préparer son montage.' unless supported?(record)
 
       data = { 'record_id' => record.id, 'user_id' => user.id, 'project_id' => SecureRandom.uuid, 'origin' => url }
+      data['source_copy_id'] = source_copy.id if source_copy
+      SourceCopyContext.call(data, record)
       ticket = Rails.application.message_verifier(PURPOSE).generate(data, purpose: PURPOSE)
       "vidb-encoder://prepare?#{URI.encode_www_form(ticket: ticket, origin: url)}"
     end
@@ -24,7 +26,7 @@ module EncoderProjects
       record = Record.find(data.fetch('record_id'))
       raise ArgumentError, 'La nature ou le placement de la fiche doit être corrigé.' unless supported?(record)
 
-      data.merge('record_title' => record.complete_title_with_parents)
+      data.merge('record_title' => record.complete_title_with_parents).merge(SourceCopyContext.call(data, record))
     end
 
     def self.supported?(record)

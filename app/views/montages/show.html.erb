@@ -7,6 +7,7 @@
     <%= button_tag 'Reprendre un projet', type: 'button', class: 'btn btn-outline-primary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('open_project') } %>
     <%= button_tag 'Encoder un DVD', type: 'button', class: 'btn btn-outline-primary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('encode_dvd') } %>
     <%= button_tag 'File d’encodage', type: 'button', class: 'btn btn-outline-secondary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('show_queue') } %>
+    <%= button_tag 'Changer de version…', type: 'button', class: 'btn btn-outline-primary', data: { action: 'encoder-launch#open', encoder_launch_url_param: @actions.fetch('change_version') } %>
   </div>
   <p class="small text-muted mt-2">Ouvre video_encoder sur ce poste. Le lancement direct de l’application reste disponible.</p>
 <% end %>

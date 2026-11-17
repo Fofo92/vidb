@@ -91,10 +91,13 @@ module VideoAssets
                          observed_at: Time.current, medium: Medium.find_by!(short_name: 'HD'),
                          language_version: version && LanguageVersion.find_by!(short_name: version),
                          container: details.dig('format', 'format_name'), technical_details: details,
-                         **ExportCondition.call(receipt))
+                         **ExportCondition.call(receipt).merge(VersionChangeImport.condition(record, receipt)))
     end
 
     def language(details, receipt)
+      version = VersionChangeImport.language(details, receipt)
+      return version if version
+
       roles = receipt.fetch('roles')
       evidence = { status: 'matched', original_role_complete: roles.include?('original'),
                    french_role_complete: roles.include?('french') }
