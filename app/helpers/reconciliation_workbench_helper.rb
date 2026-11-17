@@ -1,4 +1,14 @@
 module ReconciliationWorkbenchHelper
+  def workbench_encoder_record(id)
+    @workbench_encoder_records ||= Record.where(id: @cases.map { |item| item.payload['record_id'] })
+                                         .index_by(&:id)
+    @workbench_encoder_records[id.to_i]
+  end
+
+  def workbench_encoder_reason(payload)
+    payload['reason'].to_s.delete_suffix(' Nature ou placement à consolider avant association.')
+  end
+
   def workbench_decision_label(value)
     { 'approved' => 'Règle validée', 'deferred' => 'À préciser', 'rejected' => 'Écartée' }.fetch(value, 'À examiner')
   end

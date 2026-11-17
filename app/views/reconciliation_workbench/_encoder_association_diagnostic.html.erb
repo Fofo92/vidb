@@ -1,0 +1,17 @@
+<% record = workbench_encoder_record(payload['record_id']) %>
+<% issue = EncoderProjects::AssociationDiagnostic.call(record) %>
+<div class="small mt-1" data-encoder-association-diagnostic>
+  <% if issue %>
+    <p class="mb-1"><strong>Association bloquée :</strong> <%= issue.message %></p>
+    <% if issue.record %>
+      <%= link_to "Fiche n° #{issue.record.id} : #{issue.record.complete_title}", record_path(issue.record) %>
+      <% if issue.action == :edit %>
+        · <%= link_to 'Corriger la nature', edit_record_path(issue.record) %>
+      <% elsif issue.action == :placement %>
+        · <%= link_to 'Corriger le placement', edit_record_hierarchy_placement_path(issue.record) %>
+      <% end %>
+    <% end %>
+  <% elsif payload['reason'].to_s.include?('Nature ou placement à consolider avant association.') %>
+    <p class="mb-0">Structure désormais compatible. Actualise les propositions avant de confirmer l’association.</p>
+  <% end %>
+</div>

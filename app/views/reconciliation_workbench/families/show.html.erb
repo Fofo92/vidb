@@ -117,7 +117,12 @@
           <p class="text-break"><%= payload['path'] %></p>
           <p class="small text-muted">Le fichier sera rattaché à cette fiche, sans déplacement ni changement de nom.</p>
         <% end %>
-        <% if payload['reason'] %><p><%= payload['reason'] %></p><% end %>
+        <% if @rule.key == ReconciliationWorkbench::Rules::ENCODER_PROJECT.key %>
+          <p><%= workbench_encoder_reason(payload) %></p>
+          <%= render 'reconciliation_workbench/encoder_association_diagnostic', payload: payload %>
+        <% elsif payload['reason'] %>
+          <p><%= payload['reason'] %></p>
+        <% end %>
         <% Array(payload['sources']).each do |url| %>
           <p class="small mb-1 text-break"><%= link_to url, url, target: '_blank', rel: 'noopener noreferrer' %></p>
         <% end %>
