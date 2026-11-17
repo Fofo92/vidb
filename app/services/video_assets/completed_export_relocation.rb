@@ -61,6 +61,8 @@ module VideoAssets
 
     def stable_receipt(receipt)
       stable = receipt.except(*PATH_FIELDS).deep_dup
+      stable.delete('copy_version_replacement')
+      stable['version_change'].delete('source_path') if stable['version_change'].is_a?(Hash)
       stable.dig('probe', 'format')&.delete('filename')
       stable
     end

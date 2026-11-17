@@ -15,7 +15,7 @@ module VideoAssets
         record.lock!
         validate_record!(record)
         validate_file!
-        existing = VideoAsset.find_by(last_known_path: @observation.fetch(:path))
+        existing = existing_asset(record)
         return existing_result(existing, record) if existing
 
         CompletedExportRelocation.new(record, @observation, @export).call || attach!(record)
@@ -23,6 +23,11 @@ module VideoAssets
     end
 
     private
+
+    def existing_asset(record)
+      CopyVersionReplacementImport.new(record, @observation, @export).call
+      VideoAsset.find_by(last_known_path: @observation.fetch(:path))
+    end
 
     def attach!(record)
       asset = create_asset(record)
