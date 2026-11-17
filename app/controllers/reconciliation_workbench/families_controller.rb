@@ -67,7 +67,12 @@ module ReconciliationWorkbench
     end
 
     def scope(rule)
-      ReconciliationCase.current.where(rule_key: rule.key, rule_version: rule.version, status: %w[pending blocked])
+      items = ReconciliationCase.current.where(rule_key: rule.key, rule_version: rule.version,
+                                               status: %w[pending blocked])
+      return items unless rule.key == Rules::ENCODER_PROJECT.key
+
+      rejected = ReconciliationCaseReview.where(decision: 'rejected').select(:reconciliation_case_id)
+      items.where.not(id: rejected)
     end
   end
 end
