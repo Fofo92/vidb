@@ -3,9 +3,10 @@ module Tv
   class GuideSelectionAlerts
     Result = Data.define(:by_programme, :unplaced, :rename_by_programme, :linked_intents_by_programme)
 
-    def initialize(guide_source:, date:, programmes:)
+    def initialize(guide_source:, date:, programmes:, client: KaffeineDbus.new)
       @guide_source = guide_source
       @date = date
+      @client = client
       @programmes = programmes
       @by_slot = programmes.group_by do |programme|
         [programme.guide_channel_id, programme.starts_at, programme.ends_at]
@@ -43,8 +44,27 @@ module Tv
       if slot.one? && intents.one? && !slot.first.recording_intent&.status_selected?
         place_intent(intents.first, slot.first, alerts, rename_candidates, linked_intents)
       elsif slot.empty?
-        intents.each { |intent| unplaced << missing_warning(intent) }
+        unplaced.concat(missing_warnings(intents))
       end
+    end
+
+    def missing_warnings(intents)
+      intents.reject { |intent| concordant?(intent) }.map { |intent| missing_warning(intent) }
+    end
+
+    def concordant?(intent)
+      link = intent.kaffeine_schedule_link
+      return false if link.retired?
+
+      @live_schedules ||= live_schedules
+      RecordingScheduleAgreement.call(intent, link, @live_schedules[link.kaffeine_key])
+    end
+
+    def live_schedules
+      @client.schedules.index_by(&:key)
+    rescue KaffeineCommandRunner::CommandError, KaffeineScheduleParser::InvalidResponse, SystemCallError => e
+      Rails.logger.warn("Kaffeine schedule listing failed: #{e.class}: #{e.message}")
+      {}
     end
 
     def place_intent(intent, programme, alerts, rename_candidates, linked_intents)

@@ -59,17 +59,8 @@ module Tv
       return Row.new(intent, nil, 'offline', missing) if unavailable
 
       schedule = schedules.delete(link.kaffeine_key)
-      state = agrees?(intent, link, schedule) ? 'linked' : 'review'
+      state = RecordingScheduleAgreement.call(intent, link, schedule) ? 'linked' : 'review'
       Row.new(intent, schedule, state, missing)
-    end
-
-    def agrees?(intent, link, schedule)
-      return false unless schedule && link.matches?(schedule)
-
-      expected = RecordingIntentScheduleAttributes.new(recording_intent: intent).call
-      expected.all? { |field, value| schedule.public_send(field) == value }
-    rescue RecordingIntentScheduleAttributes::Unavailable
-      false
     end
 
     def visible?(row)
