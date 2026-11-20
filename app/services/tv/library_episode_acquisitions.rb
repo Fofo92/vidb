@@ -10,6 +10,10 @@ module Tv
     end
 
     EVIDENCE = {
+      'replace_copy' => ['À reprogrammer — copie à remplacer',
+                         'Les copies connues sont incomplètes ou sévèrement dégradées.'],
+      'copy_review' => ['Qualité de la copie à vérifier',
+                        'La couverture disponible dépend d’une copie légèrement dégradée.'],
       'available' => ['Déjà encodé avec video_encoder',
                       'Une copie complète disponible possède un projet video_encoder associé.'],
       'reencode' => ['Réencodage souhaité — ancienne copie',
@@ -53,11 +57,26 @@ module Tv
     end
 
     def acquisition_kind(record, assets)
-      return available_kind(record, assets) if complete?(assets, record)
+      kind = copy_condition_kind(record, assets)
+      return kind if kind
       return 'history' if VideoAssets::PartCoverage.recorded?(assets, expected_parts: record.broadcast_part_count)
       return 'recorded' if assets.empty? && record.is_recorded == true
 
       nil
+    end
+
+    def copy_condition_kind(record, assets)
+      usable = assets.reject { |asset| defective?(asset) }
+      preferred = usable.reject { |asset| asset.effective_condition['damage'] == 'light' }
+      return available_kind(record, preferred) if complete?(preferred, record)
+      return 'copy_review' if complete?(usable, record)
+
+      'replace_copy' if usable.size < assets.size
+    end
+
+    def defective?(asset)
+      condition = asset.effective_condition
+      condition['integrality'] == 'incomplete' || condition['damage'] == 'severe'
     end
   end
 end

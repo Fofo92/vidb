@@ -21,6 +21,12 @@ module Tv
     end
 
     def source_with_copy(source, copy)
+      if %w[replace_copy copy_review].include?(copy.kind)
+        return EpisodeAcquisition.new(kind: copy.kind, label: copy.label,
+                                      description: "#{copy.description} #{source.description}",
+                                      record_id: copy.record_id, paths: source.paths)
+      end
+
       EpisodeAcquisition.new(kind: source.kind, label: source.label,
                              description: "#{source.description} #{copy.label} : #{copy.description}",
                              record_id: copy.record_id, paths: source.paths)

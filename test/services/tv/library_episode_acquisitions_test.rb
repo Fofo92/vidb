@@ -1,7 +1,11 @@
 require 'test_helper'
 
 class Tv::LibraryEpisodeAcquisitionsTest < ActiveSupport::TestCase
-  Asset = Struct.new(:status, :broadcast_part_number) do
+  Asset = Struct.new(:status, :broadcast_part_number, :condition) do
+    def effective_condition
+      condition || {}
+    end
+
     def status_present?
       status == 'present'
     end
@@ -21,6 +25,26 @@ class Tv::LibraryEpisodeAcquisitionsTest < ActiveSupport::TestCase
     result = evidence([Asset.new('present', nil)])
     assert_equal 'available', result.kind
     assert_equal 42, result.record_id
+  end
+
+  test 'an incomplete or severely damaged copy alone calls for replacement' do
+    [{ 'integrality' => 'incomplete' }, { 'damage' => 'severe' }].each do |condition|
+      bad = Asset.new('present', nil, condition)
+      good = Asset.new('present', nil, { 'integrality' => 'complete', 'damage' => 'none' })
+      assert_equal 'replace_copy', evidence([bad], recorded: true).kind
+      assert_equal 'available', evidence([bad, good], recorded: true).kind
+    end
+  end
+
+  test 'a damaged second part cannot complete an otherwise healthy multipart copy' do
+    first = Asset.new('present', 1)
+    second = Asset.new('present', 2, { 'damage' => 'severe' })
+    assert_equal 'replace_copy', evidence([first, second], parts: 2).kind
+  end
+
+  test 'slight damage calls for review when no healthy coverage is available' do
+    asset = Asset.new('present', nil, { 'damage' => 'light' })
+    assert_equal 'copy_review', evidence([asset]).kind
   end
 
   test 'missing and deleted copies remain historical acquisitions rather than available copies' do

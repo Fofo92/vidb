@@ -8,7 +8,7 @@ module TvGuideAcquisitionsHelper
   def tv_guide_acquisition_tone(acquired:, previous:)
     return previous ? 'review' : nil unless acquired
     return 'unnecessary' if %w[available capture quarantine].include?(acquired.kind)
-    return 'recommended' if acquired.kind == 'reencode'
+    return 'recommended' if %w[reencode replace_copy].include?(acquired.kind)
 
     'review'
   end
