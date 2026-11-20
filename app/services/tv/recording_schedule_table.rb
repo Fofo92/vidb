@@ -56,10 +56,10 @@ module Tv
       return Row.new(intent, nil, 'history', false) if link.retired?
 
       missing = @guide_gaps.include?(intent.id)
-      return Row.new(intent, nil, missing ? 'review' : 'offline', missing) if unavailable
+      return Row.new(intent, nil, 'offline', missing) if unavailable
 
       schedule = schedules.delete(link.kaffeine_key)
-      state = !missing && agrees?(intent, link, schedule) ? 'linked' : 'review'
+      state = agrees?(intent, link, schedule) ? 'linked' : 'review'
       Row.new(intent, schedule, state, missing)
     end
 

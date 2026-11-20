@@ -1,3 +1,4 @@
+<% weekdays = %w[dim lun mar mer jeu ven sam] %>
 <h1>Enregistrements programmés</h1>
 <p><%= link_to "Voir toutes les programmations Kaffeine", tv_kaffeine_schedules_path %></p>
 
@@ -43,10 +44,12 @@
       </thead>
       <tbody>
         <% @rows.each do |row| %>
+          <% date = row.starts_at.in_time_zone("Europe/Paris").to_date %>
+          <% short_date = "#{weekdays.fetch(date.wday)} #{date.strftime('%d/%m/%Y')}" %>
           <% if (recording_intent = row.intent) %>
-            <tr data-recording-intent="<%= recording_intent.id %>">
+            <tr class="<%= 'table-warning' if %w[review vidb_only].include?(row.state) %>" data-recording-intent="<%= recording_intent.id %>">
             <td class="text-nowrap" data-recording-date>
-              <%= recording_intent_date_heading(row.starts_at.in_time_zone("Europe/Paris").to_date) %>
+              <%= short_date %>
             </td>
             <td data-recording-channel>
               <%= recording_intent_channel_name(recording_intent) %>
@@ -94,16 +97,19 @@
                 <% end %>
               </div>
             </td>
-            <td class="text-nowrap">
+            <td>
               <div data-kaffeine-schedule>
                 <small><%= Tv::RecordingScheduleTable::STATES.fetch(row.state) %></small>
+                <% if row.state == 'review' %>
+                  <div><%= row.schedule ? 'Écart avec Kaffeine ou avec la liaison enregistrée' : 'Programmation introuvable dans Kaffeine' %></div>
+                <% end %>
                 <% if row.guide_missing %>
-                  <div>Créneau absent du dernier guide importé</div>
+                  <small class="d-block text-body-secondary">Créneau absent du dernier guide importé</small>
                 <% end %>
                 <% if row.schedule && row.schedule.repeat.zero? &&
                       row.schedule.starts_at > Time.current + Tv::KaffeineScheduleManager::REPLACEMENT_GUARD_SECONDS %>
-                  <%= link_to 'Corriger…', edit_tv_recording_intent_correction_path(recording_intent),
-                              class: 'btn btn-sm btn-outline-primary' %>
+                  <%= link_to(row.state == 'linked' ? 'Modifier…' : 'Corriger…', edit_tv_recording_intent_correction_path(recording_intent),
+                              class: 'btn btn-sm btn-outline-primary') %>
                 <% end %>
                 <% if (link = recording_intent.kaffeine_schedule_link) %>
                   <% if link.retired? %>
@@ -112,7 +118,7 @@
                     </span>
                   <% else %>
                     <span>Liaison n° <%= link.kaffeine_key %></span>
-                    <% if row.schedule %>
+                    <% if row.schedule && row.state != 'linked' %>
                       <div><%= row.schedule.name %></div>
                       <small><%= row.schedule.channel %> · <%= recording_intent_time(row.schedule.starts_at) %> –
                         <%= recording_intent_time(row.schedule.starts_at + row.schedule.duration_seconds) %></small>
@@ -156,7 +162,7 @@
           <% else %>
             <% schedule = row.schedule %>
             <tr data-kaffeine-only="<%= schedule.key %>">
-              <td class="text-nowrap"><%= recording_intent_date_heading(row.starts_at.in_time_zone("Europe/Paris").to_date) %></td>
+              <td class="text-nowrap"><%= short_date %></td>
               <td><%= schedule.channel %></td>
               <td><%= schedule.name %></td>
               <td colspan="2">Kaffeine seule</td>

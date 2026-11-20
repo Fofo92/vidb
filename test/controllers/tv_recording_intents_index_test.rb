@@ -152,8 +152,8 @@ class TvRecordingIntentsIndexTest <
     get tv_recording_intents_url, params: { history: "1" }
 
     assert_response :success
-    assert_recording_day("27 septembre 2026", first_intent)
-    assert_recording_day("28 septembre 2026", second_intent)
+    assert_recording_day("dim 27/09/2026", first_intent)
+    assert_recording_day("lun 28/09/2026", second_intent)
   end
 
   test "presents a compact recording table" do

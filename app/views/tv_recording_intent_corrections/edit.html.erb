@@ -1,6 +1,8 @@
-<h1>Corriger la programmation</h1>
-<p><%= link_to 'Retour aux enregistrements programmés', tv_recording_intents_path %></p>
 <% live = @current.fetch(:live) %>
+<% link_current = @current.fetch(:link).matches?(live) %>
+<% concordant = Tv::RecordingScheduleCorrectionAttributes.attributes(live) == @current[:vidb] %>
+<h1><%= concordant && link_current ? 'Modifier la programmation' : 'Corriger la programmation' %></h1>
+<p><%= link_to 'Retour aux enregistrements programmés', tv_recording_intents_path %></p>
 <% zone = Time.find_zone!('Europe/Paris') %>
 <% kaffeine = { name: live.name, channel: live.channel, starts_at: live.starts_at,
                 duration_seconds: live.duration_seconds } %>
@@ -23,14 +25,24 @@
                 params: { confirmation: @confirmation }, class: 'btn btn-primary' %>
   <%= link_to 'Revenir à la comparaison', edit_tv_recording_intent_correction_path(@intent) %>
 <% else %>
-  <div class="d-flex gap-2 mb-3">
-    <% if @current[:vidb] %>
-      <%= button_to 'Appliquer vidb à Kaffeine', tv_recording_intent_correction_path(@intent),
-                    params: { mode: 'vidb' }, class: 'btn btn-outline-primary' %>
+  <% if concordant %>
+    <% if link_current %>
+      <p class="text-success">Programmations concordantes. Aucune correction nécessaire.</p>
+    <% else %>
+      <p>Les captures concordent. La liaison enregistrée dans vidb doit être actualisée.</p>
+      <%= button_to 'Actualiser la liaison', tv_recording_intent_correction_path(@intent),
+                    params: { mode: 'vidb' }, class: 'btn btn-outline-primary mb-3' %>
     <% end %>
-    <%= button_to 'Reprendre Kaffeine dans vidb', tv_recording_intent_correction_path(@intent),
-                  params: { mode: 'kaffeine' }, class: 'btn btn-outline-primary' %>
-  </div>
+  <% else %>
+    <div class="d-flex gap-2 mb-3">
+      <% if @current[:vidb] %>
+        <%= button_to 'Appliquer vidb à Kaffeine', tv_recording_intent_correction_path(@intent),
+                      params: { mode: 'vidb' }, class: 'btn btn-outline-primary' %>
+      <% end %>
+      <%= button_to 'Reprendre Kaffeine dans vidb', tv_recording_intent_correction_path(@intent),
+                    params: { mode: 'kaffeine' }, class: 'btn btn-outline-primary' %>
+    </div>
+  <% end %>
   <h2>Modifier manuellement</h2>
   <%= form_with url: tv_recording_intent_correction_path(@intent), class: 'd-flex flex-wrap gap-2 align-items-end' do %>
     <%= hidden_field_tag :mode, 'manual' %>
