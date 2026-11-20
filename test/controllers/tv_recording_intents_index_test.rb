@@ -18,7 +18,7 @@ class TvRecordingIntentsIndexTest <
     )
   end
 
-  test "lists only selected intents in chronological order" do
+  test "lists only selected intents in reverse chronological order" do
     later_intent = create_intent(
       hour: 21,
       fingerprint: "b" * 64
@@ -33,11 +33,11 @@ class TvRecordingIntentsIndexTest <
     )
     cancelled_intent.update!(status: "cancelled")
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_response :success
     assert_equal(
-      [earlier_intent.id.to_s, later_intent.id.to_s],
+      [later_intent.id.to_s, earlier_intent.id.to_s],
       rendered_intent_ids
     )
     assert_select(
@@ -52,7 +52,7 @@ class TvRecordingIntentsIndexTest <
       fingerprint: "d" * 64
     )
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_response :success
     assert_recording_details(intent)
@@ -65,7 +65,7 @@ class TvRecordingIntentsIndexTest <
       episode_numbers: [{ "system" => "xmltv_ns", "value" => "2.7." }]
     )
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
                   text: "Programme de 18 h - S03 E08"
@@ -82,7 +82,7 @@ class TvRecordingIntentsIndexTest <
     Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
 
     travel_to paris.local(2026, 9, 28, 12) do
-      get tv_recording_intents_url
+      get tv_recording_intents_url, params: { history: "1" }
       assert_select "form[action='#{tv_recording_intent_recording_confirmation_path(intent)}'] button",
                     text: "J’ai vérifié le fichier"
 
@@ -112,7 +112,7 @@ class TvRecordingIntentsIndexTest <
       subtitles: [{ "value" => "Le départ", "language" => "fr" }]
     )
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
                   text: "Programme de 18 h - S03 E08 - Le départ"
@@ -137,7 +137,7 @@ class TvRecordingIntentsIndexTest <
     assert_select recording_intent_selector(intent), count: 0
   end
 
-  test "groups selections by Paris calendar day" do
+  test "displays each selection’s Paris calendar day" do
     first_intent = create_intent(
       day: 27,
       hour: 23,
@@ -149,25 +149,25 @@ class TvRecordingIntentsIndexTest <
       fingerprint: "0" * 64
     )
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_response :success
-    assert_recording_day("2026-09-27", "27 septembre 2026", first_intent)
-    assert_recording_day("2026-09-28", "28 septembre 2026", second_intent)
+    assert_recording_day("27 septembre 2026", first_intent)
+    assert_recording_day("28 septembre 2026", second_intent)
   end
 
-  test "presents each day as a compact recording table" do
+  test "presents a compact recording table" do
     intent = create_intent(
       hour: 18,
       fingerprint: "1" * 64
     )
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_response :success
     assert_select "[data-recording-intents-table]" do
       assert_equal(
-        ["Chaîne", "Nom", "Programme", "Capture"],
+        ["Date", "Chaîne", "Nom", "Programme", "Vidb · capture", "Kaffeine"],
         recording_table_headers
       )
       assert_select recording_intent_selector(intent), count: 1
@@ -179,7 +179,7 @@ class TvRecordingIntentsIndexTest <
     @guide_channel.update!(channel:)
     intent = create_intent(hour: 18, fingerprint: "2" * 64)
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}'] button",
                   text: "Programmer dans Kaffeine"
@@ -188,9 +188,9 @@ class TvRecordingIntentsIndexTest <
     schedule = Tv::KaffeineSchedule.new(key: 982, **attributes, non_inactive: false)
     Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :created_by_vidb)
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
-    assert_select "[data-kaffeine-schedule]", text: /Programmée \(n° 982\)/
+    assert_select "[data-kaffeine-schedule]", text: /Liaison n° 982/
     assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']", count: 0
   end
 
@@ -207,12 +207,12 @@ class TvRecordingIntentsIndexTest <
     )
     Tv::KaffeineScheduleLink.attach!(recording_intent: intent, schedule:, origin: :preexisting)
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_select "#{recording_intent_selector(intent)} [data-recording-title]",
                   text: "Programme de 18 h - S11 E05"
     assert_select "#{recording_intent_selector(intent)} [data-kaffeine-schedule]",
-                  text: /Programmée \(n° 982\)/
+                  text: /Liaison n° 982/
     assert_select "#{recording_intent_selector(intent)} [data-kaffeine-name]",
                   text: /Nom Kaffeine à la liaison : Programme de 18 h/
   end
@@ -220,11 +220,24 @@ class TvRecordingIntentsIndexTest <
   test "explains when a channel has no Kaffeine mapping" do
     intent = create_intent(hour: 18, fingerprint: "3" * 64)
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_select "#{recording_intent_selector(intent)} [data-kaffeine-schedule]",
-                  text: "Chaîne non reliée"
+                  text: /Chaîne non reliée/
     assert_select "form[action='#{tv_recording_intent_schedule_path(intent)}']", count: 0
+  end
+
+  test "hides past captures by default and can filter by title and date" do
+    past = create_intent(hour: 18, fingerprint: "a" * 64)
+    later = create_intent(day: 28, hour: 21, fingerprint: "b" * 64)
+
+    travel_to paris.local(2026, 9, 28, 12) do
+      get tv_recording_intents_url, params: { date: "2026-09-28", q: "21 h" }
+      assert_select recording_intent_selector(later), count: 1
+      assert_select recording_intent_selector(past), count: 0
+      get tv_recording_intents_url
+      assert_select recording_intent_selector(past), count: 0
+    end
   end
 
   private
@@ -293,12 +306,7 @@ class TvRecordingIntentsIndexTest <
       "[method='post']"
   end
 
-  def assert_recording_day(date, heading, intent)
-    assert_select(
-      "[data-recording-day='#{date}']"
-    ) do
-      assert_select "h2", text: heading
-      assert_select recording_intent_selector(intent), count: 1
-    end
+  def assert_recording_day(heading, intent)
+    assert_select "#{recording_intent_selector(intent)} [data-recording-date]", text: heading
   end
 end

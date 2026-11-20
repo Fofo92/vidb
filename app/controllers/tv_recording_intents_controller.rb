@@ -2,8 +2,11 @@ class TvRecordingIntentsController < ApplicationController
   SCHEDULING_ERRORS = Tv::RecordingIntentScheduler::ERRORS
 
   def index
-    @recording_intents = selected_recording_intents
-    @recording_intents_by_date = recording_intents_by_date
+    @filters = params.permit(:q, :date, :channel, :state, :history)
+    table = Tv::RecordingScheduleTable.new(intents: selected_recording_intents, filters: @filters,
+                                           title: helpers.method(:recording_intent_title))
+    @rows = table.call
+    @kaffeine_unavailable = table.unavailable
   end
 
   def create
@@ -107,32 +110,6 @@ class TvRecordingIntentsController < ApplicationController
                          broadcast_observation: { guide_channel: :channel }
                        )
                        .order(:programme_starts_at, :id)
-  end
-
-  def recording_intents_by_date
-    @recording_intents
-      .group_by { |intent| recording_date(intent) }
-      .transform_values { |intents| sort_recording_intents(intents) }
-  end
-
-  def recording_date(intent)
-    intent.programme_starts_at
-          .in_time_zone("Europe/Paris")
-          .to_date
-  end
-
-  def sort_recording_intents(intents)
-    intents.sort_by { |intent| recording_intent_sort_key(intent) }
-  end
-
-  def recording_intent_sort_key(intent)
-    channel = intent.broadcast_observation.guide_channel.channel
-
-    [
-      channel&.logical_number || Float::INFINITY,
-      intent.programme_starts_at,
-      intent.id
-    ]
   end
 
   def guide_params

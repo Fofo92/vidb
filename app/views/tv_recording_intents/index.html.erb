@@ -1,137 +1,163 @@
 <h1>Enregistrements programmés</h1>
-<p class="text-body-secondary">Une sélection doit être programmée dans Kaffeine pour être enregistrée.</p>
 <p><%= link_to "Voir toutes les programmations Kaffeine", tv_kaffeine_schedules_path %></p>
 
-<div data-controller="recording-intents-scroll" data-action="submit->recording-intents-scroll#remember">
-<% if @recording_intents.empty? %>
-  <p
-    class="alert alert-info"
-    data-recording-intents-empty>
-    Aucun enregistrement n’est programmé.
+<%= form_with url: tv_recording_intents_path, method: :get, class: "d-flex flex-wrap gap-2 align-items-end mb-3" do %>
+  <div><%= label_tag :q, "Titre" %><%= search_field_tag :q, @filters[:q], class: "form-control" %></div>
+  <div><%= label_tag :date, "Date" %><%= date_field_tag :date, @filters[:date], class: "form-control" %></div>
+  <div><%= label_tag :channel, "Chaîne" %><%= search_field_tag :channel, @filters[:channel], class: "form-control" %></div>
+  <div>
+    <%= label_tag :state, "État" %>
+    <%= select_tag :state, options_for_select(Tv::RecordingScheduleTable::STATES.invert, @filters[:state]),
+                   include_blank: "Tous", class: "form-select" %>
+  </div>
+  <div class="form-check mb-2">
+    <%= check_box_tag :history, "1", @filters[:history] == "1", class: "form-check-input" %>
+    <%= label_tag :history, "Inclure les captures échues", class: "form-check-label" %>
+  </div>
+  <%= submit_tag "Filtrer", class: "btn btn-primary" %>
+  <%= link_to "Réinitialiser", tv_recording_intents_path, class: "btn btn-outline-secondary" %>
+<% end %>
+
+<% if @kaffeine_unavailable %>
+  <p class="alert alert-warning">Kaffeine est indisponible. Les liaisons vidb n’ont pas pu être vérifiées.</p>
+<% end %>
+
+<% if @rows.empty? %>
+  <p class="alert alert-info" data-recording-intents-empty>
+    <%= @filters.values.any?(&:present?) ? "Aucun enregistrement ne correspond aux filtres." :
+      "Aucun enregistrement n’est programmé." %>
   </p>
 <% else %>
-  <% @recording_intents_by_date.each do |date, recording_intents| %>
-    <section
-      class="mb-4"
-      data-recording-day="<%= date.iso8601 %>">
-      <h2 class="h4">
-        <%= recording_intent_date_heading(date) %>
-      </h2>
+  <div class="table-responsive" data-controller="recording-intents-scroll"
+       data-action="submit->recording-intents-scroll#remember">
+    <table class="table table-sm align-middle" data-recording-intents-table>
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Chaîne</th>
+          <th scope="col">Nom</th>
+          <th scope="col">Programme</th>
+          <th scope="col">Vidb · capture</th>
+          <th scope="col">Kaffeine</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @rows.each do |row| %>
+          <% if (recording_intent = row.intent) %>
+            <tr data-recording-intent="<%= recording_intent.id %>">
+            <td class="text-nowrap" data-recording-date>
+              <%= recording_intent_date_heading(row.starts_at.in_time_zone("Europe/Paris").to_date) %>
+            </td>
+            <td data-recording-channel>
+              <%= recording_intent_channel_name(recording_intent) %>
+            </td>
 
-      <div class="table-responsive">
-        <table class="table table-sm align-middle tv-recording-intents-table" data-recording-intents-table>
-          <colgroup>
-            <col class="tv-recording-intents-channel">
-            <col class="tv-recording-intents-name">
-            <col class="tv-recording-intents-programme">
-            <col class="tv-recording-intents-capture">
-          </colgroup>
+            <td>
+              <strong data-recording-title>
+                <%= recording_intent_title(recording_intent) %>
+              </strong>
+            </td>
 
-          <thead>
-            <tr>
-              <th scope="col">Chaîne</th>
-              <th scope="col">Nom</th>
-              <th scope="col">Programme</th>
-              <th scope="col">Capture</th>
-            </tr>
-          </thead>
+            <td
+              class="text-nowrap"
+              data-programme-window>
+              <%= recording_intent_time(
+                recording_intent.programme_starts_at
+              ) %>
+              –
+              <%= recording_intent_time(
+                recording_intent.programme_ends_at
+              ) %>
+            </td>
 
-          <tbody>
-            <% recording_intents.each do |recording_intent| %>
-              <tr data-recording-intent="<%= recording_intent.id %>">
-                <td data-recording-channel>
-                  <%= recording_intent_channel_name(recording_intent) %>
-                </td>
-
-                <td>
-                  <strong data-recording-title>
-                    <%= recording_intent_title(recording_intent) %>
-                  </strong>
-                </td>
-
-                <td
-                  class="text-nowrap"
-                  data-programme-window>
-                  <%= recording_intent_time(
-                    recording_intent.programme_starts_at
-                  ) %>
+            <td>
+              <div
+                class="d-flex align-items-center justify-content-between gap-3">
+                <span class="text-body-secondary text-nowrap" data-capture-window>
+                  <%= recording_intent_time(recording_intent.capture_starts_at) %>
                   –
-                  <%= recording_intent_time(
-                    recording_intent.programme_ends_at
+                  <%= recording_intent_time(recording_intent.capture_ends_at) %>
+                </span>
+
+                <%= form_with(
+                  url: tv_recording_intent_path(recording_intent),
+                  method: :delete
+                ) do %>
+                  <%= hidden_field_tag :return_to, "index" %>
+                  <%= button_tag(
+                    "Annuler",
+                    type: "submit",
+                    class: "btn btn-sm btn-outline-danger",
+                    disabled: recording_intent.kaffeine_schedule_link&.retired? ||
+                      %w[review offline].include?(row.state)
                   ) %>
-                </td>
-
-                <td>
-                  <div
-                    class="d-flex align-items-center justify-content-between gap-3">
-                    <span class="text-body-secondary text-nowrap" data-capture-window>
-                      <%= recording_intent_time(recording_intent.capture_starts_at) %>
-                      –
-                      <%= recording_intent_time(recording_intent.capture_ends_at) %>
+                <% end %>
+              </div>
+            </td>
+            <td class="text-nowrap">
+              <div data-kaffeine-schedule>
+                <small><%= Tv::RecordingScheduleTable::STATES.fetch(row.state) %></small>
+                <% if (link = recording_intent.kaffeine_schedule_link) %>
+                  <% if link.retired? %>
+                    <span class="text-body-secondary" data-kaffeine-historical>
+                      Programmation passée (ancien n° <%= link.kaffeine_key %>)
                     </span>
-
-                    <%= form_with(
-                      url: tv_recording_intent_path(recording_intent),
-                      method: :delete
-                    ) do %>
-                      <%= hidden_field_tag :return_to, "index" %>
-                      <%= button_tag(
-                        "Annuler",
-                        type: "submit",
-                        class: "btn btn-sm btn-outline-danger",
-                        disabled: recording_intent.kaffeine_schedule_link&.retired?
-                      ) %>
+                  <% else %>
+                    <span>Liaison n° <%= link.kaffeine_key %></span>
+                    <% if row.schedule %>
+                      <div><%= row.schedule.name %></div>
+                      <small><%= row.schedule.channel %> · <%= recording_intent_time(row.schedule.starts_at) %> –
+                        <%= recording_intent_time(row.schedule.starts_at + row.schedule.duration_seconds) %></small>
                     <% end %>
-                  </div>
-                  <div class="mt-2" data-kaffeine-schedule>
-                    <% if (link = recording_intent.kaffeine_schedule_link) %>
-                      <% if link.retired? %>
-                        <span class="text-body-secondary" data-kaffeine-historical>
-                          Programmation passée (ancien n° <%= link.kaffeine_key %>)
-                        </span>
-                      <% else %>
-                        <span class="text-success">Programmée (n° <%= link.kaffeine_key %>)</span>
-                      <% end %>
-                      <% if link.name != recording_intent_title(recording_intent) %>
-                        <small class="d-block text-body-secondary" data-kaffeine-name>
-                          Nom Kaffeine à la liaison : <%= link.name %>
-                        </small>
-                      <% end %>
-                      <% if recording_intent.recording_verified_at? %>
-                        <span class="d-block text-success" data-recording-verified>
-                          Fichier vérifié
-                        </span>
-                        <%= button_to "Retirer la confirmation",
-                                      tv_recording_intent_recording_confirmation_path(recording_intent),
-                                      method: :delete,
-                                      class: "btn btn-sm btn-outline-secondary" %>
-                      <% elsif recording_intent.recording_confirmable? %>
-                        <%= button_to "J’ai vérifié le fichier",
-                                      tv_recording_intent_recording_confirmation_path(recording_intent),
-                                      class: "btn btn-sm btn-outline-success" %>
-                      <% end %>
-                    <% elsif recording_intent.broadcast_observation.guide_channel.channel&.kaffeine_name.present? %>
-                      <%= form_with(
-                        url: tv_recording_intent_schedule_path(recording_intent),
-                        method: :post
-                      ) do %>
-                        <%= button_tag(
-                          "Programmer dans Kaffeine",
-                          type: "submit",
-                          class: "btn btn-sm btn-outline-primary"
-                        ) %>
-                      <% end %>
-                    <% else %>
-                      <span class="text-body-secondary">Chaîne non reliée</span>
-                    <% end %>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  <% end %>
+                  <% end %>
+                  <% if link.name != recording_intent_title(recording_intent) %>
+                    <small class="d-block text-body-secondary" data-kaffeine-name>
+                      Nom Kaffeine à la liaison : <%= link.name %>
+                    </small>
+                  <% end %>
+                  <% if recording_intent.recording_verified_at? %>
+                    <span class="d-block text-success" data-recording-verified>
+                      Fichier vérifié
+                    </span>
+                    <%= button_to "Retirer la confirmation",
+                                  tv_recording_intent_recording_confirmation_path(recording_intent),
+                                  method: :delete,
+                                  class: "btn btn-sm btn-outline-secondary" %>
+                  <% elsif recording_intent.recording_confirmable? %>
+                    <%= button_to "J’ai vérifié le fichier",
+                                  tv_recording_intent_recording_confirmation_path(recording_intent),
+                                  class: "btn btn-sm btn-outline-success" %>
+                  <% end %>
+                <% elsif recording_intent.broadcast_observation.guide_channel.channel&.kaffeine_name.present? %>
+                  <%= form_with(
+                    url: tv_recording_intent_schedule_path(recording_intent),
+                    method: :post
+                  ) do %>
+                    <%= button_tag(
+                      "Programmer dans Kaffeine",
+                      type: "submit",
+                      class: "btn btn-sm btn-outline-primary"
+                    ) %>
+                  <% end %>
+                <% else %>
+                  <span class="text-body-secondary">Chaîne non reliée</span>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+          <% else %>
+            <% schedule = row.schedule %>
+            <tr data-kaffeine-only="<%= schedule.key %>">
+              <td class="text-nowrap"><%= recording_intent_date_heading(row.starts_at.in_time_zone("Europe/Paris").to_date) %></td>
+              <td><%= schedule.channel %></td>
+              <td><%= schedule.name %></td>
+              <td colspan="2">Kaffeine seule</td>
+              <td class="text-nowrap">N° <%= schedule.key %> · <%= recording_intent_time(schedule.starts_at) %> –
+                <%= recording_intent_time(schedule.starts_at + schedule.duration_seconds) %></td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
 <% end %>
-</div>

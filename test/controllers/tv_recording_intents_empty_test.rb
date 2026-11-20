@@ -1,4 +1,5 @@
 require "test_helper"
+require "minitest/mock"
 
 class TvRecordingIntentsEmptyTest <
     ActionDispatch::IntegrationTest
@@ -12,7 +13,10 @@ class TvRecordingIntentsEmptyTest <
   end
 
   test "displays the empty recording summary" do
-    get tv_recording_intents_url
+    client = Struct.new(:schedules).new([])
+    Tv::KaffeineDbus.stub(:new, client) do
+      get tv_recording_intents_url
+    end
 
     assert_response :success
     assert_select "h1", text: "Enregistrements programmés"

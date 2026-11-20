@@ -26,17 +26,17 @@ class TvRecordingIntentsOrderingTest <
     )
   end
 
-  test "orders each day by logical channel number then time" do
+  test "orders recordings by newest start time across channels" do
     later_france_two = create_intent(@france_two, 21, "2")
     arte_intent = create_intent(@arte, 18, "3")
     earlier_france_two = create_intent(@france_two, 19, "4")
 
-    get tv_recording_intents_url
+    get tv_recording_intents_url, params: { history: "1" }
 
     assert_equal(
       [
-        earlier_france_two.id.to_s,
         later_france_two.id.to_s,
+        earlier_france_two.id.to_s,
         arte_intent.id.to_s
       ],
       rendered_intent_ids
