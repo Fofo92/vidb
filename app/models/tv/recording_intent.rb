@@ -22,10 +22,14 @@ module Tv
     before_validation :snapshot_programme_times, on: :create
 
     def capture_starts_at
+      return Time.iso8601(capture_override.fetch("starts_at")) if capture_override.present?
+
       programme_starts_at - effective_padding_before_seconds.seconds
     end
 
     def capture_ends_at
+      return capture_starts_at + capture_override.fetch("duration_seconds") if capture_override.present?
+
       programme_ends_at + effective_padding_after_seconds.seconds
     end
 

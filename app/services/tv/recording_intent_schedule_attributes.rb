@@ -9,6 +9,8 @@ module Tv
     def call
       raise Unavailable, "recording intent is not selected" unless @recording_intent.status_selected?
 
+      return overridden_attributes if @recording_intent.capture_override.present?
+
       {
         name: programme_name,
         channel: kaffeine_name,
@@ -26,6 +28,10 @@ module Tv
     end
 
     private
+
+    def overridden_attributes
+      @recording_intent.capture_override.symbolize_keys.merge(starts_at: @recording_intent.capture_starts_at)
+    end
 
     def programme_name
       ProgrammeDisplayName.call(@recording_intent.broadcast_observation) || base_name

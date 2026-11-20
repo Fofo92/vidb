@@ -97,6 +97,14 @@
             <td class="text-nowrap">
               <div data-kaffeine-schedule>
                 <small><%= Tv::RecordingScheduleTable::STATES.fetch(row.state) %></small>
+                <% if row.guide_missing %>
+                  <div>Créneau absent du dernier guide importé</div>
+                <% end %>
+                <% if row.schedule && row.schedule.repeat.zero? &&
+                      row.schedule.starts_at > Time.current + Tv::KaffeineScheduleManager::REPLACEMENT_GUARD_SECONDS %>
+                  <%= link_to 'Corriger…', edit_tv_recording_intent_correction_path(recording_intent),
+                              class: 'btn btn-sm btn-outline-primary' %>
+                <% end %>
                 <% if (link = recording_intent.kaffeine_schedule_link) %>
                   <% if link.retired? %>
                     <span class="text-body-secondary" data-kaffeine-historical>

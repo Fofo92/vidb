@@ -1,0 +1,48 @@
+<h1>Corriger la programmation</h1>
+<p><%= link_to 'Retour aux enregistrements programmés', tv_recording_intents_path %></p>
+<% live = @current.fetch(:live) %>
+<% zone = Time.find_zone!('Europe/Paris') %>
+<% kaffeine = { name: live.name, channel: live.channel, starts_at: live.starts_at,
+                duration_seconds: live.duration_seconds } %>
+<table class="table table-sm">
+  <thead><tr><th>Version</th><th>Titre</th><th>Chaîne</th><th>Début de capture</th><th>Fin de capture</th></tr></thead>
+  <tbody>
+    <% [['vidb', @current[:vidb]], ["Kaffeine n° #{live.key}", kaffeine], ['Après validation', @desired]].each do |label, row| %>
+      <% next unless row %>
+      <tr>
+        <th scope="row"><%= label %></th><td><%= row[:name] %></td><td><%= row[:channel] %></td>
+        <td><%= row[:starts_at].in_time_zone(zone).strftime('%d/%m/%Y %H:%M:%S') %></td>
+        <td><%= (row[:starts_at] + row[:duration_seconds]).in_time_zone(zone).strftime('%d/%m/%Y %H:%M:%S') %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if @confirmation %>
+  <%= button_to 'Valider la correction', tv_recording_intent_correction_path(@intent),
+                params: { confirmation: @confirmation }, class: 'btn btn-primary' %>
+  <%= link_to 'Revenir à la comparaison', edit_tv_recording_intent_correction_path(@intent) %>
+<% else %>
+  <div class="d-flex gap-2 mb-3">
+    <% if @current[:vidb] %>
+      <%= button_to 'Appliquer vidb à Kaffeine', tv_recording_intent_correction_path(@intent),
+                    params: { mode: 'vidb' }, class: 'btn btn-outline-primary' %>
+    <% end %>
+    <%= button_to 'Reprendre Kaffeine dans vidb', tv_recording_intent_correction_path(@intent),
+                  params: { mode: 'kaffeine' }, class: 'btn btn-outline-primary' %>
+  </div>
+  <h2>Modifier manuellement</h2>
+  <%= form_with url: tv_recording_intent_correction_path(@intent), class: 'd-flex flex-wrap gap-2 align-items-end' do %>
+    <%= hidden_field_tag :mode, 'manual' %>
+    <div><%= label_tag :name, 'Titre' %><%= text_field_tag :name, live.name, required: true, class: 'form-control' %></div>
+    <div><%= label_tag :channel, 'Chaîne Kaffeine' %><%= text_field_tag :channel, live.channel, required: true,
+                                                                         class: 'form-control' %></div>
+    <div><%= label_tag :starts_at, 'Début (heure de Paris)' %>
+      <%= datetime_local_field_tag :starts_at, live.starts_at.in_time_zone(zone).strftime('%Y-%m-%dT%H:%M'),
+                                   required: true, class: 'form-control' %></div>
+    <div><%= label_tag :ends_at, 'Fin (heure de Paris)' %>
+      <%= datetime_local_field_tag :ends_at, (live.starts_at + live.duration_seconds).in_time_zone(zone).strftime('%Y-%m-%dT%H:%M'),
+                                   required: true, class: 'form-control' %></div>
+    <%= submit_tag 'Prévisualiser', class: 'btn btn-primary' %>
+  <% end %>
+<% end %>

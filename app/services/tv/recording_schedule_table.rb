@@ -1,7 +1,7 @@
 module Tv
   # Joins selections to the live schedule by their recorded Kaffeine key.
   class RecordingScheduleTable
-    Row = Data.define(:intent, :schedule, :state) do
+    Row = Data.define(:intent, :schedule, :state, :guide_missing) do
       def starts_at
         intent&.programme_starts_at || schedule.starts_at
       end
@@ -34,8 +34,9 @@ module Tv
 
     def call
       schedules = live_schedules.index_by(&:key)
+      @guide_gaps = ScheduleGuideGaps.new.call(@intents)
       rows = @intents.map { |intent| linked_row(intent, schedules) }
-      rows.concat(schedules.values.map { |schedule| Row.new(nil, schedule, 'kaffeine_only') })
+      rows.concat(schedules.values.map { |schedule| Row.new(nil, schedule, 'kaffeine_only', false) })
       rows.select { |row| visible?(row) }.sort_by(&:starts_at).reverse
     end
 
@@ -51,13 +52,15 @@ module Tv
 
     def linked_row(intent, schedules)
       link = intent.kaffeine_schedule_link
-      return Row.new(intent, nil, 'vidb_only') unless link
-      return Row.new(intent, nil, 'history') if link.retired?
-      return Row.new(intent, nil, 'offline') if unavailable
+      return Row.new(intent, nil, 'vidb_only', false) unless link
+      return Row.new(intent, nil, 'history', false) if link.retired?
+
+      missing = @guide_gaps.include?(intent.id)
+      return Row.new(intent, nil, missing ? 'review' : 'offline', missing) if unavailable
 
       schedule = schedules.delete(link.kaffeine_key)
-      state = agrees?(intent, link, schedule) ? 'linked' : 'review'
-      Row.new(intent, schedule, state)
+      state = !missing && agrees?(intent, link, schedule) ? 'linked' : 'review'
+      Row.new(intent, schedule, state, missing)
     end
 
     def agrees?(intent, link, schedule)

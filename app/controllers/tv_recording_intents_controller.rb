@@ -107,7 +107,7 @@ class TvRecordingIntentsController < ApplicationController
     Tv::RecordingIntent.status_selected
                        .includes(
                          :kaffeine_schedule_link,
-                         broadcast_observation: { guide_channel: :channel }
+                         broadcast_observation: { guide_channel: %i[channel guide_source] }
                        )
                        .order(:programme_starts_at, :id)
   end
