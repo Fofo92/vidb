@@ -24,8 +24,22 @@ module EncoderProjects
     def assign_references(record, genders, countries)
       series = record.parent.parent
       series.lock!
+      assign_series_year(series)
       assign_genders(record, series, genders)
       assign_countries(record, series, countries)
+    end
+
+    def assign_series_year(series)
+      reference = @candidate['tmdb_series_year_reference']
+      return unless reference && series.year.nil?
+      return if @parameters['source'].present? && @parameters['source'] != @candidate.dig('source', 'url')
+
+      ids = CatalogueEpisodeLink.where(provider: 'tmdb', record_id: series.subtree.select(:id))
+                                .distinct.pluck(:external_series_id)
+      return unless ids.all? { |id| id == reference.fetch('series_id') }
+
+      series.update!(year: reference.fetch('year'), year_basis: 'first_release',
+                     year_evidence: reference.except('year'))
     end
 
     def assign_genders(record, series, genders)

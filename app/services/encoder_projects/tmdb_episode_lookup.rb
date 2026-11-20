@@ -14,12 +14,23 @@ module EncoderProjects
       return missing_episode(id, numbers) unless proposal
 
       proposal = yield(proposal, builder.series_data)
+      proposal = with_series_year(proposal, id, builder.series_data)
       return proposal if reference
 
       proposal.merge('catalogue_completion' => { 'tmdb_id' => id, 'record_id' => series.id })
     end
 
     private
+
+    def with_series_year(proposal, id, series)
+      date = series['first_air_date'].to_s
+      year = date[/\A\d{4}(?=-\d{2}-\d{2}\z)/]&.to_i
+      return proposal unless year&.between?(1900, Date.current.year)
+
+      proposal.merge('tmdb_series_year_reference' => { 'provider' => 'tmdb', 'series_id' => id,
+                                                       'url' => "https://www.themoviedb.org/tv/#{id}",
+                                                       'first_air_date' => date, 'year' => year })
+    end
 
     def missing_episode(id, numbers)
       @warnings << format('TMDB : aucun épisode correspondant à S%02d E%02d dans la série %s. ' \
