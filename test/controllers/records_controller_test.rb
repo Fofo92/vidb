@@ -556,10 +556,12 @@ class RecordsControllerTest < ActionDispatch::IntegrationTest
     get record_url(@record)
 
     assert_response :success
-    assert_select "[data-record-viewing] details[data-record-copy-details]:not([open])" do
-      assert_select "summary", text: "Détails des copies"
-      assert_select "[data-confirmed-video-assets] [data-video-asset='#{asset.id}']", count: 1
-      assert_select "[data-copy-path]", text: "/videos/Film de test.mkv"
+    assert_select "[data-record-viewing] details[data-record-copy-details][open]" do
+      assert_select "summary", text: "Copies"
+      assert_select "[data-confirmed-video-assets] [data-video-asset='#{asset.id}'] details:not([open])", count: 1 do
+        assert_select "summary", text: "Détails techniques"
+        assert_select "[data-copy-path]", text: "/videos/Film de test.mkv"
+      end
     end
     assert_select "[data-record-information] [data-confirmed-video-assets]", count: 0
   end

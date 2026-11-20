@@ -1,7 +1,6 @@
 <% assets = record.video_assets.includes(:medium, :language_version).order(:id).to_a %>
 <% active, history = assets.partition { |asset| !asset.status_deleted? } %>
 <% if active.any? %>
-  <p class="mb-1"><strong>Copies :</strong></p>
   <div data-confirmed-video-assets>
     <%= render "records/video_assets_table", record: record, assets: active %>
   </div>

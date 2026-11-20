@@ -17,7 +17,7 @@ class RecordCopyCompactDisplayTest < ActionDispatch::IntegrationTest
     second = copy('version-multilingue.mkv', @vm)
     get record_url(@record)
     assert_response :success
-    assert_select '[data-confirmed-video-assets] table tbody tr', count: 2
+    assert_select '[data-confirmed-video-assets] [data-video-asset]', count: 2
     assert_select "[data-video-asset='#{first.id}'] [data-copy-language]", text: 'VF'
     assert_select "[data-video-asset='#{second.id}'] [data-copy-language]", text: 'VM'
   end
@@ -37,11 +37,11 @@ class RecordCopyCompactDisplayTest < ActionDispatch::IntegrationTest
                   } })
     get record_url(@record)
     assert_select "[data-video-asset='#{asset.id}'] details:not([open])" do
-      assert_select 'summary', text: 'film.mkv'
+      assert_select 'summary', text: 'Détails techniques'
       assert_select '[data-copy-path]', text: asset.last_known_path
       assert_select '[data-copy-language-qualification]', text: /VF.*Pascal.*Pistes vérifiées/m
     end
-    assert_select "[data-video-asset='#{asset.id}'] summary", text: /\/videos\//, count: 0
+    assert_select "[data-video-asset='#{asset.id}'] > .fw-semibold", text: 'film.mkv'
   end
 
   test 'deleted copies leave the main display and offer reference cleanup' do

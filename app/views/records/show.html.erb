@@ -125,8 +125,8 @@
           </dl>
         </div>
         <% if @record.video_assets.any? %>
-          <details class="record-show-copy-details" data-record-copy-details>
-            <summary>Détails des copies</summary>
+          <details class="record-show-copy-details" data-record-copy-details open>
+            <summary>Copies</summary>
             <%= render "records/video_assets", record: @record %>
           </details>
         <% elsif @record.has_children? %>
