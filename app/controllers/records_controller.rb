@@ -72,6 +72,9 @@ class RecordsController < ApplicationController
     @record.destroy
     invalidate_record_search
     redirect_to search_return_path || (parent ? record_path(parent) : records_path), status: :see_other
+  rescue ActiveRecord::InvalidForeignKey
+    message = 'Suppression impossible : une fiche de cette branche est encore utilisée.'
+    redirect_to record_path(params[:id]), alert: message, status: :see_other
   end
 
   private
