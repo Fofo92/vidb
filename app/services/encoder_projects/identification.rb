@@ -79,8 +79,17 @@ module EncoderProjects
     def identified(binding)
       record = Record.find(binding.fetch('record_id'))
       { status: 'identified', binding: binding,
-        record_title: record.complete_title_with_parents, metadata: RecordPresentation.call(record),
+        record_title: record.complete_title_with_parents, metadata: identification_metadata(record, binding),
         selection_url: selection_url(binding) }
+    end
+
+    def identification_metadata(record, binding)
+      metadata = RecordPresentation.call(record)
+      result = Binding.current_case(binding.fetch('project_id'))&.result || {}
+      if result['record_id'] == record.id && result['selected_film_version'] == metadata['language_version']
+        metadata['language_version_explicit'] = true
+      end
+      metadata
     end
 
     def selection_url(binding)

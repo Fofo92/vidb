@@ -20,7 +20,7 @@ module EncoderProjects
     private
 
     def associate_record
-      FilmLanguageSelection.call(params[:film_language_version_id]) do
+      FilmLanguageSelection.call(params[:film_language_version_id], project: @scope.fetch('project')) do
         LocalRecordSelection.call(
           user: current_user, url: request.base_url, project: @scope.fetch('project'),
           record: Record.find(params[:record_id]), confirmed: params[:confirm_replacement] == '1'

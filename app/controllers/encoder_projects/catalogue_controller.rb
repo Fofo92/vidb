@@ -30,7 +30,7 @@ module EncoderProjects
     private
 
     def prepare_film
-      FilmLanguageSelection.call(params[:film_language_version_id]) do
+      FilmLanguageSelection.call(params[:film_language_version_id], project: @scope.fetch('project')) do
         CatalogueCreation.new(user: current_user, url: request.base_url).call(
           scope: @scope, gender_ids: selected_ids(:gender_ids), country_ids: selected_ids(:country_ids),
           confirmed: params[:confirm_replacement] == '1', replace_genres: params[:replace_genres] == '1'

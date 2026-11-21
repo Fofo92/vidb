@@ -10,10 +10,13 @@ module EncoderProjects
     end
 
     def self.current(project_id)
-      item = ReconciliationCase.current.where(rule_key: ReconciliationWorkbench::Rules::ENCODER_PROJECT.key,
-                                              status: 'applied').where("payload ->> 'project_id' = ?", project_id)
-                               .order(id: :desc).first
-      item&.result&.slice('project_id', 'record_id', 'binding_token')
+      current_case(project_id)&.result&.slice('project_id', 'record_id', 'binding_token')
+    end
+
+    def self.current_case(project_id)
+      ReconciliationCase.current.where(rule_key: ReconciliationWorkbench::Rules::ENCODER_PROJECT.key,
+                                       status: 'applied').where("payload ->> 'project_id' = ?", project_id)
+                        .order(id: :desc).first
     end
 
     def self.pending?(project_id)
