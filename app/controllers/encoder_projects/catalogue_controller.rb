@@ -19,10 +19,7 @@ module EncoderProjects
     end
 
     def create
-      record = CatalogueCreation.new(user: current_user, url: request.base_url).call(
-        scope: @scope, gender_ids: selected_ids(:gender_ids), country_ids: selected_ids(:country_ids),
-        confirmed: params[:confirm_replacement] == '1', replace_genres: params[:replace_genres] == '1'
-      )
+      record = prepare_film
       prepared = params[:encoder_window] == '1' ? 1 : nil
       redirect_to record_path(record, encoder_prepared: prepared), notice: completion_notice
     rescue ArgumentError, ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound,
@@ -31,6 +28,15 @@ module EncoderProjects
     end
 
     private
+
+    def prepare_film
+      FilmLanguageSelection.call(params[:film_language_version_id]) do
+        CatalogueCreation.new(user: current_user, url: request.base_url).call(
+          scope: @scope, gender_ids: selected_ids(:gender_ids), country_ids: selected_ids(:country_ids),
+          confirmed: params[:confirm_replacement] == '1', replace_genres: params[:replace_genres] == '1'
+        )
+      end
+    end
 
     def completion_notice
       if @scope.dig('project', 'completion_record_id')

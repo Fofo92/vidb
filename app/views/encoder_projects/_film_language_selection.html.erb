@@ -1,0 +1,8 @@
+<div class="mb-2">
+  <% field_id = "film-language-version-#{form.object_id}" %>
+  <% current = record&.language_version&.short_name %>
+  <%= form.label :film_language_version_id, "Version linguistique", for: field_id, class: "form-label" %>
+  <%= form.collection_select :film_language_version_id, LanguageVersion.order(:short_name), :id, :short_name,
+                             { include_blank: current ? "Conserver la version actuelle (#{current})" : "Sans changement" },
+                             { id: field_id, class: "form-select" } %>
+</div>

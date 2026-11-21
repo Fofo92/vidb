@@ -22,6 +22,9 @@
           <%= form.hidden_field :request_token, value: params[:request_token] %>
           <%= form.hidden_field :q, value: @query %>
           <%= form.hidden_field :record_id, value: record.id %>
+          <% if record.record_kind_standalone_video? %>
+            <%= render "encoder_projects/film_language_selection", form: form, record: record %>
+          <% end %>
           <%= render 'encoder_projects/revision_confirmation', form: form %>
           <%= form.submit 'Associer cette fiche et poursuivre le montage', class: 'btn btn-primary' %>
         <% end %>
