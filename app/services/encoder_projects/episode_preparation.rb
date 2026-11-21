@@ -63,8 +63,16 @@ module EncoderProjects
       enrichment.call(record)
       ReviewedEpisodeReference.new.call(record, candidate)
       complete_series(record.parent.parent, snapshot) if snapshot
-      EpisodeBinding.new(user: @user, url: @url).call(scope.fetch('project'), record)
+      bind_episode(scope.fetch('project'), record, parameters['language_version'])
       record
+    end
+
+    def bind_episode(project, record, selected_version)
+      EpisodeBinding.new(user: @user, url: @url).call(project, record)
+      return unless %w[VF VM VMST VOST].include?(selected_version)
+
+      version = record.language_version
+      FilmLanguageSelection.store_choice(project, record, version) if version.short_name == selected_version
     end
 
     def complete_series(root, snapshot)
