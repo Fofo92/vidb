@@ -17,10 +17,15 @@ module EncoderProjects
 
       { 'season_number' => record.parent.rank, 'episode_number' => record.rank,
         'series_french_title' => series.french_title, 'series_original_title' => series.original_title,
-        'series_year' => series.year,
+        'series_year' => destination_series_year(series),
         'series_genres' => series.effective_genders.map(&:name),
         'series_countries' => series.effective_countries.map(&:long_name),
         'series_titles' => [series.french_title, series.original_title].compact_blank }
     end
+
+    def self.destination_series_year(series)
+      series.year || series.descendants.where(record_kind: 'episode').minimum(:year)
+    end
+    private_class_method :destination_series_year
   end
 end
