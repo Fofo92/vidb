@@ -31,7 +31,7 @@ module EncoderProjects
 
     def assign_series_year(series)
       reference = @candidate['tmdb_series_year_reference']
-      return unless reference && series.year.nil?
+      return unless reference && update_series_year?(series, reference)
       return if @parameters['source'].present? && @parameters['source'] != @candidate.dig('source', 'url')
 
       ids = CatalogueEpisodeLink.where(provider: 'tmdb', record_id: series.subtree.select(:id))
@@ -40,6 +40,15 @@ module EncoderProjects
 
       series.update!(year: reference.fetch('year'), year_basis: 'first_release',
                      year_evidence: reference.except('year'))
+    end
+
+    def update_series_year?(series, reference)
+      return true if series.year.nil?
+      return false unless reference.key?('pilot') && reference.fetch('year') < series.year
+
+      previous = series.year_evidence
+      previous['provider'] == 'tmdb' && previous['series_id'] == reference.fetch('series_id') &&
+        previous['first_air_date'].to_s.start_with?("#{series.year}-")
     end
 
     def assign_genders(record, series, genders)

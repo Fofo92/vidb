@@ -23,13 +23,20 @@ module EncoderProjects
     private
 
     def with_series_year(proposal, id, series)
-      date = series['first_air_date'].to_s
+      first_air_date = series['first_air_date'].to_s
+      pilot = TmdbSeriesPilot.new(@client).call(id, series)
+      date = [first_air_date.presence, pilot&.fetch('first_air_date')].compact.min.to_s
       year = date[/\A\d{4}(?=-\d{2}-\d{2}\z)/]&.to_i
       return proposal unless year&.between?(1900, Date.current.year)
 
-      proposal.merge('tmdb_series_year_reference' => { 'provider' => 'tmdb', 'series_id' => id,
-                                                       'url' => "https://www.themoviedb.org/tv/#{id}",
-                                                       'first_air_date' => date, 'year' => year })
+      proposal.merge('tmdb_series_year_reference' => year_reference(id, date, year, pilot))
+    end
+
+    def year_reference(id, date, year, pilot)
+      evidence = { 'provider' => 'tmdb', 'series_id' => id, 'url' => "https://www.themoviedb.org/tv/#{id}",
+                   'first_air_date' => date, 'year' => year }
+      evidence['pilot'] = pilot if pilot && date == pilot.fetch('first_air_date')
+      evidence
     end
 
     def missing_episode(id, numbers)
