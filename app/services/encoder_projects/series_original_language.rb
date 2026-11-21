@@ -74,7 +74,14 @@ module EncoderProjects
       remote = SynopsisPreference.normalized_titles(row.values_at('name', 'original_name'))
       return false unless local.intersect?(remote)
 
-      series.year.blank? || row['first_air_date'].to_s.first(4) == series.year.to_s
+      series.year.blank? || row['first_air_date'].to_s.first(4) == series.year.to_s || documented_pilot?(row, series)
+    end
+
+    def documented_pilot?(row, series)
+      evidence = series.try(:year_evidence) || {}
+      date = evidence.dig('pilot', 'first_air_date')
+      evidence['provider'] == 'tmdb' && evidence['series_id'] == row['id'] &&
+        date.present? && date == evidence['first_air_date'] && date.first(4) == series.year.to_s
     end
 
     def unambiguous?(data, language)

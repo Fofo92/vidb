@@ -15,8 +15,9 @@ module EncoderProjects
       return UNKNOWN unless reference
       return UNKNOWN if reference.record_kind == 'standalone_video' && reference.year.blank?
 
-      key = ['encoder-original-language-v2', reference.record_kind, reference.id,
-             reference.french_title, reference.original_title, reference.year]
+      key = ['encoder-original-language-v3', reference.record_kind, reference.id,
+             reference.french_title, reference.original_title, reference.year,
+             reference.try(:updated_at)]
       Rails.cache.fetch(key, expires_in: 10.minutes) { new.call(reference) }
     end
 
