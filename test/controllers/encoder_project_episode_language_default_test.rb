@@ -31,9 +31,9 @@ class EncoderProjectEpisodeLanguageDefaultTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'the current montage VMST hint takes priority over an existing VF copy without changing the record on display' do
+  test 'the existing episode VF takes priority over the montage VMST hint' do
     open_form('VMST')
-    assert_select 'select[name="language_version"] option[selected][value="VMST"]', count: 1
+    assert_select 'select[name="language_version"] option[selected][value="VF"]', count: 1
     assert_equal @vf, @episode.reload.language_version
   end
 
