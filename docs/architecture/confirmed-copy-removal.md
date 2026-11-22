@@ -20,10 +20,16 @@ la date. La disponibilité et les durées sont recalculées par les callbacks
 habituels ; cette copie ne contribue plus à la durée de la fiche. Le chemin de
 corbeille reste consultable dans ses détails. Les autres copies sont intactes.
 
-**L’espace disque n’est libéré qu’au vidage de la corbeille.** Sa conservation
-est sans limite de durée ; la règle de 30 jours de la quarantaine des captures
-ne s’applique pas à cette corbeille. La suppression définitive se fait depuis
-la corbeille de video_encoder, avec sa confirmation habituelle.
+**L’espace disque est libéré lors de la suppression définitive.** Le service
+utilisateur `video-encoder-quarantine.service` traite les captures en quarantaine
+et les entrées de la corbeille de video_encoder, y compris les copies déplacées
+depuis vidb. Si le minuteur est actif et le service à jour, les entrées sont
+éligibles à la purge 30 jours après leur création. Elles sont supprimées au
+prochain passage si les contrôles réussissent. Une entrée bloquée reste conservée.
+
+Depuis le dépôt de video_encoder, `bin/video_encoder project-trash sweep` affiche
+les échéances et les motifs de blocage en lecture seule. La suppression définitive
+peut aussi être déclenchée depuis la corbeille de video_encoder.
 
 Une restauration depuis cette corbeille restitue le fichier ; elle ne constitue
 pas une nouvelle confirmation de copie dans vidb. Il faut ensuite rétablir sa confirmation dans vidb après contrôle du fichier ;

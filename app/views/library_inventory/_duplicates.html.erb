@@ -26,7 +26,7 @@
     <table class="table table-sm align-middle">
       <thead>
         <tr>
-          <th class="pe-2">Groupe</th><th class="pe-2">Fiche</th><th class="pe-2">Année</th>
+          <th class="pe-2">Groupe</th><th class="pe-2">N° fiche</th><th class="pe-2">Année</th>
           <th>Copie</th><th>Version</th><th class="text-end">Taille</th>
           <th class="text-end text-nowrap ps-2">Actions</th>
           <th scope="col" aria-label="Sélection"></th>
@@ -46,9 +46,9 @@
                 </td>
               <% end %>
               <% if first_copy %>
-                <td class="pe-2" style="max-width: 16rem" rowspan="<%= copy_count %>">
-                  <%= link_to "#{record.complete_title_with_parents} · n° #{record.id}", record_path(record),
-                              class: 'd-block text-truncate', title: "Ouvrir #{record.complete_title_with_parents}" %>
+                <td class="pe-2 text-nowrap" rowspan="<%= copy_count %>">
+                  <%= link_to record.id.to_s, record_path(record),
+                              title: "Ouvrir #{record.complete_title_with_parents}" %>
                 </td>
                 <td class="pe-2" rowspan="<%= copy_count %>"><%= group[:years].fetch(record.id) %></td>
               <% end %>
