@@ -1,13 +1,26 @@
 # frozen_string_literal: true
 
 class LibraryInventoryController < ApplicationController
-  def show
-    @snapshot = VideoAssets::InventorySnapshot.new.call
-    assets = VideoAsset.includes(:record, :language_version).to_a
-    @issues = VideoAssets::InventoryReview.new(snapshot: @snapshot,
-                                               assets: assets.reject(&:status_deleted?)).call
-    @duplicates = RecordDuplicateReview.new(assets: assets).call + disk_duplicate_groups(assets)
-    filter_results
+  before_action :load_inventory, only: %i[show preview_removals]
+
+  def show; end
+
+  def preview_removals
+    ids = Array(params[:copy_ids]).map(&:to_i).uniq
+    assets = @duplicates.flat_map { |group| group[:copies].values.flatten }.uniq(&:id)
+    @removals = assets.select { |asset| ids.include?(asset.id) && asset.status_present? }
+                      .map { |asset| removal_result(asset) { removal(asset).confirmation } }
+    render_inventory
+  end
+
+  def remove_copies
+    confirmations = params.permit(confirmations: {})[:confirmations] || {}
+    @removals = VideoAsset.where(id: confirmations.keys).map do |asset|
+      removal_result(asset) { removal(asset).call(confirmations[asset.id.to_s]) }
+    end
+    @removed_count = @removals.count { |result| result[:error].nil? }
+    load_inventory
+    render_inventory
   end
 
   def refresh
@@ -20,6 +33,34 @@ class LibraryInventoryController < ApplicationController
   end
 
   private
+
+  def render_inventory
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace('inventory_duplicates', partial: 'library_inventory/duplicates')
+      end
+      format.html { render :show }
+    end
+  end
+
+  def removal(asset)
+    VideoAssets::CopyRemoval.new(asset, user: current_user)
+  end
+
+  def removal_result(asset)
+    { asset: asset, confirmation: yield }
+  rescue VideoAssets::CopyRemoval::Error, VideoAssets::CopyRemovalBridge::Error => e
+    { asset: asset, error: e.message }
+  end
+
+  def load_inventory
+    @snapshot = VideoAssets::InventorySnapshot.new.call
+    assets = VideoAsset.includes(:record, :language_version).to_a
+    @issues = VideoAssets::InventoryReview.new(snapshot: @snapshot,
+                                               assets: assets.reject(&:status_deleted?)).call
+    @duplicates = RecordDuplicateReview.new(assets: assets).call + disk_duplicate_groups(assets)
+    filter_results
+  end
 
   def disk_duplicate_groups(assets)
     by_record = assets.select(&:status_present?).group_by { |asset| [asset.record_id, episode_numbers(asset)] }
