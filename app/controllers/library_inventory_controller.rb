@@ -15,12 +15,11 @@ class LibraryInventoryController < ApplicationController
 
   def remove_copies
     confirmations = params.permit(confirmations: {})[:confirmations] || {}
+    @requested_count = confirmations.size
     @removals = VideoAsset.where(id: confirmations.keys).map do |asset|
       removal_result(asset) { removal(asset).call(confirmations[asset.id.to_s]) }
     end
-    @removed_count = @removals.count { |result| result[:error].nil? }
-    load_inventory
-    render_inventory
+    redirect_after_removals
   end
 
   def refresh
@@ -34,10 +33,19 @@ class LibraryInventoryController < ApplicationController
 
   private
 
+  def redirect_after_removals
+    moved = @removals.count { |result| result[:error].nil? }
+    missing = @requested_count - moved
+    flash[:inventory_removal_result] = { 'moved' => moved, 'requested' => @requested_count, 'unconfirmed' => missing }
+    redirect_to library_inventory_path(q: params[:q].to_s.first(100), page: [params[:page].to_i, 1].max,
+                                       anchor: 'inventory_duplicates'), status: :see_other
+  end
+
   def render_inventory
     respond_to do |format|
       format.turbo_stream do
-        render turbo_stream: turbo_stream.replace('inventory_duplicates', partial: 'library_inventory/duplicates')
+        html = render_to_string(partial: 'library_inventory/duplicates', formats: [:html])
+        render turbo_stream: turbo_stream.replace('inventory_duplicates', html)
       end
       format.html { render :show }
     end

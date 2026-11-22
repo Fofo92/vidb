@@ -1,7 +1,5 @@
 <div class="border rounded p-2 mb-2" role="status">
-  <% if @removed_count %>
-    <p class="mb-1">Copies mises à la corbeille : <%= @removed_count %>.</p>
-  <% elsif @removals.empty? %>
+  <% if @removals.empty? %>
     <p class="mb-0">Aucune copie présente sélectionnée.</p>
   <% end %>
 
@@ -9,9 +7,9 @@
     <p class="text-danger mb-1"><%= File.basename(result[:asset].last_known_path) %> — <%= result[:error] %></p>
   <% end %>
 
-  <% pending = @removed_count ? [] : @removals.select { |result| result[:confirmation] } %>
+  <% pending = @removals.select { |result| result[:confirmation] } %>
   <% if pending.any? %>
-    <%= form_with url: remove_copies_library_inventory_path, data: { turbo_frame: 'inventory_duplicates' } do |form| %>
+    <%= form_with url: remove_copies_library_inventory_path, data: { turbo: false } do |form| %>
       <%= hidden_field_tag :q, @query %>
       <%= hidden_field_tag :page, @page %>
       <ul class="small mb-2">
