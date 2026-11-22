@@ -6,7 +6,7 @@ class LibraryInventoryController < ApplicationController
     assets = VideoAsset.includes(:record).to_a
     @issues = VideoAssets::InventoryReview.new(snapshot: @snapshot,
                                                assets: assets.reject(&:status_deleted?)).call
-    @duplicates = RecordDuplicateReview.new(assets: assets).call
+    @duplicates = RecordDuplicateReview.new(assets: assets).call + disk_duplicate_groups(assets)
     filter_results
   end
 
@@ -20,6 +20,17 @@ class LibraryInventoryController < ApplicationController
   end
 
   private
+
+  def disk_duplicate_groups(assets)
+    by_record = assets.select(&:status_present?).group_by(&:record_id)
+    by_record.values.filter_map do |copies|
+      repeated = copies.group_by(&:broadcast_part_number).values.select(&:many?).flatten
+      next if repeated.empty?
+
+      record = repeated.first.record
+      { records: [record], years: { record.id => record.year }, copies: { record.id => repeated }, disk: true }
+    end
+  end
 
   def matches?(record)
     record.id.to_s == @query || record.complete_title.parameterize.include?(@query.parameterize)

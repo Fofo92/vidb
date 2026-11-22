@@ -1,4 +1,4 @@
-<section class="container py-3">
+<section class="container-fluid py-3">
   <h1 class="h3">Inventaire et doublons</h1>
   <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
     <%= form_with url: library_inventory_path, method: :get, class: 'd-flex gap-2' do |form| %>
@@ -17,11 +17,12 @@
     Les renommages proposés nécessitent une vérification ; aucune fusion ni suppression automatique.</p>
   <%= form_with url: new_copy_retirement_path, method: :get, id: 'missing-copy-selection', class: 'mb-2' do |form| %>
     <%= form.submit 'Retirer les anciennes références sélectionnées…', class: 'btn btn-outline-secondary btn-sm' %>
-    <span class="small text-muted">Chemins absents uniquement ; sauvegarde et confirmation avant retrait de vidb.</span>
+    <span class="small text-muted">Sélection sur cette page. Sauvegarde et confirmation avant retrait des chemins absents.</span>
   <% end %>
-  <div class="table-responsive">
+  <div class="table-responsive" data-controller="inventory-selection">
     <table class="table table-sm align-middle" data-inventory-issues>
-      <thead><tr><th><span class="visually-hidden">Sélection</span></th><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
+      <thead><tr><th scope="col"><label class="text-nowrap"><input type="checkbox" disabled
+        data-inventory-selection-target="all" data-action="change->inventory-selection#toggle"> Tout sélectionner</label></th><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
       <tbody>
         <% @issues.each do |row| %>
           <% asset = row[:asset] %>
@@ -29,6 +30,7 @@
             <td>
               <% if asset.status_missing? && row[:status] == 'absent' && asset.technical_details['copy_removal_pending'].blank? %>
                 <%= check_box_tag 'video_asset_ids[]', asset.id, false, form: 'missing-copy-selection',
+                                  data: { inventory_selection_target: "item", action: "change->inventory-selection#sync" },
                                   aria: { label: "Retirer l’ancienne référence #{asset.id} après sauvegarde" } %>
               <% end %>
             </td>
@@ -49,25 +51,49 @@
       </tbody>
     </table>
   </div>
-  <h2 class="h5 mt-4">Fiches potentiellement en doublon — <%= @duplicate_count %></h2>
-  <p class="small">Même titre normalisé, année et nature, avec contexte de série concordant.
-    Pour les séries et saisons, l’année du plus ancien épisode renseigné est utilisée lorsqu’elle est disponible.
-    Le nombre de copies présentes est indiqué à titre informatif.
-    Deux copies d’une seule fiche ne sont pas deux fiches en doublon. À examiner avant toute fusion.</p>
-  <% @duplicates.each do |group| %>
-    <div class="border rounded p-2 mb-2" data-logical-duplicate>
-      <% group[:records].each do |record| %>
-        <% copies = group[:copies].fetch(record.id).reject(&:status_deleted?) %>
-        <div class="mb-2">
-          <%= link_to "#{record.complete_title_with_parents} — n° #{record.id}", record_path(record) %>
-          <span class="small text-muted"> · <%= group[:years].fetch(record.id) %> · <%= copies.count(&:status_present?) %> copie(s) présente(s)</span>
-          <% copies.each do |asset| %>
-            <div class="small text-break text-muted"><%= asset.status %> · <%= asset.last_known_path %></div>
+  <h2 class="h5 mt-4">Doublons à vérifier — <%= @duplicate_count %> groupes</h2>
+  <p class="small">Fiches de même identité probable ou copies présentes au même emplacement dans une œuvre.</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr><th>Groupe</th><th>Fiche</th><th>Année</th><th>Copies et actions</th><th>Actions fiche</th></tr>
+      </thead>
+      <% @duplicates.each do |group| %>
+        <tbody data-logical-duplicate>
+          <% group[:records].each do |record| %>
+            <% copies = group[:copies].fetch(record.id).reject(&:status_deleted?) %>
+            <tr>
+              <td class="small"><%= group[:disk] ? 'Copies sur disque' : 'Fiches similaires' %> · <%= group[:records].first.id %></td>
+              <td><%= record.complete_title_with_parents %> · n° <%= record.id %></td>
+              <td><%= group[:years].fetch(record.id) %></td>
+              <td class="small">
+                <% copies.each do |asset| %>
+                  <div class="d-flex flex-wrap gap-1 align-items-center mb-1">
+                    <span class="text-break"><%= asset.last_known_path %></span>
+                    <% if asset.status_present? %>
+                      <%= link_to 'Qualifier', edit_record_copy_condition_path(record, asset),
+                                  class: 'btn btn-sm btn-outline-secondary' %>
+                      <%= link_to 'Mettre à la corbeille…', new_record_copy_removal_path(record, video_asset_id: asset.id),
+                                  class: 'btn btn-sm btn-outline-danger' %>
+                    <% else %>
+                      <span class="text-muted">Absente</span>
+                    <% end %>
+                  </div>
+                <% end %>
+                <% if copies.empty? %>—<% end %>
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  <%= link_to 'Ouvrir', record_path(record), class: 'btn btn-sm btn-outline-secondary' %>
+                  <%= link_to 'Modifier', edit_record_path(record), class: 'btn btn-sm btn-outline-primary' %>
+                </div>
+              </td>
+            </tr>
           <% end %>
-        </div>
+        </tbody>
       <% end %>
-    </div>
-  <% end %>
+    </table>
+  </div>
   <nav class="d-flex gap-3 mt-3" aria-label="Pages du bilan">
     <% if @page > 1 %><%= link_to 'Précédent', library_inventory_path(q: @query, page: @page - 1) %><% end %>
     <span>Page <%= @page %></span>
