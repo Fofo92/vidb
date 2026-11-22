@@ -1,11 +1,18 @@
 <section class="container py-3">
-  <h1 class="h4">Reconnaître cette copie renommée ?</h1>
+  <% same_path = @path == @asset.last_known_path %>
+  <h1 class="h4"><%= same_path ? 'Confirmer le fichier à ce chemin ?' : 'Reconnaître cette copie renommée ?' %></h1>
   <p><strong><%= @record.complete_title %></strong> — copie n° <%= @asset.id %></p>
-  <p>Ancien chemin : <code class="text-break"><%= @asset.last_known_path %></code></p>
-  <p>Nouveau chemin : <code class="text-break"><%= @path %></code></p>
-  <p>Confirme qu’il s’agit bien de l’ancienne copie renommée.
-    La concordance de taille et de date ne prouve pas à elle seule que le contenu est identique.</p>
-  <p>Seul le chemin de cette copie dans vidb sera actualisé. Aucun fichier, projet ou tâche d’encodage ne sera modifié.</p>
+  <% if same_path %>
+    <p><code class="text-break"><%= @path %></code></p>
+    <p>Taille enregistrée <%= number_to_human_size(@asset.byte_size) %> · fichier détecté <%= number_to_human_size(@detected_size) %></p>
+    <p>Si ce fichier correspond à cette œuvre, confirme pour le déclarer présent et actualiser sa taille dans vidb.</p>
+  <% else %>
+    <p>Ancien chemin : <code class="text-break"><%= @asset.last_known_path %></code></p>
+    <p>Nouveau chemin : <code class="text-break"><%= @path %></code></p>
+    <p>Confirme qu’il s’agit bien de l’ancienne copie renommée.
+      La concordance de taille et de date ne prouve pas à elle seule que le contenu est identique.</p>
+    <p>Seul le chemin de cette copie dans vidb sera actualisé. Aucun fichier, projet ou tâche d’encodage ne sera modifié.</p>
+  <% end %>
   <%= form_with url: record_copy_relinks_path(@record), method: :post do |form| %>
     <%= hidden_field_tag :video_asset_id, @asset.id %>
     <%= hidden_field_tag :confirmation, @confirmation %>

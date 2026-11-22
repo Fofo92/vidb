@@ -3,6 +3,8 @@
 module VideoAssets
   # Reassociate a manually renamed file; no filesystem/project/queue mutation.
   class CopyRelink
+    attr_reader :detected_size
+
     def initialize(asset, user:, root: '/videos', guard: ReconciliationVolumeGuard.new(root: root))
       @asset = asset
       @user = user
@@ -16,11 +18,8 @@ module VideoAssets
 
       @guard.call
       source = InventorySnapshot.new.call
-      review = InventoryReview.new(snapshot: source, root: @root)
-      entry = review.candidates(@asset).find { |item| item[:path] == path }
-      raise ArgumentError, 'Ce chemin n’est plus un renommage proposé par l’inventaire.' unless entry
-
-      stat = stable_file(path, entry)
+      stat = stable_file(path, inventory_entry(source, path))
+      @detected_size = stat.size
       plan = build_plan(path, stat, source)
       verifier.generate(plan, expires_in: 15.minutes, purpose: 'copy-relink')
     end
@@ -41,6 +40,27 @@ module VideoAssets
 
     private
 
+    def inventory_entry(source, path)
+      review = InventoryReview.new(snapshot: source, root: @root)
+      return replacement_entry(source, review) if replacement?(path)
+
+      review.candidates(@asset).find { |item| item[:path] == path } ||
+        raise(ArgumentError, 'Ce chemin n’est plus un renommage proposé par l’inventaire.')
+    end
+
+    def replacement_entry(source, review)
+      check_association(@asset.last_known_path)
+      if source && @asset.status_missing? && review.state(@asset) == 'changed'
+        return source.fetch(:entries).find { |entry| entry[:path] == @asset.last_known_path }
+      end
+
+      raise ArgumentError, 'L’inventaire ne signale plus de fichier modifié pour cette référence.'
+    end
+
+    def replacement?(path)
+      path == @asset.last_known_path
+    end
+
     def build_plan(path, stat, source)
       { 'asset_id' => @asset.id, 'user_id' => @user.id, 'old_path' => @asset.last_known_path,
         'updated_at' => @asset.updated_at.iso8601(9), 'path' => path,
@@ -51,7 +71,7 @@ module VideoAssets
       stat = stable_file(plan.fetch('path'))
       raise ArgumentError, 'Le fichier a changé.' unless RelocationFileIdentity.call(stat).as_json == plan['identity']
 
-      relink(plan)
+      relink(plan, stat)
     end
 
     def verifier
@@ -72,7 +92,14 @@ module VideoAssets
               [@asset.id, @user.id, @asset.last_known_path, @asset.updated_at.iso8601(9)]
       valid &&= !@asset.status_deleted? && !@asset.technical_details['copy_removal_pending']
       raise ArgumentError, 'La copie a changé : renouvelle la confirmation.' unless valid
-      return unless VideoAsset.exists?(last_known_path: plan['path'])
+
+      check_association(plan.fetch('path'))
+    end
+
+    def check_association(path)
+      candidates = VideoAsset.where(last_known_path: path)
+      candidates = candidates.where(status: 'present').where.not(id: @asset.id) if replacement?(path)
+      return unless candidates.exists?
 
       raise ArgumentError,
             'Le fichier est déjà associé à une copie.'
@@ -81,7 +108,7 @@ module VideoAssets
     def stable_file(path, entry = nil)
       check_path(path)
       stat = File.lstat(path)
-      valid = matching_asset?(stat)
+      valid = replacement?(path) ? stat.file? : matching_asset?(stat)
       valid &&= !entry || (entry[:size] == stat.size && Time.iso8601(entry[:modified_at]).to_i == stat.mtime.to_i)
       raise ArgumentError, 'Fichier modifié ou incompatible avec la copie.' unless valid
 
@@ -98,15 +125,15 @@ module VideoAssets
       stat.file? && stat.size == @asset.byte_size && @asset.observed_at && @asset.observed_at >= stat.mtime
     end
 
-    def relink(plan)
+    def relink(plan, stat)
       history = @asset.technical_details.fetch('relocation_history', [])
       event = plan.slice('identity', 'inventory_at').merge(
         'from' => plan.fetch('old_path'), 'to' => plan.fetch('path'), 'origin' => 'manual_inventory_review',
         'user_id' => @user.id, 'moved_at' => Time.current.iso8601(9)
       )
       details = @asset.technical_details.merge('relocation_history' => history + [event])
-      @asset.update!(last_known_path: plan.fetch('path'), status: 'present', observed_at: Time.current,
-                     technical_details: details)
+      @asset.update!(byte_size: stat.size, last_known_path: plan.fetch('path'), status: 'present',
+                     observed_at: Time.current, technical_details: details)
     end
   end
 end

@@ -1,6 +1,10 @@
 <% copies.each do |asset| %>
   <div class="d-flex gap-1 align-items-center py-1">
     <span class="text-truncate flex-grow-1" style="min-width: 0" title="<%= asset.last_known_path %>"><%= asset.last_known_path %></span>
+    <span class="text-end text-nowrap flex-shrink-0 text-muted" style="width: 5.5rem"
+          title="<%= asset.byte_size ? "#{number_with_delimiter(asset.byte_size)} octets enregistrés" : "Taille inconnue" %>">
+      <%= asset.byte_size ? number_to_human_size(asset.byte_size) : '—' %>
+    </span>
     <% if asset.status_present? %>
       <%= link_to edit_record_copy_condition_path(record, asset), class: 'btn btn-sm flex-shrink-0 btn-outline-secondary',
                   title: 'Qualifier la copie', aria: { label: "Qualifier la copie #{asset.id}" } do %>

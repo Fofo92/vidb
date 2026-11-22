@@ -45,7 +45,16 @@
             </td>
             <td><%= link_to "#{asset.record.complete_title} (n° #{asset.record_id})", record_path(asset.record) %></td>
             <td class="small text-break"><%= asset.last_known_path %></td>
-            <td><%= { 'absent' => 'Chemin absent', 'changed' => 'Fichier remplacé ou modifié', 'unverified' => 'Mesures insuffisantes', 'outside' => 'Hors périmètre de l’inventaire' }.fetch(row[:status]) %></td>
+            <td><%= { 'absent' => 'Chemin absent', 'changed' => 'Fichier remplacé ou modifié', 'unverified' => 'Mesures insuffisantes', 'outside' => 'Hors périmètre de l’inventaire' }.fetch(row[:status]) %>
+              <% if row[:status] == 'changed' && asset.status_missing? && !row[:retirable] &&
+                    asset.technical_details['copy_removal_pending'].blank? %>
+                <%= link_to new_record_copy_relink_path(asset.record, video_asset_id: asset.id, path: asset.last_known_path),
+                            class: 'btn btn-sm btn-outline-primary', title: 'Confirmer le fichier à ce chemin…',
+                            aria: { label: "Confirmer le fichier de #{asset.record.complete_title}" } do %>
+                  <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <% end %>
+              <% end %>
+            </td>
             <td class="small">
               <% row[:candidates].first(5).each do |entry| %>
                 <div class="mb-1 text-break">
@@ -65,7 +74,7 @@
   <div class="table-responsive">
     <table class="table table-sm align-middle">
       <thead>
-        <tr><th>Groupe</th><th>Fiche</th><th>Année</th><th>Copies et actions</th><th>Actions fiche</th></tr>
+        <tr><th>Groupe</th><th>Fiche</th><th>Année</th><th>Copies et actions</th><th class="text-end text-nowrap">Actions fiche</th></tr>
       </thead>
       <% @duplicates.each_with_index do |group, index| %>
         <tbody data-logical-duplicate>
@@ -89,7 +98,7 @@
                   —
                 <% end %>
               </td>
-              <td class="text-nowrap">
+              <td class="text-end text-nowrap">
                 <%= link_to edit_record_path(record), class: 'btn btn-sm btn-outline-primary',
                             title: 'Modifier la fiche', aria: { label: "Modifier la fiche #{record.id}" } do %>
                   <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
