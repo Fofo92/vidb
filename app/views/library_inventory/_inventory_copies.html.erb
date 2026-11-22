@@ -1,21 +1,37 @@
-<% copies.each do |asset| %>
-  <div class="d-flex gap-1 align-items-center py-1">
-    <span class="text-truncate flex-grow-1" style="min-width: 0" title="<%= asset.last_known_path %>"><%= asset.last_known_path %></span>
-    <span class="text-end text-nowrap flex-shrink-0 text-muted" style="width: 5.5rem"
-          title="<%= asset.byte_size ? "#{number_with_delimiter(asset.byte_size)} octets enregistrés" : "Taille inconnue" %>">
-      <%= asset.byte_size ? number_to_human_size(asset.byte_size) : '—' %>
-    </span>
-    <% if asset.status_present? %>
-      <%= link_to edit_record_copy_condition_path(record, asset), class: 'btn btn-sm flex-shrink-0 btn-outline-secondary',
-                  title: 'Qualifier la copie', aria: { label: "Qualifier la copie #{asset.id}" } do %>
-        <i class="fa-solid fa-tags" aria-hidden="true"></i>
-      <% end %>
-      <%= link_to new_record_copy_removal_path(record, video_asset_id: asset.id), class: 'btn btn-sm flex-shrink-0 btn-outline-danger',
-                  title: 'Mettre à la corbeille…', aria: { label: "Mettre la copie #{asset.id} à la corbeille" } do %>
+<td class="small pe-2" style="max-width: 20rem">
+  <span class="d-block text-truncate" title="<%= asset&.last_known_path %>"><%= asset&.last_known_path || '—' %></span>
+</td>
+<td class="small text-nowrap"><%= asset&.language_version&.short_name || '—' %></td>
+<td class="small text-end text-nowrap">
+  <% if asset&.byte_size %>
+    <span title="<%= number_with_delimiter(asset.byte_size) %> octets enregistrés"><%= number_to_human_size(asset.byte_size) %></span>
+  <% else %>
+    —
+  <% end %>
+</td>
+<td class="text-end text-nowrap ps-2">
+  <% if asset&.status_present? %>
+    <%= link_to edit_record_copy_condition_path(record, asset), class: 'btn btn-sm btn-outline-secondary',
+                title: 'Qualifier la copie', aria: { label: "Qualifier la copie #{asset.id}" } do %>
+      <i class="fa-solid fa-tags" aria-hidden="true"></i>
+    <% end %>
+  <% elsif asset %>
+    <span class="small text-muted">Absente</span>
+  <% end %>
+  <% if first_copy %>
+    <%= link_to edit_record_path(record), class: 'btn btn-sm btn-outline-primary',
+                title: 'Modifier la fiche', aria: { label: "Modifier la fiche #{record.id}" } do %>
+      <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+    <% end %>
+  <% end %>
+  <% if asset&.status_present? %>
+    <%= turbo_frame_tag dom_id(asset, :inventory_remove), class: 'd-inline-block' do %>
+      <%= link_to new_record_copy_removal_path(record, video_asset_id: asset.id, inventory: '1', q: @query, page: @page),
+                  class: 'btn btn-sm btn-outline-danger', title: 'Mettre à la corbeille…',
+                  data: { turbo_frame: dom_id(asset, :inventory_remove) },
+                  aria: { label: "Mettre la copie #{asset.id} à la corbeille" } do %>
         <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
       <% end %>
-    <% else %>
-      <span class="text-muted text-nowrap text-center flex-shrink-0" style="width: 4rem">Absente</span>
     <% end %>
-  </div>
-<% end %>
+  <% end %>
+</td>

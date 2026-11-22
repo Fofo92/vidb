@@ -13,8 +13,10 @@ class RecordCopyRelinksController < ApplicationController
   end
 
   def create
+    previous_path = @asset.last_known_path
     service.call(params.require(:confirmation))
-    redirect_to record_path(@record), notice: 'Référence de la copie actualisée.', status: :see_other
+    destination = @asset.last_known_path == previous_path ? library_inventory_path : record_path(@record)
+    redirect_to destination, notice: 'Référence de la copie actualisée.', status: :see_other
   rescue ArgumentError, SystemCallError => e
     redirect_to library_inventory_path, alert: e.message, status: :see_other
   end

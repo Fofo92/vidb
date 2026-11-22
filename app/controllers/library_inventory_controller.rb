@@ -3,7 +3,7 @@
 class LibraryInventoryController < ApplicationController
   def show
     @snapshot = VideoAssets::InventorySnapshot.new.call
-    assets = VideoAsset.includes(:record).to_a
+    assets = VideoAsset.includes(:record, :language_version).to_a
     @issues = VideoAssets::InventoryReview.new(snapshot: @snapshot,
                                                assets: assets.reject(&:status_deleted?)).call
     @duplicates = RecordDuplicateReview.new(assets: assets).call + disk_duplicate_groups(assets)
