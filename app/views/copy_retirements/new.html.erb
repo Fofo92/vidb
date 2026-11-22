@@ -1,6 +1,6 @@
 <section class="container py-3">
   <h1 class="h4">Retirer ces anciennes références ?</h1>
-  <p>Ces <%= @assets.size %> anciens chemins sont absents. Leurs références seront retirées de vidb après sauvegarde technique.</p>
+  <p>Les <%= @assets.size %> références seront retirées de vidb après sauvegarde technique. Le chemin peut être absent ou occupé par une autre copie confirmée de la même fiche.</p>
   <p>S’il s’agit d’un déplacement vers une copie déjà présente dans cette fiche, conserve cette copie présente et retire
     les anciennes références devenues inutiles. Si le nouveau chemin n’est pas encore associé, utilise plutôt le rattachement.</p>
   <ul>

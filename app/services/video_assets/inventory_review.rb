@@ -8,6 +8,7 @@ module VideoAssets
       @root = root
       @entries = (snapshot&.fetch(:entries, []) || []).index_by { |entry| entry[:path] }
       @by_size = @entries.values.group_by { |entry| entry[:size] }
+      @present_by_path = @assets.select(&:status_present?).group_by { |asset| [asset.record_id, asset.last_known_path] }
       @known = @assets.to_set(&:last_known_path)
     end
 
@@ -18,7 +19,7 @@ module VideoAssets
         status = state(asset)
         next if status == 'confirmed'
 
-        { asset: asset, status: status, candidates: candidates(asset) }
+        { asset: asset, status: status, candidates: candidates(asset), retirable: retirable?(asset, status) }
       end
     end
 
@@ -41,6 +42,16 @@ module VideoAssets
     end
 
     private
+
+    def retirable?(asset, status)
+      return false unless asset.status_missing? && asset.technical_details['copy_removal_pending'].blank?
+      return true if status == 'absent'
+      return false unless status == 'changed' && asset.byte_size != @entries.fetch(asset.last_known_path)[:size]
+
+      @present_by_path.fetch([asset.record_id, asset.last_known_path], []).one? do |copy|
+        copy.technical_details['copy_removal_pending'].blank? && state(copy) == 'confirmed'
+      end
+    end
 
     def candidate?(asset, entry)
       path = entry[:path]

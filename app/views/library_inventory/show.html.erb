@@ -15,14 +15,21 @@
   <h2 class="h5">Copies à examiner — <%= @issue_count %></h2>
   <p class="small">Un chemin occupé par un autre encodage ne confirme pas l’ancienne copie.
     Les renommages proposés nécessitent une vérification ; aucune fusion ni suppression automatique.</p>
+  <% eligible_ids = @issues.filter_map { |row| row[:asset].id if row[:retirable] } %>
   <%= form_with url: new_copy_retirement_path, method: :get, id: 'missing-copy-selection', class: 'mb-2' do |form| %>
-    <%= form.submit 'Retirer les anciennes références sélectionnées…', class: 'btn btn-outline-secondary btn-sm' %>
-    <span class="small text-muted">Sélection sur cette page. Sauvegarde et confirmation avant retrait des chemins absents.</span>
+    <%= form.submit 'Retirer les anciennes références sélectionnées…', disabled: eligible_ids.empty?, class: 'btn btn-outline-secondary btn-sm' %>
+    <span class="small text-muted"><% if eligible_ids.empty? %>
+      Aucune référence retirable sur cette page.
+    <% else %>
+      Sélection sur cette page. Sauvegarde et confirmation avant retrait des anciennes références.
+    <% end %></span>
   <% end %>
   <div class="table-responsive" data-controller="inventory-selection">
     <table class="table table-sm align-middle" data-inventory-issues>
       <thead><tr><th scope="col" class="text-center" style="width: 2rem">
-        <input type="checkbox" disabled title="Tout sélectionner sur cette page" aria-label="Tout sélectionner sur cette page"
+        <input type="checkbox" <%= "disabled" if eligible_ids.empty? %>
+               title="<%= eligible_ids.empty? ? "Aucune référence retirable sur cette page" : "Tout sélectionner sur cette page" %>"
+               aria-label="Tout sélectionner sur cette page"
                data-inventory-selection-target="all" data-action="change->inventory-selection#toggle">
       </th><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
       <tbody>
@@ -30,7 +37,7 @@
           <% asset = row[:asset] %>
           <tr>
             <td class="text-center">
-              <% if asset.status_missing? && row[:status] == 'absent' && asset.technical_details['copy_removal_pending'].blank? %>
+              <% if eligible_ids.include?(asset.id) %>
                 <%= check_box_tag 'video_asset_ids[]', asset.id, false, form: 'missing-copy-selection',
                                   data: { inventory_selection_target: "item", action: "change->inventory-selection#sync" },
                                   aria: { label: "Retirer l’ancienne référence #{asset.id} après sauvegarde" } %>
@@ -76,12 +83,7 @@
               </td>
               <td><%= group[:years].fetch(record.id) %></td>
               <td class="small" style="max-width: 20rem">
-                <% if copies.many? %>
-                  <details>
-                    <summary><%= pluralize(copies.size, 'copie') %></summary>
-                    <%= render 'inventory_copies', record: record, copies: copies %>
-                  </details>
-                <% elsif copies.one? %>
+                <% if copies.any? %>
                   <%= render 'inventory_copies', record: record, copies: copies %>
                 <% else %>
                   —

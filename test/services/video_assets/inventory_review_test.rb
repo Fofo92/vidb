@@ -1,10 +1,22 @@
 require 'test_helper'
 
 class InventoryReviewTest < ActiveSupport::TestCase
-  Asset = Struct.new(:id, :last_known_path, :byte_size, :observed_at)
+  Asset = Struct.new(:id, :last_known_path, :byte_size, :observed_at, :record_id, :status) do
+    def status_present?
+      status == 'present'
+    end
+
+    def status_missing?
+      status == 'missing'
+    end
+
+    def technical_details
+      {}
+    end
+  end
 
   setup do
-    @asset = Asset.new(1, '/videos/Films/Jo.mkv', 123, Time.utc(2026, 1, 3))
+    @asset = Asset.new(1, '/videos/Films/Jo.mkv', 123, Time.utc(2026, 1, 3), 10, 'present')
     @entry = { path: @asset.last_known_path, size: 123, modified_at: '2026-01-01T00:00:00Z' }
   end
 
@@ -20,6 +32,17 @@ class InventoryReviewTest < ActiveSupport::TestCase
   test 'a new encoding at the same path is reported as changed' do
     assert_equal 'changed', review([@entry.merge(size: 456)]).call.first[:status]
     assert_equal 'changed', review([@entry.merge(modified_at: '2026-01-04T00:00:00Z')]).call.first[:status]
+  end
+
+  test 'a missing reference is retirable when its replacement is confirmed on the same record' do
+    @asset.status = 'missing'
+    replacement = Asset.new(2, @asset.last_known_path, 456, @asset.observed_at, @asset.record_id, 'present')
+    entries = [@entry.merge(size: 456)]
+
+    assert review(entries, [@asset, replacement]).call.first.fetch(:retirable)
+
+    replacement.record_id = 20
+    assert_not review(entries, [@asset, replacement]).call.first.fetch(:retirable)
   end
 
   test 'matching copies need no review' do
@@ -41,7 +64,7 @@ class InventoryReviewTest < ActiveSupport::TestCase
   end
 
   test 'another confirmed copy or another directory is never a rename candidate' do
-    other = Asset.new(2, '/videos/Films/Jo_old.mkv', 123, @asset.observed_at)
+    other = Asset.new(2, '/videos/Films/Jo_old.mkv', 123, @asset.observed_at, 20, 'present')
     entries = [@entry.merge(path: other.last_known_path), @entry.merge(path: '/videos/Elsewhere/Jo_old.mkv')]
     assert_empty review(entries, [@asset, other]).candidates(@asset)
   end

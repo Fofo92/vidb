@@ -56,7 +56,23 @@ module VideoAssets
       raise ArgumentError, 'Une suppression vers la corbeille est déjà en cours.' if
         asset.technical_details['copy_removal_pending']
 
-      @absence.call(asset.last_known_path)
+      validate_path(asset)
+    end
+
+    def validate_path(asset)
+      @absence.call(asset.last_known_path) do |stat|
+        replacement_confirmed?(asset, stat)
+      end
+    end
+
+    def replacement_confirmed?(asset, stat)
+      return false unless asset.status_missing? && asset.byte_size && asset.byte_size != stat.size
+
+      replacements = VideoAsset.where(record_id: asset.record_id, last_known_path: asset.last_known_path,
+                                      status: 'present', byte_size: stat.size)
+      replacements.one? do |copy|
+        copy.observed_at && copy.observed_at >= stat.mtime && copy.technical_details['copy_removal_pending'].blank?
+      end
     end
 
     def lock_tables
@@ -77,7 +93,7 @@ module VideoAssets
       @backup_path = @backup.write(assets, user: @user)
       update_references(assets)
       @guard.call
-      assets.each { |asset| @absence.call(asset.last_known_path) }
+      assets.each { |asset| validate_path(asset) }
       assets
     end
 
