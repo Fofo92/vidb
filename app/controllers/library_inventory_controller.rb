@@ -14,7 +14,7 @@ class LibraryInventoryController < ApplicationController
   end
 
   def remove_copies
-    confirmations = params.permit(confirmations: {})[:confirmations] || {}
+    confirmations = params.permit(confirmations: {})[:confirmations].to_h
     @requested_count = confirmations.size
     @removals = VideoAsset.where(id: confirmations.keys).map do |asset|
       removal_result(asset) { removal(asset).call(confirmations[asset.id.to_s]) }

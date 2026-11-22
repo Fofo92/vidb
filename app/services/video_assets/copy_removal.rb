@@ -24,7 +24,9 @@ module VideoAssets
       return if @asset.reload.status_deleted?
 
       receipt = @bridge.call(plan.fetch('request').merge('operation' => 'remove'))
-      finish(plan, receipt)
+      finish_with_retry(plan, receipt)
+    rescue ActiveRecord::Deadlocked
+      raise Error, 'La base est occupée. Vérifie la copie ou renouvelle la confirmation.'
     end
 
     private
@@ -62,6 +64,12 @@ module VideoAssets
     def validate_pending(pending, plan)
       raise Error, 'Une autre suppression est déjà préparée : renouvelle la confirmation.' if pending && pending != plan
       raise Error, 'Cette copie n’est plus présente.' unless @asset.status_present? || pending
+    end
+
+    def finish_with_retry(plan, receipt)
+      finish(plan, receipt)
+    rescue ActiveRecord::Deadlocked
+      finish(plan, receipt)
     end
 
     def finish(plan, receipt)
