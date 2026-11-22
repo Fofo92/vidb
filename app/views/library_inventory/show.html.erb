@@ -90,9 +90,9 @@
                copies = group[:copies].fetch(record.id).reject(&:status_deleted?)
                (copies.presence || [nil]).each_with_index.map { |asset, i| [record, asset, i.zero?, [copies.size, 1].max] }
              end %>
-          <tbody data-logical-duplicate class="<%= 'border-top border-2 border-secondary' unless index.zero? %>">
+          <tbody data-logical-duplicate <% unless index.zero? %>style="border-top: 1px solid var(--bs-secondary-border-subtle, #c5c9ce)"<% end %>>
             <% rows.each_with_index do |(record, asset, first_copy, copy_count), row_index| %>
-              <tr class="<%= 'border-top border-secondary' unless row_index.zero? %>">
+              <tr <% unless row_index.zero? %>style="border-top: 1px solid var(--bs-secondary-border-subtle, #c5c9ce)"<% end %>>
                 <% if row_index.zero? %>
                   <td class="small text-nowrap pe-2" rowspan="<%= rows.size %>">
                     <%= group[:disk] ? 'Disque' : 'Fiches' %> · <%= (@page - 1) * 30 + index + 1 %>

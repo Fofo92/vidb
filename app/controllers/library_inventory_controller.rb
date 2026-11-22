@@ -22,7 +22,7 @@ class LibraryInventoryController < ApplicationController
   private
 
   def disk_duplicate_groups(assets)
-    by_record = assets.select(&:status_present?).group_by(&:record_id)
+    by_record = assets.select(&:status_present?).group_by { |asset| [asset.record_id, episode_numbers(asset)] }
     by_record.values.filter_map do |copies|
       repeated = copies.group_by(&:broadcast_part_number).values.select(&:many?).flatten
       next if repeated.empty?
@@ -30,6 +30,12 @@ class LibraryInventoryController < ApplicationController
       record = repeated.first.record
       { records: [record], years: { record.id => record.year }, copies: { record.id => repeated }, disk: true }
     end
+  end
+
+  def episode_numbers(asset)
+    filename = File.basename(asset.last_known_path.to_s)
+    numbers = filename.scan(/(?<![[:alnum:]])S(\d+)[ ._-]*E(\d+)(?![[:alnum:]])/i)
+    numbers.map { |season, episode| [season.to_i, episode.to_i] }.uniq.sort
   end
 
   def matches?(record)
