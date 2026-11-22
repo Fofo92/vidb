@@ -1,0 +1,17 @@
+<% copies.each do |asset| %>
+  <div class="d-flex gap-1 align-items-center">
+    <span class="text-truncate flex-grow-1" title="<%= asset.last_known_path %>"><%= asset.last_known_path %></span>
+    <% if asset.status_present? %>
+      <%= link_to edit_record_copy_condition_path(record, asset), class: 'btn btn-sm btn-outline-secondary',
+                  title: 'Qualifier la copie', aria: { label: "Qualifier la copie #{asset.id}" } do %>
+        <i class="fa-solid fa-tags" aria-hidden="true"></i>
+      <% end %>
+      <%= link_to new_record_copy_removal_path(record, video_asset_id: asset.id), class: 'btn btn-sm btn-outline-danger',
+                  title: 'Mettre à la corbeille…', aria: { label: "Mettre la copie #{asset.id} à la corbeille" } do %>
+        <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+      <% end %>
+    <% else %>
+      <span class="text-muted text-nowrap">Absente</span>
+    <% end %>
+  </div>
+<% end %>

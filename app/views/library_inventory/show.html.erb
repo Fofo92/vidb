@@ -21,13 +21,15 @@
   <% end %>
   <div class="table-responsive" data-controller="inventory-selection">
     <table class="table table-sm align-middle" data-inventory-issues>
-      <thead><tr><th scope="col"><label class="text-nowrap"><input type="checkbox" disabled
-        data-inventory-selection-target="all" data-action="change->inventory-selection#toggle"> Tout sélectionner</label></th><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
+      <thead><tr><th scope="col" class="text-center" style="width: 2rem">
+        <input type="checkbox" disabled title="Tout sélectionner sur cette page" aria-label="Tout sélectionner sur cette page"
+               data-inventory-selection-target="all" data-action="change->inventory-selection#toggle">
+      </th><th>Œuvre</th><th>Chemin enregistré</th><th>Constat</th><th>Renommages possibles</th></tr></thead>
       <tbody>
         <% @issues.each do |row| %>
           <% asset = row[:asset] %>
           <tr>
-            <td>
+            <td class="text-center">
               <% if asset.status_missing? && row[:status] == 'absent' && asset.technical_details['copy_removal_pending'].blank? %>
                 <%= check_box_tag 'video_asset_ids[]', asset.id, false, form: 'missing-copy-selection',
                                   data: { inventory_selection_target: "item", action: "change->inventory-selection#sync" },
@@ -58,35 +60,38 @@
       <thead>
         <tr><th>Groupe</th><th>Fiche</th><th>Année</th><th>Copies et actions</th><th>Actions fiche</th></tr>
       </thead>
-      <% @duplicates.each do |group| %>
+      <% @duplicates.each_with_index do |group, index| %>
         <tbody data-logical-duplicate>
-          <% group[:records].each do |record| %>
+          <% group[:records].each_with_index do |record, row_index| %>
             <% copies = group[:copies].fetch(record.id).reject(&:status_deleted?) %>
             <tr>
-              <td class="small"><%= group[:disk] ? 'Copies sur disque' : 'Fiches similaires' %> · <%= group[:records].first.id %></td>
-              <td><%= record.complete_title_with_parents %> · n° <%= record.id %></td>
-              <td><%= group[:years].fetch(record.id) %></td>
-              <td class="small">
-                <% copies.each do |asset| %>
-                  <div class="d-flex flex-wrap gap-1 align-items-center mb-1">
-                    <span class="text-break"><%= asset.last_known_path %></span>
-                    <% if asset.status_present? %>
-                      <%= link_to 'Qualifier', edit_record_copy_condition_path(record, asset),
-                                  class: 'btn btn-sm btn-outline-secondary' %>
-                      <%= link_to 'Mettre à la corbeille…', new_record_copy_removal_path(record, video_asset_id: asset.id),
-                                  class: 'btn btn-sm btn-outline-danger' %>
-                    <% else %>
-                      <span class="text-muted">Absente</span>
-                    <% end %>
-                  </div>
-                <% end %>
-                <% if copies.empty? %>—<% end %>
+              <% if row_index.zero? %>
+                <td class="small text-nowrap" rowspan="<%= group[:records].size %>">
+                  <%= group[:disk] ? 'Disque' : 'Fiches' %> · <%= (@page - 1) * 30 + index + 1 %>
+                </td>
+              <% end %>
+              <td style="max-width: 16rem">
+                <%= link_to "#{record.complete_title_with_parents} · n° #{record.id}", record_path(record),
+                            class: 'd-block text-truncate', title: "Ouvrir #{record.complete_title_with_parents}" %>
               </td>
-              <td>
-                <div class="d-flex flex-wrap gap-1">
-                  <%= link_to 'Ouvrir', record_path(record), class: 'btn btn-sm btn-outline-secondary' %>
-                  <%= link_to 'Modifier', edit_record_path(record), class: 'btn btn-sm btn-outline-primary' %>
-                </div>
+              <td><%= group[:years].fetch(record.id) %></td>
+              <td class="small" style="max-width: 20rem">
+                <% if copies.many? %>
+                  <details>
+                    <summary><%= pluralize(copies.size, 'copie') %></summary>
+                    <%= render 'inventory_copies', record: record, copies: copies %>
+                  </details>
+                <% elsif copies.one? %>
+                  <%= render 'inventory_copies', record: record, copies: copies %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td class="text-nowrap">
+                <%= link_to edit_record_path(record), class: 'btn btn-sm btn-outline-primary',
+                            title: 'Modifier la fiche', aria: { label: "Modifier la fiche #{record.id}" } do %>
+                  <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                <% end %>
               </td>
             </tr>
           <% end %>
