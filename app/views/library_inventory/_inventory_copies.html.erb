@@ -25,7 +25,7 @@
     <% end %>
   <% end %>
   <% if asset&.status_present? %>
-    <%= turbo_frame_tag dom_id(asset, :inventory_remove), class: 'd-inline-block' do %>
+    <%= turbo_frame_tag dom_id(asset, :inventory_remove), class: 'd-inline-block position-relative align-middle' do %>
       <%= link_to new_record_copy_removal_path(record, video_asset_id: asset.id, inventory: '1', q: @query, page: @page),
                   class: 'btn btn-sm btn-outline-danger', title: 'Mettre à la corbeille…',
                   data: { turbo_frame: dom_id(asset, :inventory_remove) },
