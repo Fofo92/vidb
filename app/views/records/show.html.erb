@@ -9,7 +9,7 @@
 <% poster = RecordPosters::Display.call(@record) %>
 <% placement_status = @record.hierarchy_placement_status %>
 <% display_year = @record.display_range_of_years %>
-<div class="record-show" data-controller="record-states record-live" data-record-live-root
+<div class="record-show<%= " record-show--split" if @record.has_children? %>" data-controller="record-states record-live" data-record-live-root
      data-record-live-url-value="<%= record_live_path(@record, search_context: record_search_context_token) %>"
      data-record-live-version-value="<%= @record_live_version %>" data-record-states-url-value="<%= record_states_path(@record) %>">
   <div class="small" role="status" aria-live="polite" data-record-states-target="message"></div>
@@ -142,7 +142,7 @@
       </div>
     </div>
   </section>
-<div data-record-live-region="children">
+<div class="record-show-children" data-record-live-region="children">
 <div class="d-flex flex-row justify-content-between align-items-center">
   <%= link_to "Retour à la liste d'enregistrements", record_search_return_path, class: "btn btn-primary btn-sm" %>
   <% if @record.allows_new_hierarchy_children? %>
@@ -164,27 +164,29 @@
   <%# child_type = @record.children.first.type_list || "enregistrement" %>
   <% record_count = @record.children.count - @record.children.where(is_recorded: [nil, ""]).count %>
   <% vizualised_count = @record.children.count - @record.children.where(is_seen: [nil, ""]).count %>
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Rang</th>
-        <th>Titre</th>
-        <th>Année</th>
-        <th>Durée</th>
-        <th>Genre</th>
-        <th>Avis</th>
-        <th>Pays</th>
-        <th>Version</th>
-        <th>Support</th>
-        <%= render "records/state_columns", record: @record, header: true %>
-        <th><span class="visually-hidden">Actions</span></th>
-      </tr>
-    </thead>
-    <tbody data-record-states-target="rows">
-      <%= render "records/child_rows", record: @record %>
-    </tbody>
-  </table>
+  <div class="record-show-children-table" tabindex="0" role="region" aria-label="Liste des fiches enfants">
+    <table class="table table-striped table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Rang</th>
+          <th>Titre</th>
+          <th>Année</th>
+          <th>Durée</th>
+          <th>Genre</th>
+          <th>Avis</th>
+          <th>Pays</th>
+          <th>Version</th>
+          <th>Support</th>
+          <%= render "records/state_columns", record: @record, header: true %>
+          <th><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody data-record-states-target="rows">
+        <%= render "records/child_rows", record: @record %>
+      </tbody>
+    </table>
+  </div>
 <% end %>
 
 </div>

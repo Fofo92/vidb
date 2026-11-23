@@ -124,3 +124,41 @@
 @media (max-width: 360px) {
   .record-show-overview { grid-template-columns: 85px minmax(0, 1fr); column-gap: .6rem; }
 }
+
+@media (min-width: 768px) and (min-height: 640px) {
+  body:has(> .record-show--split) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  body:has(> .record-show--split) > :not(.record-show--split) {
+    flex-shrink: 0;
+  }
+
+  .record-show--split,
+  .record-show--split > .record-show-children {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .record-show--split > .record-show-overview {
+    flex-shrink: 0;
+    max-height: 55dvh;
+    overflow: auto;
+  }
+
+  .record-show-children-table {
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .record-show-children-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--bs-body-bg, #fff);
+  }
+}
