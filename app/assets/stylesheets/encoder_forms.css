@@ -75,16 +75,17 @@
 .encoder-episode-toolbar select { max-width: 100%; }
 .encoder-episode-toolbar .encoder-episode-url { width: 21rem; max-width: 100%; }
 .encoder-episode-toolbar select { flex: 1 1 20rem; min-width: 0; }
-.encoder-episode-help { margin-bottom: .4rem; }
+.encoder-episode-help { margin-left: auto; max-width: 100%; }
+.encoder-episode-help summary { text-align: right; }
 
 .encoder-episode-proposal-header {
   display: flex;
   align-items: flex-start;
   gap: .5rem;
 }
-.encoder-episode-proposal-header .encoder-proposal-heading { flex: 1; }
-.encoder-episode-proposal-header .encoder-proposal-artwork { float: none; width: auto; margin: 0; }
-.encoder-episode-proposal-header .encoder-proposal-artwork img { width: auto; height: 3rem; margin: auto; }
+.encoder-episode-proposal-header .encoder-proposal-heading { flex: 1; min-width: 0; }
+.encoder-episode-proposal-header .encoder-proposal-artwork { float: none; flex: 0 0 92px; margin: 0; }
+.encoder-episode-form p { overflow-wrap: anywhere; }
 
 .encoder-episode-form .encoder-episode-reference {
   display: grid;

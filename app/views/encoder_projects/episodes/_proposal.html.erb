@@ -12,6 +12,8 @@
     <div class="encoder-proposal-sources">
       <% if proposal['existing_record_id'] %>
         <%= link_to 'Modifier la fiche existante', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %>
+      <% elsif (existing_series = series || (@series.first if @series.one? && !proposal['series_candidate'])) %>
+        <%= link_to 'Modifier la fiche de la série', edit_record_path(existing_series), target: '_blank', rel: 'noopener' %>
       <% end %>
       <% if proposal.dig('source', 'provider').present? %>
         <%= link_to 'Consulter la source', proposal.dig('source', 'url'), target: '_blank', rel: 'noopener' %>
@@ -39,9 +41,9 @@
       <p>Création complète suivant la numérotation Wikipédia. Les parties du catalogue seront regroupées
         uniquement lorsque leur identité est établie ; leur nombre ne correspond pas au nombre de fiches locales.</p>
     <% else %>
-      <p>Création complète : environ <%= pluralize(series['episode_count'].to_i, 'épisode', 'épisodes') %>
-        dans <%= pluralize(series['season_count'].to_i, 'saison', 'saisons') %>,
-        selon le catalogue qui sera actualisé à la confirmation. Aucune copie ne sera déclarée présente.</p>
+      <p>Création complète : <%= pluralize(series['season_count'].to_i, 'saison', 'saisons') %>,
+        <%= pluralize(series['episode_count'].to_i, 'épisode', 'épisodes') %>,
+        avec actualisation du catalogue et aucune copie déclarée présente.</p>
     <% end %>
     <%= form.hidden_field :series_id, value: 'new' %>
   <% else %>
