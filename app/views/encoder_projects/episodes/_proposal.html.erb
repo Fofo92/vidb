@@ -4,16 +4,22 @@
                                                   submitted: submitted, series: series) %>
 <% values = proposal.merge((@submitted || {}).slice('title', 'original_title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
 <section class="card my-2 encoder-proposal-card"><div class="card-body">
-<%= render 'encoder_projects/artwork', proposal: proposal %>
-<% if proposal.dig('source', 'provider').present? %>
+<div class="encoder-episode-proposal-header">
   <div class="encoder-proposal-heading">
-    <h2 class="h5">Proposition <%= index + 1 %> · <%= proposal.dig('source', 'provider') %></h2>
-    <%= link_to 'Consulter la source', proposal.dig('source', 'url'), target: '_blank', rel: 'noopener' %>
+    <% if proposal.dig('source', 'provider').present? %>
+      <h2 class="h5">Proposition <%= index + 1 %> · <%= proposal.dig('source', 'provider') %></h2>
+    <% end %>
+    <div class="encoder-proposal-sources">
+      <% if proposal['existing_record_id'] %>
+        <%= link_to 'Modifier la fiche existante', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %>
+      <% end %>
+      <% if proposal.dig('source', 'provider').present? %>
+        <%= link_to 'Consulter la source', proposal.dig('source', 'url'), target: '_blank', rel: 'noopener' %>
+      <% end %>
+    </div>
   </div>
-<% end %>
-<% if proposal['existing_record_id'] %>
-  <p><%= link_to 'Modifier la fiche existante', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %></p>
-<% end %>
+  <%= render 'encoder_projects/artwork', proposal: proposal %>
+</div>
 <%= form_with url: encoder_projects_episode_path, method: :post, html: { class: 'encoder-episode-form' } do |form| %>
   <%= form.hidden_field :encoder_window, value: 1 %>
   <%= render 'encoder_projects/revision_confirmation', form: form %>
@@ -46,8 +52,7 @@
     <% complete_catalogue = submitted.key?('complete_catalogue') ? submitted['complete_catalogue'] == '1' : true %>
     <div>
       <%= form.check_box :complete_catalogue, { checked: complete_catalogue, id: "episode-complete-catalogue-#{index}" }, '1', '0' %>
-      <%= form.label :complete_catalogue, 'Ajouter les saisons et épisodes manquants', for: "episode-complete-catalogue-#{index}" %>
-      <p class="small">Les nouveaux épisodes seront ajoutés sans copie ni historique de visionnage.</p>
+      <%= form.label :complete_catalogue, 'Ajouter les saisons et épisodes manquants, sans copie ni historique de visionnage', for: "episode-complete-catalogue-#{index}" %>
     </div>
   <% end %>
   <% if proposal['tmdb_episode_reference'] %>
@@ -85,16 +90,16 @@
   <div class="encoder-field">
   <%= form.label :original_title, 'Titre original', for: "episode-original-title-#{index}" %>
   <%= form.text_field :original_title, value: values['original_title'], maxlength: 300, placeholder: 'À compléter si connu', id: "episode-original-title-#{index}" %>
+  <% if values['original_title'].blank? %><p class="small text-muted">Titre original non trouvé : tu peux le compléter ici.</p><% end %>
+  </div>
   <% countries = Country.where(id: values.fetch('country_ids', [])).pluck(:long_name) %>
   <% complete_title = EncoderProjects::EpisodeTitles.display(values['title'].presence || @episode.title, values['original_title'], countries: countries) %>
   <p class="small">Nom proposé : <%= format('S%02d E%02d - %s', @episode.season, @episode.episode, complete_title) %></p>
-  <% if values['original_title'].blank? %><p class="small text-muted">Titre original non trouvé : tu peux le compléter ici.</p><% end %>
-  </div>
   <div class="encoder-field">
   <%= form.label :language_version, 'Version linguistique prévue', for: "episode-language-#{index}" %>
   <%= form.select :language_version, LanguageVersion.order(:id).map { |item| [item.long_name, item.short_name] }, { selected: language }, id: "episode-language-#{index}" %>
   <% if language == 'IND' %>
-    <p class="small text-warning">Version linguistique : à compléter ; elle sera vérifiée sur le fichier final.</p>
+    <p class="small text-warning">Version linguistique à compléter, qui sera vérifiée sur le fichier final.</p>
   <% end %>
   </div>
   <div class="encoder-field">
@@ -132,13 +137,13 @@
   <%= form.select :country_ids, Country.order(:long_name).map { |item| [item.long_name, item.id] }, { selected: values['country_ids'] }, multiple: true, size: 3, class: 'encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(values['country_ids']).first }, id: "episode-countries-#{index}" %>
   <% if values.fetch('country_ids', []).empty? %><p class="small text-warning">Pays : à compléter.</p><% end %>
   </div>
-  <div class="encoder-field encoder-field-wide">
+  <div class="encoder-field encoder-field-wide encoder-episode-reference">
   <%= form.label :source, 'Lien de référence', for: "episode-source-#{index}" %>
   <%= form.url_field :source, value: (@submitted || {})['source'].presence || proposal.dig('source', 'url'), id: "episode-source-#{index}" %>
   </div>
-  <p class="small">Un champ vide conserve la proposition disponible. Les informations déjà renseignées sont préservées, sauf correction explicite de ta part.
+  <p class="small">Un champ vide conserve la proposition disponible. Les informations déjà renseignées sont préservées, sauf correction explicite.
     Pays et genres complètent la série lorsqu’ils y manquent ; l’épisode en hérite.
-    Le support HD et la durée réelle seront établis à l’import de l’encodage terminé.</p>
+    Le support et la durée réelle seront mis à jour après encodage.</p>
   <% episode_label = format('S%02d E%02d', @episode.season, @episode.episode) %>
   <div class="encoder-confirmation-bar">
     <%= form.submit(proposal['series_candidate'] ? (proposal['tmdb_episode_reference'] ? "Créer la série et préparer #{episode_label}" : "Créer la série complète et préparer #{episode_label}") : "Confirmer et préparer #{episode_label}") %>
