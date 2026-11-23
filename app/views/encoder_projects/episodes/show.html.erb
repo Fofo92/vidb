@@ -54,7 +54,8 @@
     <p>Aucune proposition exploitable. Tu peux compléter les champs ci-dessous et préparer la fiche.</p>
   <% end %>
 <% end %>
-<% @proposals.each_with_index do |proposal, index| %>
+<% tmdb, other = @proposals.partition { |item| item.dig('source', 'provider') == 'tmdb' } %>
+<% (tmdb + other).each_with_index do |proposal, index| %>
   <fieldset data-episode-preparation-target="proposal">
   <legend class="h5">Préparation de <%= @query %> · <%= format('S%02d E%02d', @episode.season, @episode.episode) %></legend>
   <%= render 'proposal', proposal: proposal, index: index %>

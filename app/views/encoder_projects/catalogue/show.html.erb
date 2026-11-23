@@ -54,7 +54,8 @@
       <p class="small">Vérifie le numéro de ton montage. Aucune fiche ni association n’est créée à cette étape.</p>
     </div></section>
   <% end %>
-  <% @candidates.each_with_index do |candidate, index| %>
+  <% tmdb, other = @candidates.partition { |item| item.dig('source', 'provider') == 'tmdb' } %>
+  <% (tmdb + other).each_with_index do |candidate, index| %>
     <section class="card my-2 encoder-proposal-card"><div class="card-body">
       <%= render 'encoder_projects/artwork', proposal: candidate %>
       <h2 class="h5"><%= candidate['french_title'] %> · <%= candidate['year'] || 'Année à compléter' %> · Film</h2>
@@ -66,7 +67,9 @@
       <% end %>
       <p><%= candidate['abstract'] %></p>
       <p class="small encoder-proposal-sources">
-        <% ([candidate.fetch('source')] + candidate.fetch('additional_sources', [])).each do |source| %>
+        <% links = [candidate.fetch('source')] + candidate.fetch('additional_sources', []) %>
+        <% tmdb_links, other_links = links.partition { |source| source['provider'] == 'tmdb' } %>
+        <% (tmdb_links + other_links).each do |source| %>
           <%= link_to({ 'wikipedia' => 'Wikipédia', 'tmdb' => 'TMDB', 'senscritique' => 'SensCritique' }.fetch(source['provider'], 'Consulter la source'), source.fetch('url'), target: '_blank', rel: 'noopener noreferrer') %>
         <% end %>
       </p>
