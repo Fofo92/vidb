@@ -62,3 +62,17 @@
 .encoder-proposal-artwork[hidden] { display: none; }
 .encoder-proposal-card .encoder-confirmation-bar { padding: .35rem 0; }
 .encoder-identification > .alert { padding: .55rem .75rem; margin-bottom: .65rem; }
+
+.encoder-episode-preparation .encoder-episode-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .55rem;
+  margin-bottom: .4rem;
+}
+
+.encoder-episode-toolbar input,
+.encoder-episode-toolbar select { max-width: 100%; }
+.encoder-episode-toolbar .encoder-episode-url { width: 21rem; max-width: 100%; }
+.encoder-episode-toolbar select { flex: 1 1 20rem; min-width: 0; }
+.encoder-episode-help { margin-bottom: .4rem; }

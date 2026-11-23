@@ -12,7 +12,7 @@
   </div>
 <% end %>
 <% if proposal['existing_record_id'] %>
-  <p><%= link_to 'Modifier ou effacer une information déjà renseignée', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %></p>
+  <p><%= link_to 'Modifier la fiche existante', edit_record_path(proposal['existing_record_id']), target: '_blank', rel: 'noopener' %></p>
 <% end %>
 <%= form_with url: encoder_projects_episode_path, method: :post, html: { class: 'encoder-episode-form' } do |form| %>
   <%= form.hidden_field :encoder_window, value: 1 %>
@@ -44,11 +44,10 @@
   <% end %>
   <% if proposal['catalogue_completion'] && !proposal['series_candidate'] %>
     <% complete_catalogue = submitted.key?('complete_catalogue') ? submitted['complete_catalogue'] == '1' : true %>
-    <div class="my-3">
+    <div>
       <%= form.check_box :complete_catalogue, { checked: complete_catalogue, id: "episode-complete-catalogue-#{index}" }, '1', '0' %>
-      <%= form.label :complete_catalogue, 'Compléter toutes les saisons et tous les épisodes documentés de cette série', for: "episode-complete-catalogue-#{index}" %>
-      <p class="small">Les fiches existantes et leurs états sont conservés. Les nouveaux épisodes seront non enregistrés,
-        non disponibles et non visionnés. Aucun fichier ne sera rattaché ici.</p>
+      <%= form.label :complete_catalogue, 'Ajouter les saisons et épisodes manquants', for: "episode-complete-catalogue-#{index}" %>
+      <p class="small">Les nouveaux épisodes seront ajoutés sans copie ni historique de visionnage.</p>
     </div>
   <% end %>
   <% if proposal['tmdb_episode_reference'] %>
