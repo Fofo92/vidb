@@ -91,12 +91,11 @@
               </label>
             <% end %>
             <fieldset <%= 'disabled' if existing_genres.any? %> data-encoder-genre-review-target="fields">
-              <% if Array(candidate['tmdb_genres']).any? %>
-                <p class="small mb-1">Genres TMDB : <%= Array(candidate['tmdb_genres']).join(' · ') %></p>
-                <p class="small text-muted">Choisis jusqu’à deux genres dans ta liste vidb. Les genres TMDB sont indiqués pour t’aider, y compris ceux absents de cette liste.</p>
-              <% end %>
               <%= label_tag "film-genres-#{index}", 'Genres principaux (deux maximum)', class: 'form-label' %>
               <%= select_tag 'gender_ids[]', options_from_collection_for_select(@genders, :id, :name, selected_genres), multiple: true, size: 3, id: "film-genres-#{index}", class: 'form-select encoder-reference-choices', data: { controller: 'encoder-choices', encoder_choices_first_value: Array(selected_genres).first } %>
+              <% if Array(candidate['tmdb_genres']).any? %>
+                <p class="small mt-1 mb-0">Genres TMDB : <%= Array(candidate['tmdb_genres']).join(' · ') %></p>
+              <% end %>
             </fieldset>
           </div>
           <% if !@completion_record || @completion_record.effective_countries.empty? %>
