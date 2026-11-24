@@ -54,7 +54,10 @@
       <p class="small">Vérifie le numéro de ton montage. Aucune fiche ni association n’est créée à cette étape.</p>
     </div></section>
   <% end %>
-  <% tmdb, other = @candidates.partition { |item| item.dig('source', 'provider') == 'tmdb' } %>
+  <% tmdb, other = @candidates.partition do |item|
+       sources = [item['source'], *item['additional_sources']].compact
+       sources.any? { |source| source['provider'] == 'tmdb' }
+     end %>
   <% (tmdb + other).each_with_index do |candidate, index| %>
     <section class="card my-2 encoder-proposal-card"><div class="card-body">
       <%= render 'encoder_projects/artwork', proposal: candidate %>

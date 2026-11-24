@@ -23,6 +23,24 @@ class EncoderProjects::FilmCatalogueTest < ActiveSupport::TestCase
     assert_equal 'tmdb', result.first.dig('abstract_source', 'provider')
   end
 
+  test 'TMDB searches the entered title before a different Wikipedia title' do
+    catalogue = EncoderProjects::FilmCatalogue.new(tmdb: empty_tmdb, senscritique: empty_senscritique)
+    wiki = { 'french_title' => 'Avril',
+             'source' => { 'provider' => 'wikipedia', 'url' => 'https://fr.wikipedia.org/wiki/Avril' } }
+    movie = { 'french_title' => 'April',
+              'source' => { 'provider' => 'tmdb', 'url' => 'https://www.themoviedb.org/movie/7' } }
+    search = Minitest::Mock.new
+    search.expect(:call, [movie], ['April'])
+
+    catalogue.stub(:wikipedia_films, [wiki]) do
+      catalogue.stub(:tmdb_films, search) do
+        assert_includes catalogue.call('April').map { |item| item.fetch('source') }, movie.fetch('source')
+      end
+    end
+
+    search.verify
+  end
+
   test 'a direct SensCritique link bypasses Wikipedia and TMDB' do
     wiki = Object.new
     wiki.define_singleton_method(:search) { |_title| raise 'Recherche Wikipédia indue' }

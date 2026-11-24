@@ -25,8 +25,8 @@ module EncoderProjects
       return SynopsisPreference.call(senscritique_films(title)) if title.match?(%r{\Ahttps://(?:www\.)?senscritique\.com/}i)
 
       films = wikipedia_films(title)
-      query = films.first&.fetch('french_title', nil).presence || title
-      FilmProposalGrouping.call(SynopsisPreference.call(CatalogueRuntime.enrich(films + other_films(query, title))))
+      proposals = films + other_films(title, films)
+      FilmProposalGrouping.call(SynopsisPreference.call(CatalogueRuntime.enrich(proposals)))
     end
 
     private
@@ -35,8 +35,10 @@ module EncoderProjects
       self.class.tmdb_movie_url(query) || query.to_s.strip
     end
 
-    def other_films(query, title)
-      proposals = tmdb_synopses(query)
+    def other_films(title, films)
+      wikipedia_title = films.first&.fetch('french_title', nil).presence
+      proposals = title.start_with?('https://fr.wikipedia.org/wiki/') ? [] : tmdb_synopses(title)
+      proposals = tmdb_synopses(wikipedia_title) if proposals.empty? && wikipedia_title && wikipedia_title != title
       proposals.presence || senscritique_films(title)
     end
 
