@@ -78,13 +78,21 @@
 .encoder-episode-help { margin-left: auto; max-width: 100%; }
 .encoder-episode-help summary { text-align: right; }
 
-.encoder-episode-proposal-header {
+.encoder-episode-proposal-top {
   display: flex;
   align-items: flex-start;
-  gap: .5rem;
+  gap: .8rem;
 }
-.encoder-episode-proposal-header .encoder-proposal-heading { flex: 1; min-width: 0; }
-.encoder-episode-proposal-header .encoder-proposal-artwork { float: none; flex: 0 0 92px; margin: 0; }
+.encoder-episode-proposal-top > .encoder-episode-form { flex: 1; }
+.encoder-episode-proposal-top > .encoder-proposal-artwork { float: none; flex: 0 0 138px; margin: 0; }
+.encoder-episode-proposal-top .encoder-proposal-artwork img { width: 138px; height: 207px; }
+
+@media (max-width: 640px) {
+  .encoder-episode-proposal-top { flex-direction: column; }
+  .encoder-episode-proposal-top > .encoder-episode-form { width: 100%; }
+  .encoder-episode-proposal-top > .encoder-proposal-artwork { flex: none; }
+}
+
 .encoder-episode-form p { overflow-wrap: anywhere; }
 
 .encoder-episode-form .encoder-episode-reference {

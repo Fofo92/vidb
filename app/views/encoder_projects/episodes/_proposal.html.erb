@@ -4,7 +4,16 @@
                                                   submitted: submitted, series: series) %>
 <% values = proposal.merge((@submitted || {}).slice('title', 'original_title', 'year', 'abstract', 'gender_ids', 'country_ids').reject { |_key, value| value.blank? }) %>
 <section class="card my-2 encoder-proposal-card"><div class="card-body">
-<div class="encoder-episode-proposal-header">
+<%= form_with url: encoder_projects_episode_path, method: :post, html: { class: 'encoder-episode-form' } do |form| %>
+  <%= form.hidden_field :encoder_window, value: 1 %>
+  <%= render 'encoder_projects/revision_confirmation', form: form %>
+  <%= form.hidden_field :request_token, value: params[:request_token] %>
+  <% if proposal.present? %>
+    <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: proposal) %>
+  <% end %>
+  <%= form.hidden_field :q, value: @query %>
+  <div class="encoder-episode-proposal-top">
+  <div class="encoder-episode-form">
   <div class="encoder-proposal-heading">
     <% if proposal.dig('source', 'provider').present? %>
       <h2 class="h5">Proposition <%= index + 1 %> · <%= proposal.dig('source', 'provider') %></h2>
@@ -20,16 +29,6 @@
       <% end %>
     </div>
   </div>
-  <%= render 'encoder_projects/artwork', proposal: proposal %>
-</div>
-<%= form_with url: encoder_projects_episode_path, method: :post, html: { class: 'encoder-episode-form' } do |form| %>
-  <%= form.hidden_field :encoder_window, value: 1 %>
-  <%= render 'encoder_projects/revision_confirmation', form: form %>
-  <%= form.hidden_field :request_token, value: params[:request_token] %>
-  <% if proposal.present? %>
-    <%= form.hidden_field :proposal_token, value: EncoderProjects::CatalogueScope.issue(user: current_user, project: @scope.fetch('project'), candidate: proposal) %>
-  <% end %>
-  <%= form.hidden_field :q, value: @query %>
   <% if proposal['series_candidate'] %>
     <% series = proposal.fetch('series_candidate') %>
     <p><strong>Nouvelle série : <%= series['french_title'] %></strong>
@@ -113,6 +112,9 @@
     <% synopsis_label = { 'tmdb' => 'TMDB', 'wikipedia' => 'Wikipédia', 'senscritique' => 'SensCritique' }.fetch(proposal.dig('abstract_source', 'provider'), proposal.dig('abstract_source', 'provider')) %>
     <p class="small">Synopsis : <%= link_to synopsis_label, proposal.dig('abstract_source', 'url'), target: '_blank', rel: 'noopener' %></p>
   <% end %>
+  </div>
+  </div>
+  <%= render 'encoder_projects/artwork', proposal: proposal %>
   </div>
   <div class="encoder-field encoder-field-wide">
   <%= form.label :abstract, 'Résumé', for: "episode-abstract-#{index}" %>
