@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -438,13 +438,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_120000) do
     t.bigint "broadcast_observation_id", null: false
     t.jsonb "capture_override", default: {}, null: false
     t.datetime "created_at", null: false
-    t.integer "effective_padding_after_seconds", default: 600, null: false
-    t.integer "effective_padding_before_seconds", default: 600, null: false
+    t.integer "effective_padding_after_seconds", default: 900, null: false
+    t.integer "effective_padding_before_seconds", default: 900, null: false
     t.timestamptz "programme_ends_at", null: false
     t.timestamptz "programme_starts_at", null: false
     t.datetime "recording_verified_at"
-    t.integer "requested_padding_after_seconds", default: 600, null: false
-    t.integer "requested_padding_before_seconds", default: 600, null: false
+    t.integer "requested_padding_after_seconds", default: 900, null: false
+    t.integer "requested_padding_before_seconds", default: 900, null: false
     t.string "status", default: "selected", null: false
     t.datetime "updated_at", null: false
     t.index ["broadcast_observation_id"], name: "index_tv_recording_intents_on_broadcast_observation_id", unique: true
