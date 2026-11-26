@@ -10,6 +10,7 @@ class EncoderProjects::CatalogueCreationHomonymTest < ActiveSupport::TestCase
   def existing_record(year: 2020, parent: true, kind: 'undetermined')
     record = Struct.new(:id, :year, :parent, :kind).new(6184, year, parent, kind)
     record.define_singleton_method(:has_parent?) { parent }
+    record.define_singleton_method(:record_kind_episode?) { kind == 'episode' }
     record.define_singleton_method(:record_kind_standalone_video?) { kind == 'standalone_video' }
     record
   end
@@ -43,11 +44,11 @@ class EncoderProjects::CatalogueCreationHomonymTest < ActiveSupport::TestCase
     assert_raises(ArgumentError) { lookup([record], [record]) }
   end
 
-  test 'an episode is never reused as the selected standalone film' do
+  test 'an episode with the same title and year only blocks creation if the source matches' do
     record = existing_record(year: 2025, kind: 'episode')
-    EncoderProjects::Matcher.stub(:qualified?, true) do
-      assert_raises(ArgumentError) { lookup([record]) }
-    end
+
+    assert_nil lookup([record])
+    assert_raises(ArgumentError) { lookup([record], [record]) }
   end
 
   test 'a qualified standalone film with the same year is reused' do

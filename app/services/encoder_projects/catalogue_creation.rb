@@ -88,6 +88,8 @@ module EncoderProjects
     end
 
     def distinct_work?(record, candidate, project)
+      return true if record.record_kind_episode?
+
       return false if record.year.blank? || candidate['year'].blank? || record.year == candidate['year']
       return true if record.has_parent?
 
